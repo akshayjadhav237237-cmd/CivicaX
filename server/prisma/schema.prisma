@@ -1,0 +1,484 @@
+// CivicaX Prisma Schema
+// PostgreSQL with PostGIS for geospatial support
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  citizen
+  department_op
+  government
+  admin
+}
+
+enum AlertLevel {
+  yellow
+  orange
+  red
+  green
+}
+
+enum ReportStatus {
+  submitted
+  assigned
+  in_progress
+  resolved
+}
+
+enum CivicCategory {
+  pothole
+  broken_streetlight
+  waste_management
+  drainage
+  water_supply
+  other
+}
+
+enum SafeZoneStatus {
+  available
+  activated
+  at_capacity
+}
+
+enum SafeZoneType {
+  school
+  stadium
+  community_hall
+  government_building
+  other
+}
+
+enum IncidentType {
+  civil_unrest
+  suspicious_activity
+  medical_emergency
+  violence
+  road_accident
+  other
+}
+
+enum Urgency {
+  immediate
+  non_urgent
+}
+
+enum SafetyReportStatus {
+  pending
+  dispatched
+  resolved
+}
+
+model User {
+  id                String    @id @default(uuid())
+  name              String
+  email             String    @unique
+  passwordHash      String    @map("password_hash")
+  role              UserRole  @default(citizen)
+  city              String?
+  phone             String?
+  smsAlertsEnabled  Boolean   @default(false) @map("sms_alerts_enabled")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  civicReports        CivicReport[]
+  safetyReports       SafetyReport[]
+  notifications       Notification[]
+  alertsCreated       EmergencyAlert[]
+  auditLogs           AuditLog[]
+  timelineChanges     CivicReportTimeline[]
+
+  // Three-portal relations
+  dispatches              EmergencyDispatch[]    @relation("DispatchedBy")
+  grievancesSubmitted     CivicGrievance[]       @relation("GrievanceSubmittedBy")
+  grievancesReviewed      CivicGrievance[]       @relation("GrievanceReviewedBy")
+  grievanceUpdates        GrievanceUpdate[]      @relation("GrievanceUpdatedBy")
+  whitelistEntriesAdded   WhitelistedOfficial[]  @relation("WhitelistAddedBy")
+
+  @@map("users")
+}
+
+model EmergencyZone {
+  id          String      @id @default(uuid())
+  name        String
+  level       AlertLevel  @default(green)
+  geojson     Json        // GeoJSON polygon
+  description String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  alerts      EmergencyAlert[]
+
+  @@map("emergency_zones")
+}
+
+model EmergencyAlert {
+  id               String      @id @default(uuid())
+  zoneId           String      @map("zone_id")
+  zone             EmergencyZone @relation(fields: [zoneId], references: [id])
+  level            AlertLevel
+  title            String
+  description      String
+  evacuationOrder  Boolean     @default(false) @map("evacuation_order")
+  isActive         Boolean     @default(true) @map("is_active")
+  createdBy        String      @map("created_by")
+  creator          User        @relation(fields: [createdBy], references: [id])
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@index([zoneId])
+  @@map("emergency_alerts")
+}
+
+model SafeZone {
+  id          String          @id @default(uuid())
+  name        String
+  type        SafeZoneType
+  latitude    Float
+  longitude   Float
+  capacity    Int
+  status      SafeZoneStatus  @default(available)
+  address     String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@map("safe_zones")
+}
+
+model CivicDepartment {
+  id          String          @id @default(uuid())
+  name        String
+  categories  String[]
+  email       String?
+  phone       String?
+
+  reports     CivicReport[]
+  grievances  CivicGrievance[]
+
+  @@map("civic_departments")
+}
+
+model CivicReport {
+  id               String          @id @default(uuid())
+  userId           String          @map("user_id")
+  user             User            @relation(fields: [userId], references: [id])
+  category         CivicCategory
+  description      String
+  latitude         Float
+  longitude        Float
+  address          String?
+  images           String[]        @default([])
+  status           ReportStatus    @default(submitted)
+  departmentId     String?         @map("department_id")
+  department       CivicDepartment? @relation(fields: [departmentId], references: [id])
+  assignedOfficer  String?         @map("assigned_officer")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  resolvedAt       DateTime?       @map("resolved_at")
+
+  timeline         CivicReportTimeline[]
+
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("civic_reports")
+}
+
+model CivicReportTimeline {
+  id          String        @id @default(uuid())
+  reportId    String        @map("report_id")
+  report      CivicReport   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  status      ReportStatus
+  note        String?
+  changedById String?       @map("changed_by")
+  changedBy   User?         @relation(fields: [changedById], references: [id])
+  changedAt   DateTime      @default(now()) @map("changed_at")
+
+  @@map("civic_report_timeline")
+}
+
+model SafetyReport {
+  id               String              @id @default(uuid())
+  userId           String?             @map("user_id")
+  user             User?               @relation(fields: [userId], references: [id])
+  incidentType     IncidentType        @map("incident_type")
+  latitude         Float
+  longitude        Float
+  address          String?
+  description      String
+  urgency          Urgency             @default(non_urgent)
+  credibilityScore Int                 @default(1) @map("credibility_score")
+  images           String[]            @default([])
+  status           SafetyReportStatus  @default(pending)
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  @@index([urgency])
+  @@index([createdAt])
+  @@map("safety_reports")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  body      String
+  isRead    Boolean   @default(false) @map("is_read")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model ElevationData {
+  id          String    @id @default(uuid())
+  latitude    Float
+  longitude   Float
+  elevationM  Float     @map("elevation_m")
+  region      String
+  sequence    Int       // for ordering cross-section points
+
+  @@map("elevation_data")
+}
+
+model PopulationDensity {
+  id              String  @id @default(uuid())
+  regionName      String  @map("region_name")
+  densityPerSqkm  Float   @map("density_per_sqkm")
+
+  @@map("population_density")
+}
+
+model AuditLog {
+  id        String    @id @default(uuid())
+  userId    String?   @map("user_id")
+  user      User?     @relation(fields: [userId], references: [id])
+  action    String
+  payload   Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("audit_log")
+}
+
+// ─────────────────────────────────────────────
+// Three-Portal System — Phase 1 Additions
+// ─────────────────────────────────────────────
+
+enum SatelliteSource {
+  EONET
+  FIRMS
+  LANCE
+  OPEN_METEO
+}
+
+enum SatelliteSeverity {
+  low
+  medium
+  high
+  critical
+}
+
+enum DispatchServiceType {
+  ambulance
+  police
+  fire
+  rescue
+  medical
+  flood_rescue
+}
+
+enum DispatchStatus {
+  dispatched
+  en_route
+  on_scene
+  completed
+}
+
+enum GrievanceStatus {
+  submitted
+  under_review
+  approved
+  rejected
+  assigned
+  in_progress
+  resolved
+}
+
+enum GrievancePriority {
+  low
+  medium
+  high
+  critical
+}
+
+enum GrievanceFeedbackRating {
+  one
+  two
+  three
+  four
+  five
+}
+
+enum ApiHealthStatus {
+  healthy
+  degraded
+  down
+  unconfigured
+}
+
+enum FeatureHealthStatus {
+  passing
+  failing
+  warning
+}
+
+// Satellite-detected natural events (EONET, FIRMS, etc.)
+model SatelliteEvent {
+  id              String             @id @default(uuid())
+  source          SatelliteSource
+  eventType       String             @map("event_type")
+  title           String
+  description     String             @db.Text
+  latitude        Float?
+  longitude       Float?
+  severity        SatelliteSeverity  @default(low)
+  rawData         Json               @map("raw_data")
+  situationalDesc String?            @map("situational_desc") @db.Text
+  detectedAt      DateTime           @map("detected_at")
+  expiresAt       DateTime?          @map("expires_at")
+  isActive        Boolean            @default(true) @map("is_active")
+  sourceEventId   String?            @unique @map("source_event_id") // prevent duplicates
+  createdAt       DateTime           @default(now()) @map("created_at")
+
+  dispatches      EmergencyDispatch[]
+
+  @@map("satellite_events")
+}
+
+// Emergency service dispatches created by government officials
+model EmergencyDispatch {
+  id               String              @id @default(uuid())
+  satelliteEventId String?             @map("satellite_event_id")
+  satelliteEvent   SatelliteEvent?     @relation(fields: [satelliteEventId], references: [id])
+  emergencyAlertId String?             @map("emergency_alert_id")
+  dispatchedById   String              @map("dispatched_by_id")
+  dispatchedBy     User                @relation("DispatchedBy", fields: [dispatchedById], references: [id])
+  serviceType      DispatchServiceType @map("service_type")
+  quantity         Int                 @default(1)
+  destinationLat   Float               @map("destination_lat")
+  destinationLng   Float               @map("destination_lng")
+  destinationLabel String?             @map("destination_label")
+  priority         String              @default("standard")
+  notes            String?
+  status           DispatchStatus      @default(dispatched)
+  dispatchedAt     DateTime            @default(now()) @map("dispatched_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  @@map("emergency_dispatches")
+}
+
+// Civilian grievances (go through government approval workflow)
+model CivicGrievance {
+  id                       String            @id @default(uuid())
+  submittedById            String            @map("submitted_by_id")
+  submittedBy              User              @relation("GrievanceSubmittedBy", fields: [submittedById], references: [id])
+  category                 String
+  title                    String
+  description              String            @db.Text
+  latitude                 Float?
+  longitude                Float?
+  address                  String?
+  images                   String[]          @default([])
+  status                   GrievanceStatus   @default(submitted)
+  reviewedById             String?           @map("reviewed_by_id")
+  reviewedBy               User?             @relation("GrievanceReviewedBy", fields: [reviewedById], references: [id])
+  approvedBudget           Float?            @map("approved_budget")
+  assignedDepartmentId     String?           @map("assigned_department_id")
+  assignedDepartment       CivicDepartment?  @relation(fields: [assignedDepartmentId], references: [id])
+  priority                 GrievancePriority @default(medium)
+  estimatedResolutionDays  Int?              @map("estimated_resolution_days")
+  internalNotes            String?           @map("internal_notes") @db.Text
+  rejectionReason          String?           @map("rejection_reason") @db.Text
+  resolutionNotes          String?           @map("resolution_notes") @db.Text
+  createdAt                DateTime          @default(now()) @map("created_at")
+  updatedAt                DateTime          @updatedAt @map("updated_at")
+  resolvedAt               DateTime?         @map("resolved_at")
+
+  updates     GrievanceUpdate[]
+  feedback    GrievanceFeedback?
+
+  @@map("civic_grievances")
+}
+
+// Timeline entries for grievance status changes
+model GrievanceUpdate {
+  id          String         @id @default(uuid())
+  grievanceId String         @map("grievance_id")
+  grievance   CivicGrievance @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+  updatedById String         @map("updated_by_id")
+  updatedBy   User           @relation("GrievanceUpdatedBy", fields: [updatedById], references: [id])
+  status      GrievanceStatus
+  note        String?        @db.Text
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@map("grievance_updates")
+}
+
+// Citizen satisfaction feedback after grievance resolution
+model GrievanceFeedback {
+  id          String                  @id @default(uuid())
+  grievanceId String                  @unique @map("grievance_id")
+  grievance   CivicGrievance          @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+  rating      GrievanceFeedbackRating
+  comment     String?
+  createdAt   DateTime                @default(now()) @map("created_at")
+
+  @@map("grievance_feedback")
+}
+
+// Government official IDs whitelisted for auto role assignment
+model WhitelistedOfficial {
+  id           String    @id @default(uuid())
+  officialId   String    @unique @map("official_id")
+  name         String
+  jurisdiction String
+  addedById    String?   @map("added_by_id")
+  addedBy      User?     @relation("WhitelistAddedBy", fields: [addedById], references: [id])
+  isActive     Boolean   @default(true) @map("is_active")
+  addedAt      DateTime  @default(now()) @map("added_at")
+
+  @@map("whitelisted_officials")
+}
+
+// External API health check logs
+model ApiHealthLog {
+  id             String          @id @default(uuid())
+  apiName        String          @map("api_name")
+  endpoint       String
+  status         ApiHealthStatus
+  responseTimeMs Int?            @map("response_time_ms")
+  errorMessage   String?         @map("error_message")
+  checkedAt      DateTime        @default(now()) @map("checked_at")
+
+  @@map("api_health_logs")
+}
+
+// Internal feature health check results
+model FeatureHealthReport {
+  id           String              @id @default(uuid())
+  page         String
+  feature      String
+  status       FeatureHealthStatus
+  responseMs   Int?                @map("response_ms")
+  errorMessage String?             @map("error_message")
+  checkedAt    DateTime            @default(now()) @map("checked_at")
+
+  @@map("feature_health_reports")
+}
