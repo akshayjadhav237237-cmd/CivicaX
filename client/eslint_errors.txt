@@ -1,0 +1,6 @@
+
+C:\Users\aksha\OneDrive\Desktop\Akshay\anti gravity\CivicaX\client\src\pages\EmergencyPage.jsx
+  391:28  error  Empty block statement  no-empty
+
+✖ 1 problem (1 error, 0 warnings)
+
