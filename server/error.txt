@@ -1,0 +1,32 @@
+[dotenv@17.3.1] injecting env (13) from .env -- tip: ⚙️  write to custom object with { processEnv: myObject }
+[32minfo[39m: WebSocket handlers initialized {"timestamp":"2026-03-21T13:10:12.292Z"}
+[32minfo[39m: [EONET] Poller started (15 min interval) — no API key required {"timestamp":"2026-03-21T13:10:12.293Z"}
+[33mwarn[39m: [FIRMS] Not starting — NASA_FIRMS_MAP_KEY not set. FIRMS data will show "Unconfigured" in the portal. {"timestamp":"2026-03-21T13:10:12.294Z"}
+[32minfo[39m: [APIHealth] Monitor started (2 min interval) {"timestamp":"2026-03-21T13:10:12.294Z"}
+[32minfo[39m: [FeatureHealth] Checker started (10 min interval) {"timestamp":"2026-03-21T13:10:12.294Z"}
+node:events:486
+      throw er; // Unhandled 'error' event
+      ^
+
+Error: listen EADDRINUSE: address already in use :::3001
+    at Server.setupListenHandle [as _listen2] (node:net:1940:16)
+    at listenInCluster (node:net:1997:12)
+    at Server.listen (node:net:2102:7)
+    at Object.<anonymous> (C:\Users\aksha\OneDrive\Desktop\Akshay\anti gravity\CivicaX\server\index.js:99:12)
+    at Module._compile (node:internal/modules/cjs/loader:1804:14)
+    at Object..js (node:internal/modules/cjs/loader:1936:10)
+    at Module.load (node:internal/modules/cjs/loader:1525:32)
+    at Module._load (node:internal/modules/cjs/loader:1327:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:245:24)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1976:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:89:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 3001
+}
+
+Node.js v24.13.1
