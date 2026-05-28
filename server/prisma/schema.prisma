@@ -482,3 +482,103 @@ model FeatureHealthReport {
 
   @@map("feature_health_reports")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Satellite Disaster Intelligence Pipeline — Phase 2 Additions
+// Do NOT modify existing models above. All additions below are new tables only.
+// Target: Mandakini River Basin, Kedarnath, Uttarakhand
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum FloodRiskLevel {
+  green
+  yellow
+  orange
+  red
+}
+
+// Timestamped composite readings from all satellite sources (one per pipeline run)
+model FloodSnapshot {
+  id                String         @id @default(uuid())
+  zoneId            String         @map("zone_id")
+  riskScore         Float          @map("risk_score")         // 0–100 composite score
+  riskLevel         FloodRiskLevel @map("risk_level")
+  rainfallMmHr      Float          @map("rainfall_mm_hr")     // current rain rate
+  forecast24hMm     Float          @map("forecast_24h_mm")    // 24h total forecast
+  soilMoistureM3    Float          @map("soil_moisture_m3")   // volumetric water content
+  valleySlope       Float          @map("valley_slope")       // m/m terrain slope
+  soilSource        String         @map("soil_source")        // 'SMAP' | 'default_fallback'
+  terrainSource     String         @map("terrain_source")     // 'open_elevation' | 'opentopo' | 'hardcoded_fallback'
+  rainSource        String         @map("rain_source")        // 'open_meteo' | 'GPM_IMERG'
+  overflowDetected  Boolean        @default(false) @map("overflow_detected")
+  factorsJson       Json           @map("factors_json")       // full factor breakdown
+  recommendation    String         @db.Text
+  snapshotAt        DateTime       @map("snapshot_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  floodZoneRisks    FloodZoneRisk[]
+
+  @@index([riskLevel])
+  @@index([snapshotAt])
+  @@map("flood_snapshots")
+}
+
+// Per-street-segment flood risk records (populated when overflow detected)
+// Each record represents one OSM road segment with estimated water depth and flow direction.
+model FloodZoneRisk {
+  id               String         @id @default(uuid())
+  osmSegmentId     String         @unique @map("osm_segment_id")  // OSM way ID as string
+  snapshotId       String?        @map("snapshot_id")
+  snapshot         FloodSnapshot? @relation(fields: [snapshotId], references: [id])
+  segmentName      String?        @map("segment_name")
+  highway          String?        // 'primary', 'secondary', 'residential', etc.
+  latitude         Float          // centroid lat
+  longitude        Float          // centroid lng
+  geometry         Json           // GeoJSON LineString of the road segment
+  waterDepthM      Float          @default(0) @map("water_depth_m")    // estimated water depth
+  flowDirection    String?        @map("flow_direction")                // 'downvalley' | 'lateral' | 'upvalley'
+  riskLevel        FloodRiskLevel @default(green) @map("risk_level")
+  riskScore        Int            @default(0) @map("risk_score")       // parent composite score
+  lengthKm         Float?         @map("length_km")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  @@index([riskLevel])
+  @@index([snapshotId])
+  @@map("flood_zone_risks")
+}
+
+// RTSP camera feed registry (polled every 60s by cameraPoller.js)
+model CameraFeed {
+  id                      String    @id @default(uuid())
+  name                    String
+  rtspUrl                 String    @map("rtsp_url")
+  latitude                Float
+  longitude               Float
+  locationLabel           String?   @map("location_label")
+  isActive                Boolean   @default(true) @map("is_active")
+  isOnline                Boolean   @default(false) @map("is_online")
+  latencyMs               Int?      @map("latency_ms")
+  lastPolledAt            DateTime? @map("last_polled_at")
+  lastWaterDetected       Boolean   @default(false) @map("last_water_detected")
+  lastDetectionConfidence Float     @default(0) @map("last_detection_confidence")
+  lastDetectionMethod     String    @default("stub_cv") @map("last_detection_method")
+  connectionError         String?   @map("connection_error")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  @@map("camera_feeds")
+}
+
+// Raw API response cache — prevents redundant fetches within same cycle
+model SatelliteDataRaw {
+  id          String   @id @default(uuid())
+  source      String   // 'open_meteo' | 'GPM_IMERG' | 'SMAP' | 'open_elevation' | 'overpass'
+  payloadJson Json     @map("payload_json")
+  fetchedAt   DateTime @map("fetched_at")
+  expiresAt   DateTime @map("expires_at")
+  isStale     Boolean  @default(false) @map("is_stale")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([source, fetchedAt])
+  @@map("satellite_data_raw")
+}

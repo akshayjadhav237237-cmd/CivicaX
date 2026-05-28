@@ -313,4 +313,185 @@ router.get('/satellite-status', async (req, res) => {
   }
 });
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Satellite Pipeline Routes — Phase 2 (Mandakini Basin Disaster Intelligence)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * GET /api/v1/emergency/flood-risk
+ * Returns the latest FloodSnapshot with full factor breakdown.
+ * Serves the cached in-memory result for instant response (updated every 10 min).
+ * Falls back to the most recent DB record if pipeline hasn't run yet.
+ * Role required: none (public)
+ */
+router.get('/flood-risk', async (_req, res) => {
+  try {
+    // Try in-memory cache first (zero latency)
+    const { getLastRiskResult } = require('../modules/pipeline');
+    const cached = getLastRiskResult();
+
+    if (cached) {
+      return res.set('Cache-Control', 'public, max-age=60').json({
+        success: true,
+        data: cached,
+        source: 'pipeline_cache',
+        message: 'Flood risk retrieved from pipeline cache',
+      });
+    }
+
+    // Fall back to most recent DB snapshot
+    const snapshot = await prisma.floodSnapshot.findFirst({
+      orderBy: { snapshotAt: 'desc' },
+    });
+
+    if (!snapshot) {
+      return res.json({
+        success: true,
+        data: null,
+        message: 'No flood risk data yet — pipeline running on startup',
+      });
+    }
+
+    res.set('Cache-Control', 'public, max-age=60').json({
+      success: true,
+      data: {
+        score: snapshot.riskScore,
+        level: snapshot.riskLevel,
+        overflowDetected: snapshot.overflowDetected,
+        factors: snapshot.factorsJson,
+        recommendation: snapshot.recommendation,
+        sources: {
+          rain: snapshot.rainSource,
+          soil: snapshot.soilSource,
+          terrain: snapshot.terrainSource,
+        },
+        computedAt: snapshot.snapshotAt,
+        snapshotId: snapshot.id,
+      },
+      source: 'database',
+      message: 'Flood risk retrieved from latest snapshot',
+    });
+  } catch (err) {
+    logger.error('Error fetching flood risk:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch flood risk', code: 'PIPELINE_ERROR' });
+  }
+});
+
+/**
+ * GET /api/v1/emergency/flood-zones
+ * Returns all FloodZoneRisk records for Leaflet street-level map coloring.
+ * Each record has {latitude, longitude, geometry, waterDepthM, riskLevel, flowDirection}.
+ * Role required: none (public)
+ */
+router.get('/flood-zones', async (req, res) => {
+  try {
+    const level = req.query.level; // optional filter: 'red' | 'orange' | 'yellow' | 'green'
+
+    const where = level ? { riskLevel: level } : {};
+
+    const zones = await prisma.floodZoneRisk.findMany({
+      where,
+      orderBy: { riskScore: 'desc' },
+      take: 500, // cap at 500 segments for performance
+      select: {
+        id: true,
+        osmSegmentId: true,
+        segmentName: true,
+        highway: true,
+        latitude: true,
+        longitude: true,
+        geometry: true,
+        waterDepthM: true,
+        flowDirection: true,
+        riskLevel: true,
+        riskScore: true,
+        lengthKm: true,
+        updatedAt: true,
+      },
+    });
+
+    // Return as GeoJSON FeatureCollection for direct Leaflet consumption
+    const featureCollection = {
+      type: 'FeatureCollection',
+      features: zones.map((z) => ({
+        type: 'Feature',
+        geometry: z.geometry,
+        properties: {
+          id: z.id,
+          osmSegmentId: z.osmSegmentId,
+          name: z.segmentName,
+          highway: z.highway,
+          lat: z.latitude,
+          lng: z.longitude,
+          waterDepthM: z.waterDepthM,
+          flowDirection: z.flowDirection,
+          riskLevel: z.riskLevel,
+          riskScore: z.riskScore,
+          lengthKm: z.lengthKm,
+          updatedAt: z.updatedAt,
+        },
+      })),
+    };
+
+    res.set('Cache-Control', 'public, max-age=120').json({
+      success: true,
+      data: featureCollection,
+      meta: {
+        total: zones.length,
+        level: level || 'all',
+        note: 'Street-level flood zone risks derived from satellite data + Manning equation',
+      },
+      message: 'Flood zones retrieved',
+    });
+  } catch (err) {
+    logger.error('Error fetching flood zones:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch flood zones', code: 'DB_ERROR' });
+  }
+});
+
+/**
+ * GET /api/v1/emergency/camera-feeds
+ * Returns all registered RTSP camera feeds with latest water detection results.
+ * Role required: none (public)
+ */
+router.get('/camera-feeds', async (_req, res) => {
+  try {
+    const feeds = await prisma.cameraFeed.findMany({
+      orderBy: { name: 'asc' },
+      select: {
+        id: true,
+        name: true,
+        latitude: true,
+        longitude: true,
+        locationLabel: true,
+        isActive: true,
+        isOnline: true,
+        latencyMs: true,
+        lastPolledAt: true,
+        lastWaterDetected: true,
+        lastDetectionConfidence: true,
+        lastDetectionMethod: true,
+        connectionError: true,
+        updatedAt: true,
+        // Intentionally exclude rtspUrl from public API for security
+      },
+    });
+
+    res.set('Cache-Control', 'public, max-age=30').json({
+      success: true,
+      data: feeds,
+      meta: {
+        total: feeds.length,
+        online: feeds.filter((f) => f.isOnline).length,
+        waterDetected: feeds.filter((f) => f.lastWaterDetected).length,
+      },
+      message: 'Camera feeds retrieved',
+    });
+  } catch (err) {
+    logger.error('Error fetching camera feeds:', err);
+    res.status(500).json({ success: false, error: 'Failed to fetch camera feeds', code: 'DB_ERROR' });
+  }
+});
+
 module.exports = router;
+

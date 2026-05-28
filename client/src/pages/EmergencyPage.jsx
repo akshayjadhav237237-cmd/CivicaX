@@ -1,7 +1,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Popup, Marker, CircleMarker, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
-import { ShieldAlert, Info, AlertTriangle, AlertCircle, RefreshCw, ArrowRight } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, RefreshCw, ArrowRight, Satellite } from 'lucide-react';
+import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { useAuth } from '../hooks/useAuth';
 import { useGeolocation } from '../hooks/useGeolocation';
@@ -11,6 +12,7 @@ import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { GlassBadge } from '../components/ui/GlassBadge';
 import { GlassModal } from '../components/ui/GlassModal';
+import { FloodRiskPanel } from '../components/FloodRiskPanel';
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
@@ -61,12 +63,12 @@ export function EmergencyPage() {
   const { zones, activeAlerts, fetchZones, fetchActiveAlerts, isLoadingZones } = useAlertStore();
   
   const [safeZones, setSafeZones] = useState([]);
-  const [satelliteStatus, setSatelliteStatus] = useState(null);
-  const [isRefreshingSat, setIsRefreshingSat] = useState(false);
+  const [floodZones, setFloodZones] = useState(null);    // GeoJSON FeatureCollection for street-level flood layer
+  const [socket, setSocket] = useState(null);            // Socket.io client instance for FloodRiskPanel
   
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [zoneDetails, setZoneDetails] = useState(null);
-  const [evacRoute, setEvacRoute] = useState(null);  // [[lat,lng], [lat,lng], ...] for Leaflet Polyline
+  const [evacRoute, setEvacRoute] = useState(null);
   const [isRoutingLoading, setIsRoutingLoading] = useState(false);
 
   // Fetch real driving route from OSRM
@@ -127,9 +129,32 @@ export function EmergencyPage() {
     api.get('/emergency/safe-zones')
       .then(res => setSafeZones(res.data))
       .catch(err => console.error('Failed to load safe zones', err));
-      
-    fetchSatelliteStatus();
-  }, [fetchZones, fetchActiveAlerts, fetchSatelliteStatus]);
+
+    // Fetch flood zone street segments for map layer
+    api.get('/emergency/flood-zones')
+      .then(res => {
+        if (res.data?.data?.features?.length > 0) {
+          setFloodZones(res.data.data);
+        }
+      })
+      .catch(err => console.error('Failed to load flood zones', err));
+
+    // Get socket instance for FloodRiskPanel WebSocket updates
+    try {
+      const API_BASE = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
+      const s = io(API_BASE, { transports: ['websocket', 'polling'] });
+      setSocket(s);
+      // Keep flood zones fresh on live zone updates
+      s.on('zone:flood-level', () => {
+        api.get('/emergency/flood-zones')
+          .then(res => { if (res.data?.data?.features?.length > 0) setFloodZones(res.data.data); })
+          .catch(() => {});
+      });
+      return () => s.disconnect();
+    } catch (e) {
+      console.warn('[EmergencyPage] Socket setup failed:', e.message);
+    }
+  }, [fetchZones, fetchActiveAlerts]);
 
   // Map zone colours
   const styleZone = (feature) => {
@@ -198,58 +223,14 @@ export function EmergencyPage() {
           </div>
         </section>
 
-        {/* Satellite Data Box */}
+        {/* Satellite Intelligence Panel */}
         <section>
-          <h2 className="text-xl font-bold mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Live Telemetry</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Satellite size={16} className="text-indigo-500" />
+            <h2 className="text-xl font-bold" style={{ fontFamily: 'var(--font-heading)' }}>Flood Intelligence</h2>
+          </div>
           <GlassCard padding="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-500">NASA & ISRO Feeds</span>
-              <button onClick={fetchSatelliteStatus} disabled={isRefreshingSat} className={`p-1.5 rounded-full hover:bg-slate-100 ${isRefreshingSat ? 'animate-spin opacity-50' : ''}`}>
-                <RefreshCw size={14} className="text-slate-500" />
-              </button>
-            </div>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-200/50">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50 flex items-center justify-center text-blue-500"><Info size={16} /></div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Precipitation</p>
-                    <p className="text-[10px] text-slate-500">OpenWeather / IMD</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  {satelliteStatus?.weather?.message ? (
-                    <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">API Key Req.</span>
-                  ) : (
-                    <>
-                      <p className="font-bold text-slate-800">{satelliteStatus?.weather?.rain1h || 0} mm/hr</p>
-                      <p className="text-xs text-slate-500 capitalize">{satelliteStatus?.weather?.condition || 'Clear'}</p>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center text-orange-500"><AlertCircle size={16} /></div>
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">Soil Saturation</p>
-                    <p className="text-[10px] text-slate-500">NASA SMAP Radar</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                   {satelliteStatus?.soilMoisture?.message ? (
-                    <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-1 rounded">API Key Req.</span>
-                  ) : (
-                    <>
-                      <p className="font-bold text-slate-800">{satelliteStatus?.soilMoisture?.sm || '--'}%</p>
-                      <p className="text-xs text-slate-500">{satelliteStatus?.soilMoisture?.sm > 80 ? 'High Risk' : 'Normal'}</p>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
+            <FloodRiskPanel socket={socket} />
           </GlassCard>
         </section>
 
@@ -270,6 +251,38 @@ export function EmergencyPage() {
           />
           <MapUpdater center={[location.lat, location.lng]} />
           
+          {/* Flood Zone Street-Level Layer */}
+          {floodZones && floodZones.features && floodZones.features.length > 0 && (
+            <GeoJSON
+              key={`flood-zones-${Date.now()}`}
+              data={floodZones}
+              style={(feature) => {
+                const level = feature.properties?.riskLevel || 'green';
+                const depthColors = {
+                  red:    { color: '#ef4444', weight: 5, opacity: 0.85 },
+                  orange: { color: '#f97316', weight: 4, opacity: 0.75 },
+                  yellow: { color: '#eab308', weight: 3, opacity: 0.65 },
+                  green:  { color: '#22c55e', weight: 2, opacity: 0.40 },
+                };
+                return depthColors[level] || depthColors.green;
+              }}
+            >
+              <Popup>
+                {(layer) => {
+                  const p = layer?.feature?.properties || {};
+                  return (
+                    <div style={{ minWidth: 180, padding: 4 }}>
+                      <p style={{ fontWeight: 700, marginBottom: 4 }}>{p.name || p.highway || 'Road Segment'}</p>
+                      <p style={{ fontSize: 12, color: '#64748b' }}>Water depth: <b>{p.waterDepthM?.toFixed(2) ?? '--'} m</b></p>
+                      <p style={{ fontSize: 12, color: '#64748b' }}>Flow: {p.flowDirection || '--'}</p>
+                      <p style={{ fontSize: 12, color: '#64748b' }}>Risk score: {p.riskScore ?? '--'}/100</p>
+                    </div>
+                  );
+                }}
+              </Popup>
+            </GeoJSON>
+          )}
+
           {/* Geofenced Zones */}
           {zones.map((zone, idx) => (
             <GeoJSON 
