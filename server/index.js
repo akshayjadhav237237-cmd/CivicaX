@@ -35,6 +35,10 @@ try { ({ startFIRMSPoller }        = require('./services/firmsService'));       
 try { ({ startAPIHealthMonitor }   = require('./services/apiHealthMonitor'));    } catch(e) { console.warn('[SERVICE] apiHealthMonitor load failed:', e.message); }
 try { ({ startFeatureHealthChecker } = require('./services/featureHealthChecker')); } catch(e) { console.warn('[SERVICE] featureHealthChecker load failed:', e.message); }
 
+// Disaster Intelligence Pipeline — Mandakini Basin satellite pipeline
+let startPipeline;
+try { ({ startPipeline } = require('./modules/pipeline')); } catch(e) { console.warn('[PIPELINE] Disaster pipeline load failed:', e.message); }
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -94,6 +98,9 @@ if (startEONETPoller)          try { startEONETPoller(io);          } catch(e) {
 if (startFIRMSPoller)          try { startFIRMSPoller(io);          } catch(e) { console.warn('[SERVICE] firmsService start failed:', e.message); }
 if (startAPIHealthMonitor)     try { startAPIHealthMonitor(io);     } catch(e) { console.warn('[SERVICE] apiHealthMonitor start failed:', e.message); }
 if (startFeatureHealthChecker) try { startFeatureHealthChecker(io); } catch(e) { console.warn('[SERVICE] featureHealthChecker start failed:', e.message); }
+
+// Start the Mandakini Basin disaster intelligence pipeline (10-min polling)
+if (startPipeline)             try { startPipeline(io);             } catch(e) { console.warn('[PIPELINE] Disaster pipeline start failed:', e.message); }
 
 // Global Express error handler
 app.use((err, _req, res, _next) => {
