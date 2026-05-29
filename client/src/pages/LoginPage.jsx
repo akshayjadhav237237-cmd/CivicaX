@@ -14,6 +14,13 @@ export function LoginPage() {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const demoAccounts = [
+    { email: 'citizen@civicax.demo', role: 'Citizen' },
+    { email: 'dept@civicax.demo',    role: 'Dept Op' },
+    { email: 'gov@civicax.demo',     role: 'Gov'     },
+    { email: 'admin@civicax.demo',   role: 'Admin'   },
+  ];
+
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { isDark } = useThemeStore();
@@ -128,19 +135,27 @@ export function LoginPage() {
           {/* Demo Credentials */}
           <div className="mt-8 pt-6" style={{ borderTop: '1px solid var(--divider)' }}>
             <p className="text-xs text-center font-medium mb-3 tracking-wider" style={{ color: 'var(--text-muted)' }}>
-              DEMO CREDENTIALS
+              DEMO CREDENTIALS — click to fill
             </p>
-            <div
-              className="grid grid-cols-2 gap-2 rounded-xl p-3 text-[11px]"
-              style={{
-                background: isDark ? 'rgba(51,65,85,0.5)' : 'rgba(248,250,252,0.8)',
-                border: '1px solid var(--divider)',
-                color: 'var(--text-secondary)',
-              }}
-            >
-              <div className="truncate"><b>citizen</b>@civicax.demo</div><div>demo1234</div>
-              <div className="truncate"><b>dept</b>@civicax.demo</div><div>demo1234</div>
-              <div className="truncate"><b>gov</b>@civicax.demo</div><div>demo1234</div>
+            <div className="flex flex-col gap-1.5">
+              {demoAccounts.map((acc) => (
+                <button
+                  key={acc.email}
+                  type="button"
+                  onClick={() => { setEmail(acc.email); setPassword('demo1234'); }}
+                  className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-[11px] transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  style={{
+                    background: email === acc.email
+                      ? (isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.08)')
+                      : (isDark ? 'rgba(51,65,85,0.5)' : 'rgba(248,250,252,0.8)'),
+                    border: `1px solid ${email === acc.email ? 'rgba(59,130,246,0.5)' : 'var(--divider)'}`,
+                    color: 'var(--text-secondary)',
+                  }}
+                >
+                  <span><b>{acc.role}</b> — {acc.email}</span>
+                  <span style={{ color: 'var(--text-muted)' }}>demo1234</span>
+                </button>
+              ))}
             </div>
           </div>
         </GlassCard>
