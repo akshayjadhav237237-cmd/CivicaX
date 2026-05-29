@@ -577,7 +577,7 @@ router.get('/flood-prediction/:zoneId', async (req, res) => {
  * Used by government dashboard.
  * Requires: authenticated government or admin role.
  */
-router.get('/flood-predictions/active', authenticate, roleGuard(['government', 'admin']), async (_req, res) => {
+router.get('/flood-predictions/active', authenticate, roleGuard('government', 'admin'), async (_req, res) => {
   try {
     // Get the latest prediction per zone using a subquery approach
     const allLatest = await prisma.floodPrediction.findMany({
