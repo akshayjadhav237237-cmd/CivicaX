@@ -37,6 +37,9 @@ let _isRunning = false;
  * @param {Object} io - Socket.io server instance
  */
 async function runDisasterPipeline(io) {
+  // Health-check log — always printed, confirms pipeline is executing
+  logger.info(`[Pipeline] Starting cycle at ${new Date().toISOString()}`);
+
   if (_isRunning) {
     logger.warn('[Pipeline] Previous cycle still running — skipping this tick');
     return;

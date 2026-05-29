@@ -340,9 +340,21 @@ router.get('/flood-risk', async (_req, res) => {
     }
 
     // Fall back to most recent DB snapshot
-    const snapshot = await prisma.floodSnapshot.findFirst({
-      orderBy: { snapshotAt: 'desc' },
-    });
+    let snapshot = null;
+    try {
+      snapshot = await prisma.floodSnapshot.findFirst({
+        orderBy: { snapshotAt: 'desc' },
+      });
+    } catch (dbErr) {
+      // Table doesn't exist yet — migration pending
+      logger.warn('[flood-risk] floodSnapshot table not found — migration may not have run yet:', dbErr.message);
+      return res.json({
+        success: true,
+        data: null,
+        status: 'pending_migration',
+        message: 'Pipeline tables not yet created — redeploy with migrate deploy will fix this',
+      });
+    }
 
     if (!snapshot) {
       return res.json({
@@ -385,32 +397,41 @@ router.get('/flood-risk', async (_req, res) => {
  */
 router.get('/flood-zones', async (req, res) => {
   try {
-    const level = req.query.level; // optional filter: 'red' | 'orange' | 'yellow' | 'green'
-
+    const level = req.query.level;
     const where = level ? { riskLevel: level } : {};
 
-    const zones = await prisma.floodZoneRisk.findMany({
-      where,
-      orderBy: { riskScore: 'desc' },
-      take: 500, // cap at 500 segments for performance
-      select: {
-        id: true,
-        osmSegmentId: true,
-        segmentName: true,
-        highway: true,
-        latitude: true,
-        longitude: true,
-        geometry: true,
-        waterDepthM: true,
-        flowDirection: true,
-        riskLevel: true,
-        riskScore: true,
-        lengthKm: true,
-        updatedAt: true,
-      },
-    });
+    let zones = [];
+    try {
+      zones = await prisma.floodZoneRisk.findMany({
+        where,
+        orderBy: { riskScore: 'desc' },
+        take: 500,
+        select: {
+          id: true,
+          osmSegmentId: true,
+          segmentName: true,
+          highway: true,
+          latitude: true,
+          longitude: true,
+          geometry: true,
+          waterDepthM: true,
+          flowDirection: true,
+          riskLevel: true,
+          riskScore: true,
+          lengthKm: true,
+          updatedAt: true,
+        },
+      });
+    } catch (dbErr) {
+      logger.warn('[flood-zones] floodZoneRisk table not found — migration pending:', dbErr.message);
+      return res.json({
+        success: true,
+        data: { type: 'FeatureCollection', features: [] },
+        meta: { total: 0, level: level || 'all', status: 'pending_migration' },
+        message: 'Flood zone table not yet created — redeploy will fix this',
+      });
+    }
 
-    // Return as GeoJSON FeatureCollection for direct Leaflet consumption
     const featureCollection = {
       type: 'FeatureCollection',
       features: zones.map((z) => ({
@@ -456,26 +477,36 @@ router.get('/flood-zones', async (req, res) => {
  */
 router.get('/camera-feeds', async (_req, res) => {
   try {
-    const feeds = await prisma.cameraFeed.findMany({
-      orderBy: { name: 'asc' },
-      select: {
-        id: true,
-        name: true,
-        latitude: true,
-        longitude: true,
-        locationLabel: true,
-        isActive: true,
-        isOnline: true,
-        latencyMs: true,
-        lastPolledAt: true,
-        lastWaterDetected: true,
-        lastDetectionConfidence: true,
-        lastDetectionMethod: true,
-        connectionError: true,
-        updatedAt: true,
-        // Intentionally exclude rtspUrl from public API for security
-      },
-    });
+    let feeds = [];
+    try {
+      feeds = await prisma.cameraFeed.findMany({
+        orderBy: { name: 'asc' },
+        select: {
+          id: true,
+          name: true,
+          latitude: true,
+          longitude: true,
+          locationLabel: true,
+          isActive: true,
+          isOnline: true,
+          latencyMs: true,
+          lastPolledAt: true,
+          lastWaterDetected: true,
+          lastDetectionConfidence: true,
+          lastDetectionMethod: true,
+          connectionError: true,
+          updatedAt: true,
+        },
+      });
+    } catch (dbErr) {
+      logger.warn('[camera-feeds] cameraFeed table not found — migration pending:', dbErr.message);
+      return res.json({
+        success: true,
+        data: [],
+        meta: { total: 0, online: 0, waterDetected: 0, status: 'pending_migration' },
+        message: 'Camera feed table not yet created — redeploy will fix this',
+      });
+    }
 
     res.set('Cache-Control', 'public, max-age=30').json({
       success: true,
