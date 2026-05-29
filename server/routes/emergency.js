@@ -10,6 +10,7 @@ const { roleGuard } = require('../middleware/roleGuard');
 const { getSatelliteStatus } = require('../services/satelliteService');
 const { sendSMS } = require('../services/notificationService');
 const logger = require('../config/logger');
+const { predict: floodPredict } = require('../modules/hydrology/floodOrchestrator');
 
 let turf;
 try { turf = require('@turf/turf'); } catch (_) { turf = null; }
@@ -521,6 +522,95 @@ router.get('/camera-feeds', async (_req, res) => {
   } catch (err) {
     logger.error('Error fetching camera feeds:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch camera feeds', code: 'DB_ERROR' });
+  }
+});
+
+/**
+ * GET /api/v1/emergency/flood-prediction/:zoneId
+ * Returns latest prediction + last 6 for trend analysis.
+ * Public — no auth required (read-only intelligence data).
+ */
+router.get('/flood-prediction/:zoneId', async (req, res) => {
+  const { zoneId } = req.params;
+  try {
+    const [latest, history] = await Promise.all([
+      prisma.floodPrediction.findFirst({
+        where: { zoneId },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.floodPrediction.findMany({
+        where: { zoneId },
+        orderBy: { createdAt: 'desc' },
+        take: 6,
+        select: { id: true, alertLevel: true, createdAt: true, predictionData: true },
+      }),
+    ]);
+
+    if (!latest) {
+      // No prediction yet — trigger one on-demand
+      logger.info(`[flood-prediction] No cached prediction for zone ${zoneId} — running on-demand`);
+      try {
+        const fresh = await floodPredict(30.735, 79.067, zoneId, zoneId);
+        return res.json({ success: true, data: { latest: fresh, history: [fresh], onDemand: true } });
+      } catch (orchErr) {
+        return res.status(503).json({ success: false, error: 'Prediction engine unavailable', detail: orchErr.message });
+      }
+    }
+
+    res.json({
+      success: true,
+      data: {
+        latest:     latest.predictionData,
+        history:    history.map(h => ({ id: h.id, alertLevel: h.alertLevel, createdAt: h.createdAt, summary: h.predictionData?.summary })),
+        onDemand:   false,
+      },
+    });
+  } catch (err) {
+    logger.error('[flood-prediction] Error:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to fetch flood prediction', code: 'DB_ERROR' });
+  }
+});
+
+/**
+ * GET /api/v1/emergency/flood-predictions/active
+ * Returns all zones where latest alertLevel is 'orange' or 'red'.
+ * Used by government dashboard.
+ * Requires: authenticated government or admin role.
+ */
+router.get('/flood-predictions/active', authenticate, roleGuard(['government', 'admin']), async (_req, res) => {
+  try {
+    // Get the latest prediction per zone using a subquery approach
+    const allLatest = await prisma.floodPrediction.findMany({
+      orderBy: { createdAt: 'desc' },
+      take: 200, // safety cap
+    });
+
+    // De-duplicate: keep only the most recent per zoneId
+    const byZone = new Map();
+    for (const p of allLatest) {
+      if (!byZone.has(p.zoneId)) byZone.set(p.zoneId, p);
+    }
+
+    const active = [...byZone.values()].filter(
+      p => p.alertLevel === 'orange' || p.alertLevel === 'red'
+    );
+
+    res.json({
+      success: true,
+      data: active.map(p => ({
+        zoneId:     p.zoneId,
+        alertLevel: p.alertLevel,
+        createdAt:  p.createdAt,
+        summary:    p.predictionData?.summary,
+        riverStatus: p.predictionData?.riverStatus,
+        populationAtRisk: p.predictionData?.populationAtRisk,
+        resourcesNeeded:  p.predictionData?.resourcesNeeded,
+      })),
+      meta: { total: active.length, orange: active.filter(p => p.alertLevel === 'orange').length, red: active.filter(p => p.alertLevel === 'red').length },
+    });
+  } catch (err) {
+    logger.error('[flood-predictions/active] Error:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to fetch active flood predictions', code: 'DB_ERROR' });
   }
 });
 
