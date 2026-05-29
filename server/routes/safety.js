@@ -7,7 +7,7 @@ const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 const { roleGuard } = require('../middleware/roleGuard');
 const { sendSMS } = require('../services/notificationService');
@@ -18,7 +18,7 @@ const prisma = new PrismaClient();
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, 'uploads/safety'),
-  filename: (_req, file, cb) => cb(null, `${uuidv4()}${path.extname(file.originalname)}`),
+  filename: (_req, file, cb) => cb(null, `${randomUUID()}${path.extname(file.originalname)}`),
 });
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 
