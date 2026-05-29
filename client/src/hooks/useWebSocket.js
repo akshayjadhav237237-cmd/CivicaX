@@ -5,7 +5,7 @@ import { useAlertStore } from '../stores/alertStore';
 import { useNotificationStore } from '../stores/notificationStore';
 import toast from 'react-hot-toast';
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
+const WS_URL = (import.meta.env.VITE_WS_URL || 'https://civicax-production.up.railway.app').trim();
 
 export function useWebSocket() {
   const socketRef = useRef(null);

@@ -141,7 +141,7 @@ export function EmergencyPage() {
 
     // Get socket instance for FloodRiskPanel WebSocket updates
     try {
-      const API_BASE = import.meta.env.VITE_WS_URL || 'http://localhost:3001';
+      const API_BASE = (import.meta.env.VITE_WS_URL || 'https://civicax-production.up.railway.app').trim();
       const s = io(API_BASE, { transports: ['websocket', 'polling'] });
       setSocket(s);
       // Keep flood zones fresh on live zone updates
