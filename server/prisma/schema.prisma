@@ -582,3 +582,20 @@ model SatelliteDataRaw {
   @@index([source, fetchedAt])
   @@map("satellite_data_raw")
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Flood Prediction Intelligence Layer — Phase 3 Additions
+// Hydrology pipeline output: runoff → Manning's → inundation → landslide
+// ─────────────────────────────────────────────────────────────────────────────
+
+model FloodPrediction {
+  id             String   @id @default(cuid())
+  zoneId         String   @map("zone_id")
+  alertLevel     String   @map("alert_level")   // 'green'|'yellow'|'orange'|'red'
+  predictionData Json     @map("prediction_data") // full orchestrator output
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([zoneId])
+  @@index([createdAt])
+  @@map("flood_predictions")
+}
