@@ -62,7 +62,20 @@ async function pollFIRMS(io) {
 
     const csv = await res.text();
     const hotspots = parseFIRMSCSV(csv);
-    logger.info(`[FIRMS] Received ${hotspots.length} fire hotspots`);
+
+    // ── First-response confirmation log ──────────────────────────────────
+    if (hotspots.length > 0) {
+      const sample = hotspots[0];
+      logger.info(
+        `[FIRMS] ✅ REAL DATA — ${hotspots.length} fire hotspots received from VIIRS SNPP` +
+        ` | Sample: lat=${sample.latitude}, lon=${sample.longitude}` +
+        `, confidence=${sample.confidence}, date=${sample.acq_date}` +
+        `, brightness=${sample.bright_ti4 || sample.brightness || 'N/A'}K`
+      );
+    } else {
+      logger.info('[FIRMS] ✅ API connected — 0 hotspots in this time window (normal if no active fires)');
+    }
+    // ─────────────────────────────────────────────────────────────────────
 
     let newCount = 0;
     for (const spot of hotspots.slice(0, 50)) { // limit to 50 per cycle
