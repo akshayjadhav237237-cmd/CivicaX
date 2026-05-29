@@ -7,7 +7,7 @@ const { z } = require('zod');
 const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
 const path = require('path');
-const { v4: uuidv4 } = require('uuid');
+const { randomUUID } = require('crypto');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 const { roleGuard } = require('../middleware/roleGuard');
 const logger = require('../config/logger');
@@ -18,7 +18,7 @@ const prisma = new PrismaClient();
 // Multer upload configuration — stores to /uploads/civic/
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, 'uploads/civic'),
-  filename: (_req, file, cb) => cb(null, `${uuidv4()}${path.extname(file.originalname)}`),
+  filename: (_req, file, cb) => cb(null, `${randomUUID()}${path.extname(file.originalname)}`),
 });
 const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 }, fileFilter: (_req, file, cb) => {
   if (file.mimetype.startsWith('image/')) cb(null, true); else cb(new Error('Only images allowed'));
@@ -245,7 +245,7 @@ router.get('/stats', async (_req, res) => {
 // Multer for grievance images
 const grievanceStorage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, 'uploads/grievances'),
-  filename: (_req, file, cb) => cb(null, `${uuidv4()}${path.extname(file.originalname)}`),
+  filename: (_req, file, cb) => cb(null, `${randomUUID()}${path.extname(file.originalname)}`),
 });
 const grievanceUpload = multer({ storage: grievanceStorage, limits: { fileSize: 10 * 1024 * 1024 }, fileFilter: (_req, file, cb) => {
   if (file.mimetype.startsWith('image/')) cb(null, true); else cb(new Error('Only images allowed'));
