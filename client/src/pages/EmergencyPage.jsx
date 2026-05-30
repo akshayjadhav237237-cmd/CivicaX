@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Popup, Marker, CircleMarker, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { ShieldAlert, AlertTriangle, RefreshCw, ArrowRight, Satellite } from 'lucide-react';
@@ -13,6 +13,15 @@ import { GlassButton } from '../components/ui/GlassButton';
 import { GlassBadge } from '../components/ui/GlassBadge';
 import { GlassModal } from '../components/ui/GlassModal';
 import { FloodRiskPanel } from '../components/FloodRiskPanel';
+// ── Flood Intelligence Layer ────────────────────────────────────────────────
+import { ETACountdownBanner }    from '../components/emergency/ETACountdownBanner';
+import { FloodPredictionPanel }  from '../components/emergency/FloodPredictionPanel';
+import { FloodHistoryChart }     from '../components/emergency/FloodHistoryChart';
+import { FloodStreetOverlay }    from '../components/emergency/FloodStreetOverlay';
+import { LandslideOverlay }      from '../components/emergency/LandslideOverlay';
+import { ZonePolygons }          from '../components/emergency/ZonePolygons';
+import { MapLayerControls }      from '../components/emergency/MapLayerControls';
+import { initFloodAlertNotifier } from '../services/floodAlertNotifier';
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
@@ -65,7 +74,12 @@ export function EmergencyPage() {
   const [safeZones, setSafeZones] = useState([]);
   const [floodZones, setFloodZones] = useState(null);    // GeoJSON FeatureCollection for street-level flood layer
   const [socket, setSocket] = useState(null);            // Socket.io client instance for FloodRiskPanel
-  
+  const [selectedZoneId, setSelectedZoneId] = useState('kedarnath'); // for flood prediction panel
+  const [floodPrediction, setFloodPrediction] = useState(null);      // latest prediction for ETA banner
+  const [mapLayers, setMapLayers] = useState({
+    floodStreets: true, landslideRisk: true, alertZones: true, safeZones: true, activeAlerts: true,
+  });
+
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [zoneDetails, setZoneDetails] = useState(null);
   const [evacRoute, setEvacRoute] = useState(null);
@@ -140,6 +154,7 @@ export function EmergencyPage() {
       .catch(err => console.error('Failed to load flood zones', err));
 
     // Get socket instance for FloodRiskPanel WebSocket updates
+    let cleanup;
     try {
       const API_BASE = (import.meta.env.VITE_WS_URL || 'https://civicax-production.up.railway.app').trim();
       const s = io(API_BASE, { transports: ['websocket', 'polling'] });
@@ -150,10 +165,17 @@ export function EmergencyPage() {
           .then(res => { if (res.data?.data?.features?.length > 0) setFloodZones(res.data.data); })
           .catch(() => {});
       });
-      return () => s.disconnect();
+      // Update floodPrediction state for ETA banner
+      s.on('zone:flood-prediction', (pred) => {
+        if (pred.zoneId === selectedZoneId) setFloodPrediction(pred);
+      });
+      // Initialize browser push notifications
+      const notifierCleanup = initFloodAlertNotifier(s);
+      cleanup = () => { s.disconnect(); notifierCleanup(); };
     } catch (e) {
       console.warn('[EmergencyPage] Socket setup failed:', e.message);
     }
+    return () => { if (cleanup) cleanup(); };
   }, [fetchZones, fetchActiveAlerts]);
 
   // Map zone colours
@@ -179,6 +201,9 @@ export function EmergencyPage() {
   }
 
   return (
+    <div className="flex flex-col gap-0">
+      {/* ETA Countdown Banner — only shows when river is overflowing with ≤30 min ETA */}
+      <ETACountdownBanner prediction={floodPrediction} />
     <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-140px)] min-h-[600px]">
       
       {/* Sidebar Panel */}
@@ -214,7 +239,10 @@ export function EmergencyPage() {
                     </div>
                   )}
                   
-                  <GlassButton size="sm" variant="ghost" className="w-full justify-between group" onClick={() => setSelectedAlert(alert)}>
+                  <GlassButton size="sm" variant="ghost" className="w-full justify-between group" onClick={() => {
+                    setSelectedAlert(alert);
+                    if (alert.zoneId) setSelectedZoneId(alert.zoneId);
+                  }}>
                     View Zone Details <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
                   </GlassButton>
                 </GlassCard>
@@ -232,6 +260,21 @@ export function EmergencyPage() {
           <GlassCard padding="p-5">
             <FloodRiskPanel socket={socket} />
           </GlassCard>
+        </section>
+
+        {/* Flood Prediction Panel (new) */}
+        <section>
+          <FloodPredictionPanel
+            zoneId={selectedZoneId}
+            zoneName={selectedZoneId}
+            onPredictionLoad={(pred) => setFloodPrediction(pred)}
+          />
+          {floodPrediction?.history?.length > 0 && (
+            <GlassCard padding="p-4" className="mt-3">
+              <p className="text-xs font-semibold text-slate-500 mb-2">Trend (last 6 predictions)</p>
+              <FloodHistoryChart history={floodPrediction.history} />
+            </GlassCard>
+          )}
         </section>
 
       </div>
@@ -283,22 +326,16 @@ export function EmergencyPage() {
             </GeoJSON>
           )}
 
-          {/* Geofenced Zones */}
-          {zones.map((zone, idx) => (
-            <GeoJSON 
-              key={`zone-${idx}`} 
-              data={zone} 
-              style={styleZone}
-            >
-              <Popup>
-                <div className="p-1">
-                  <h3 className="font-bold mb-1">{zone.properties.name}</h3>
-                  <p className="text-sm text-slate-600 mb-2">{zone.properties.description}</p>
-                  <GlassBadge level={zone.properties.level} />
-                </div>
-              </Popup>
-            </GeoJSON>
-          ))}
+          {/* Geofenced Zones — flood-aware, WebSocket-updated */}
+          {mapLayers.alertZones && (
+            <ZonePolygons zones={zones} socket={socket} />
+          )}
+
+          {/* Flood Street Overlay */}
+          {mapLayers.floodStreets && <FloodStreetOverlay zoneId={selectedZoneId} />}
+
+          {/* Landslide Risk Overlay */}
+          {mapLayers.landslideRisk && <LandslideOverlay zoneId={selectedZoneId} />}
 
           {/* User Location Marker */}
           <Marker position={[location.lat, location.lng]}>
@@ -353,7 +390,12 @@ export function EmergencyPage() {
           {evacRoute && <MapFitBounds positions={evacRoute} />}
         </MapContainer>
         
-        {/* Map Overlay Controls */}
+        {/* Map Layer Toggle Controls — top right */}
+        <div className="absolute top-4 right-4 z-[1000]">
+          <MapLayerControls onChange={setMapLayers} />
+        </div>
+
+        {/* Map Legend — bottom right */}
         <div className="absolute bottom-4 right-4 z-[1000] flex flex-col gap-2">
            <GlassCard padding="p-3" className="text-xs bg-white/90">
              <div className="font-semibold mb-2">Map Legend</div>
@@ -438,6 +480,7 @@ export function EmergencyPage() {
           </div>
         </GlassModal>
       )}
+    </div>
     </div>
   );
 }
