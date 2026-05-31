@@ -116,9 +116,10 @@ export function FloodRiskPanel({ socket }) {
   const fetchRiskData = useCallback(async (silent = false) => {
     if (!silent) setIsRefreshing(true);
     try {
-      const { data } = await api.get('/emergency/flood-risk');
-      if (data?.data) {
-        setRiskData(data.data);
+      const response = await api.get('/emergency/flood-risk');
+      const data = response?.data || response;
+      if (data) {
+        setRiskData(data);
         setLastUpdated(new Date());
       }
     } catch (err) {

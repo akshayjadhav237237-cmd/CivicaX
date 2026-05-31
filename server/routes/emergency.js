@@ -551,7 +551,15 @@ router.get('/flood-prediction/:zoneId', async (req, res) => {
       logger.info(`[flood-prediction] No cached prediction for zone ${zoneId} — running on-demand`);
       try {
         const fresh = await floodPredict(30.735, 79.067, zoneId, zoneId);
-        return res.json({ success: true, data: { latest: fresh, history: [fresh], onDemand: true } });
+        return res.json({
+          success: true,
+          data: {
+            ...fresh,
+            latest: fresh,
+            history: [fresh],
+            onDemand: true,
+          },
+        });
       } catch (orchErr) {
         return res.status(503).json({ success: false, error: 'Prediction engine unavailable', detail: orchErr.message });
       }
@@ -560,6 +568,7 @@ router.get('/flood-prediction/:zoneId', async (req, res) => {
     res.json({
       success: true,
       data: {
+        ...latest.predictionData,
         latest:     latest.predictionData,
         history:    history.map(h => ({ id: h.id, alertLevel: h.alertLevel, createdAt: h.createdAt, summary: h.predictionData?.summary })),
         onDemand:   false,

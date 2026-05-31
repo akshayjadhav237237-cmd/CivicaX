@@ -19,7 +19,7 @@ import { useAlertStore } from '../stores/alertStore';
 import { GovernmentAlertsFeed } from '../components/government/GovernmentAlertsFeed';
 import { GovernmentDispatchModal } from '../components/government/GovernmentDispatchModal';
 import { GovernmentGrievanceQueue } from '../components/government/GovernmentGrievanceQueue';
-import { ActiveFloodAlerts } from '../components/government/ActiveFloodAlerts';
+import ActiveFloodAlerts from '../components/government/ActiveFloodAlerts';
 
 const STATUS_BADGE = {
   dispatched: 'bg-blue-100 text-blue-700',

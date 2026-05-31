@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import GlassCard from '../ui/GlassCard';
+import { GlassCard } from '../ui/GlassCard';
 import api from '../../services/api';
 
 export default function ActiveFloodAlerts({ onDispatch }) {

@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '../ui/GlassCard';
 import api from '../../services/api';
@@ -71,22 +71,20 @@ function LoadingSkeleton() {
 export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading]       = useState(false);
-  const intervalRef                 = useRef(null);
 
   // Fetch helper
-  const fetchPrediction = async (id) => {
+  const fetchPrediction = async () => {
+    if (!zoneId) return;
     try {
-      const data = await api.get(`/emergency/flood-prediction/${id}`);
-      // api.js unwraps response.data; backend shape: { success, data: { latest, history, onDemand } }
-      const latest = data?.data?.latest ?? data?.latest ?? null;
-      const history = data?.data?.history ?? data?.history ?? [];
-      if (latest) {
-        setPrediction(latest);
-        if (onPredictionLoad) onPredictionLoad({ ...latest, history });
-      } else {
-        toast.error('Unexpected response format for flood prediction.');
+      console.log(`[FloodPredictionPanel] Fetching flood prediction for zone: ${zoneId}`);
+      const response = await api.get(`/emergency/flood-prediction/${zoneId}`);
+      const data = response.data?.data || response.data;
+      setPrediction(data);
+      if (onPredictionLoad) {
+        onPredictionLoad(data);
       }
     } catch (err) {
+      console.error('[FloodPredictionPanel] Error fetching prediction:', err);
       toast.error(err?.response?.data?.message ?? 'Failed to fetch flood prediction.');
     }
   };
@@ -98,13 +96,13 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
     }
 
     setLoading(true);
-    fetchPrediction(zoneId).finally(() => setLoading(false));
+    fetchPrediction().finally(() => setLoading(false));
 
     // Auto-refetch every 10 minutes
-    intervalRef.current = setInterval(() => fetchPrediction(zoneId), REFETCH_INTERVAL_MS);
+    const interval = setInterval(fetchPrediction, 600000);
 
     return () => {
-      clearInterval(intervalRef.current);
+      clearInterval(interval);
     };
   }, [zoneId]);
 
@@ -125,13 +123,13 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
     return <LoadingSkeleton />;
   }
 
-  // ── No data yet ────────────────────────────────────────────────────────────
-  if (!prediction) {
+  // ── No data yet / pipeline hasn't run yet ──────────────────────────────────
+  if (!prediction || Object.keys(prediction).length === 0 || (!prediction.rainfall && !prediction.soilMoisture)) {
     return (
       <GlassCard>
         <div className="flex flex-col items-center justify-center py-10 text-slate-400">
-          <span style={{ fontSize: 32 }}>📭</span>
-          <p className="mt-3 text-sm font-medium">No prediction data available</p>
+          <span style={{ fontSize: 32 }}>🛰️</span>
+          <p className="mt-3 text-sm font-medium">Awaiting first satellite pass...</p>
         </div>
       </GlassCard>
     );
@@ -202,17 +200,23 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
       {/* ── Rainfall ── */}
       {rainfall && (
         <DataRow icon="🌧" label="Rainfall">
-          {rainfall.current.toFixed(1)} mm/hr current
+          {rainfall?.current != null ? `${rainfall.current.toFixed(1)} mm/hr current` : 'Awaiting first satellite pass...'}
           &nbsp;|&nbsp;
-          {rainfall.forecast24h.toFixed(1)} mm 24h forecast
+          {rainfall?.forecast24h != null ? `${rainfall.forecast24h.toFixed(1)} mm 24h forecast` : 'Awaiting first satellite pass...'}
         </DataRow>
       )}
 
       {/* ── Soil Saturation ── */}
       {soilMoisture && (
         <DataRow icon="💧" label="Soil Saturation">
-          {soilMoisture.saturationPercent}%
-          <ProgressBar percent={soilMoisture.saturationPercent} colorClass={soilBarColor} />
+          {soilMoisture?.saturationPercent != null ? (
+            <>
+              {soilMoisture.saturationPercent}%
+              <ProgressBar percent={soilMoisture.saturationPercent} colorClass={soilBarColor} />
+            </>
+          ) : (
+            'Awaiting first satellite pass...'
+          )}
         </DataRow>
       )}
 
