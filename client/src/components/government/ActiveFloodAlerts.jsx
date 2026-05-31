@@ -7,13 +7,21 @@ export default function ActiveFloodAlerts({ onDispatch }) {
   const [alerts, setAlerts] = useState([]);
   const [meta, setMeta] = useState({ total: 0, orange: 0, red: 0 });
   const [loading, setLoading] = useState(true);
+  const [expandedBriefings, setExpandedBriefings] = useState({});
+
+  const toggleBriefing = (alertId) => {
+    setExpandedBriefings((prev) => ({
+      ...prev,
+      [alertId]: !prev[alertId],
+    }));
+  };
 
   const fetchAlerts = async () => {
     try {
       const res = await api.get('/emergency/flood-predictions/active');
       setAlerts(res.data ?? []);
       setMeta(res.meta ?? { total: 0, orange: 0, red: 0 });
-    } catch (err) {
+    } catch {
       toast.error('Failed to load active flood alerts.');
     } finally {
       setLoading(false);
@@ -138,6 +146,45 @@ export default function ActiveFloodAlerts({ onDispatch }) {
             >
               🚨 Dispatch Resources
             </button>
+
+            {/* Collapsible Briefing Section */}
+            {item.governmentBriefing && (
+              <div className="mt-3 pt-3 border-t border-slate-200/50 text-left">
+                <button
+                  type="button"
+                  onClick={() => toggleBriefing(item._id ?? idx)}
+                  className="text-xs font-semibold text-slate-600 hover:text-slate-800 flex items-center gap-1.5 transition-colors focus:outline-none"
+                >
+                  <span
+                    style={{
+                      display: 'inline-block',
+                      transform: expandedBriefings[item._id ?? idx] ? 'rotate(90deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.15s ease',
+                    }}
+                  >
+                    ▶
+                  </span>
+                  📋 Official Situation Report
+                </button>
+                {expandedBriefings[item._id ?? idx] && (
+                  <div
+                    style={{
+                      fontFamily: 'monospace',
+                      fontSize: '13px',
+                      padding: '12px',
+                      borderLeft: `3px solid ${item.alertLevel === 'red' ? '#EF4444' : '#F97316'}`,
+                      background: 'rgba(255, 255, 255, 0.4)',
+                    }}
+                    className="backdrop-blur-sm mt-2 rounded text-slate-800 border border-l-0 border-slate-200/50"
+                  >
+                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 select-none">
+                      AI Generated • GPT-4o • {item.createdAt ? new Date(item.createdAt).toLocaleString() : 'N/A'}
+                    </div>
+                    <div className="whitespace-pre-wrap leading-relaxed">{item.governmentBriefing}</div>
+                  </div>
+                )}
+              </div>
+            )}
           </GlassCard>
         );
       })}

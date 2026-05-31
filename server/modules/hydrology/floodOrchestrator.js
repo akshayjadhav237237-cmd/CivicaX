@@ -21,6 +21,8 @@ const { calculateRunoff }            = require('./runoffCalculator');
 const { calculateManningsFlow }      = require('./manningsFlow');
 const { calculateUrbanInundation }   = require('./urbanInundation');
 const { calculateLandslidRisk }      = require('./landslidRisk');
+const { generateFloodSummary }       = require('../ai/summaryGenerator');
+const { generateGovernmentBriefing } = require('../ai/governmentBriefing');
 
 const prisma = new PrismaClient();
 
@@ -216,7 +218,7 @@ async function predict(lat, lng, zoneId, zoneName, io = null) {
   }
 
   // ── Step 11: Build prediction object ─────────────────────────────────────
-  const summary = buildSummary({ alertLevel, riverStatus: flowResult, urbanImpact, landslidRiskResult, populationAtRisk });
+  const baseSummary = buildSummary({ alertLevel, riverStatus: flowResult, urbanImpact, landslidRiskResult, populationAtRisk });
 
   const prediction = {
     zoneId,
@@ -278,10 +280,19 @@ async function predict(lat, lng, zoneId, zoneName, io = null) {
 
     populationAtRisk,
     resourcesNeeded,
-    summary,
+    summary: baseSummary,
   };
 
-  logger.info(`[FloodOrchestrator] 📊 Prediction complete — alertLevel: ${alertLevel} | pop at risk: ${populationAtRisk} | ${summary}`);
+  // Generate GPT-4o dynamic summaries and briefings in parallel
+  const [aiSummary, aiBriefing] = await Promise.all([
+    generateFloodSummary(prediction),
+    generateGovernmentBriefing(prediction)
+  ]);
+  prediction.summary = aiSummary;
+  prediction.governmentBriefing = aiBriefing;
+  console.log('[GPT-4o] Summary generated:', aiSummary.slice(0, 80));
+
+  logger.info(`[FloodOrchestrator] 📊 Prediction complete — alertLevel: ${alertLevel} | pop at risk: ${populationAtRisk} | ${prediction.summary}`);
 
   // ── Step 12: Save to DB ───────────────────────────────────────────────────
   try {

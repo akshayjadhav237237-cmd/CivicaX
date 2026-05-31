@@ -120,6 +120,13 @@ app.use((_req, res) => {
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, async () => {
   logger.info(`🚀 CivicaX server running on port ${PORT}`);
+  
+  if (process.env.OPENAI_API_KEY) {
+    console.log('[OpenAI] GPT-4o summaries enabled');
+  } else {
+    console.warn('[OpenAI] No API key — using fallback summaries');
+  }
+
   try {
     const { PrismaClient } = require('@prisma/client');
     const prisma = new PrismaClient();

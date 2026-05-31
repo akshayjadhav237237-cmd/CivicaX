@@ -605,6 +605,7 @@ router.get('/flood-predictions/active', authenticate, roleGuard('government', 'a
         riverStatus: p.predictionData?.riverStatus,
         populationAtRisk: p.predictionData?.populationAtRisk,
         resourcesNeeded:  p.predictionData?.resourcesNeeded,
+        governmentBriefing: p.predictionData?.governmentBriefing,
       })),
       meta: { total: active.length, orange: active.filter(p => p.alertLevel === 'orange').length, red: active.filter(p => p.alertLevel === 'red').length },
     });
