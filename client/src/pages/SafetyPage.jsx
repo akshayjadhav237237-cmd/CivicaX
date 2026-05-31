@@ -60,10 +60,9 @@ export function SafetyPage() {
   const fetchReports = useCallback(async () => {
     setIsLoading(true);
     try {
-      const res = await api.get('/safety/reports');
-      const raw = res.data;
-      const arr = raw?.data ?? raw?.reports ?? raw ?? [];
-      setReports(Array.isArray(arr) ? arr : []);
+      const response = await api.get('/safety/reports');
+      const data = response.data?.data || response.data || [];
+      setReports(Array.isArray(data) ? data : []);
     } catch {
       toast.error('Failed to load safety reports');
     } finally {
@@ -114,11 +113,12 @@ export function SafetyPage() {
       data.append('urgency', formData.urgency);
       if (formData.image) data.append('images', formData.image);
 
-      const res = await api.post('/safety/reports', data, {
+      const response = await api.post('/safety/reports', data, {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
 
-      toast.success(`Threat report submitted! ID: ${res.data.data?.id?.slice(0, 8).toUpperCase()}`);
+      const responseData = response.data?.data || response.data;
+      toast.success(`Threat report submitted! ID: ${responseData?.id?.slice(0, 8).toUpperCase()}`);
       setIsModalOpen(false);
       setFormData({
         incidentType: 'suspicious_activity',

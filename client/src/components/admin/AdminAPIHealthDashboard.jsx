@@ -57,8 +57,9 @@ export function AdminAPIHealthDashboard() {
 
   const fetchLogs = useCallback(async () => {
     try {
-      const res = await api.get('/admin/api-health');
-      setLogs(res.data.data || []);
+      const response = await api.get('/admin/api-health');
+      const data = response.data?.data || response.data || [];
+      setLogs(Array.isArray(data) ? data : []);
       setLastChecked(new Date());
     } catch { /* handled below */ }
     finally { setIsLoading(false); }
@@ -77,8 +78,9 @@ export function AdminAPIHealthDashboard() {
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
-      const res = await api.post('/admin/api-health/refresh');
-      setLogs(res.data.data || []);
+      const response = await api.post('/admin/api-health/refresh');
+      const data = response.data?.data || response.data || [];
+      setLogs(Array.isArray(data) ? data : []);
       setLastChecked(new Date());
       toast.success('Health check complete');
     } catch { toast.error('Health check failed'); }

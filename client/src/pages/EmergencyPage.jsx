@@ -1,10 +1,9 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Popup, Marker, CircleMarker, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
 import { ShieldAlert, AlertTriangle, RefreshCw, ArrowRight, Satellite } from 'lucide-react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
-import { useAuth } from '../hooks/useAuth';
 import { useGeolocation } from '../hooks/useGeolocation';
 import { useAlertStore } from '../stores/alertStore';
 import api from '../services/api';
@@ -114,44 +113,53 @@ export function EmergencyPage() {
   }, []);
 
   useEffect(() => {
-    if (selectedAlert) {
-      api.get(`/emergency/population-estimate?zoneId=${selectedAlert.zoneId}`)
-        .then(res => setZoneDetails(res.data.data))
-        .catch(console.error);
-    } else {
-      setZoneDetails(null);
-    }
+    const fetchPopulationEstimate = async () => {
+      if (selectedAlert) {
+        try {
+          const response = await api.get(`/emergency/population-estimate?zoneId=${selectedAlert.zoneId}`);
+          const data = response.data?.data || response.data;
+          setZoneDetails(data);
+        } catch (err) {
+          console.error(err);
+        }
+      } else {
+        setZoneDetails(null);
+      }
+    };
+    fetchPopulationEstimate();
   }, [selectedAlert]);
 
-  const fetchSatelliteStatus = useCallback(async () => {
-    setIsRefreshingSat(true);
-    try {
-      const { data } = await api.get('/emergency/satellite-status', { params: { lat: location.lat, lng: location.lng } });
-      setSatelliteStatus(data);
-    } catch (err) {
-      console.error('Failed to load satellite status', err);
-    } finally {
-      setIsRefreshingSat(false);
-    }
-  }, [location.lat, location.lng]);
+
 
   useEffect(() => {
     fetchZones();
     fetchActiveAlerts();
     
     // Fetch safe zones
-    api.get('/emergency/safe-zones')
-      .then(res => setSafeZones(res.data))
-      .catch(err => console.error('Failed to load safe zones', err));
+    const fetchSafeZones = async () => {
+      try {
+        const response = await api.get('/emergency/safe-zones');
+        const data = response.data?.data || response.data || [];
+        setSafeZones(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to load safe zones', err);
+      }
+    };
+    fetchSafeZones();
 
     // Fetch flood zone street segments for map layer
-    api.get('/emergency/flood-zones')
-      .then(res => {
-        if (res.data?.data?.features?.length > 0) {
-          setFloodZones(res.data.data);
+    const fetchFloodZones = async () => {
+      try {
+        const response = await api.get('/emergency/flood-zones');
+        const data = response.data?.data || response.data || {};
+        if (data?.features?.length > 0) {
+          setFloodZones(data);
         }
-      })
-      .catch(err => console.error('Failed to load flood zones', err));
+      } catch (err) {
+        console.error('Failed to load flood zones', err);
+      }
+    };
+    fetchFloodZones();
 
     // Get socket instance for FloodRiskPanel WebSocket updates
     let cleanup;
@@ -160,10 +168,12 @@ export function EmergencyPage() {
       const s = io(API_BASE, { transports: ['websocket', 'polling'] });
       setSocket(s);
       // Keep flood zones fresh on live zone updates
-      s.on('zone:flood-level', () => {
-        api.get('/emergency/flood-zones')
-          .then(res => { if (res.data?.data?.features?.length > 0) setFloodZones(res.data.data); })
-          .catch(() => {});
+      s.on('zone:flood-level', async () => {
+        try {
+          const response = await api.get('/emergency/flood-zones');
+          const data = response.data?.data || response.data || {};
+          if (data?.features?.length > 0) setFloodZones(data);
+        } catch {}
       });
       // Update floodPrediction state for ETA banner
       s.on('zone:flood-prediction', (pred) => {
@@ -178,23 +188,7 @@ export function EmergencyPage() {
     return () => { if (cleanup) cleanup(); };
   }, [fetchZones, fetchActiveAlerts]);
 
-  // Map zone colours
-  const styleZone = (feature) => {
-    const activeAlert = activeAlerts.find(a => a.zoneId === feature.properties.id);
-    const level = activeAlert ? activeAlert.level : feature.properties.level;
-    
-    const colors = {
-      yellow: { color: '#EAB308', fillColor: '#FEF08A', fillOpacity: 0.4 },
-      orange: { color: '#F97316', fillColor: '#FED7AA', fillOpacity: 0.5 },
-      red: { color: '#EF4444', fillColor: '#FECACA', fillOpacity: 0.6 },
-    };
-    return {
-      weight: 2,
-      opacity: 1,
-      dashArray: '4',
-      ...(colors[level] || { color: '#3B82F6', fillColor: '#BFDBFE', fillOpacity: 0.2 })
-    };
-  };
+
 
   if (isLocLoading || isLoadingZones) {
     return <div className="h-full flex items-center justify-center">Loading Emergency System...</div>;
@@ -443,7 +437,7 @@ export function EmergencyPage() {
                 try {
                   const c = selectedAlert.zone.geojson.coordinates[0][0];
                   zLng = c[0]; zLat = c[1];
-                } catch(e) {}
+                } catch {}
                 
                 const sorted = [...safeZones].map(sz => ({
                   ...sz, 

@@ -21,7 +21,7 @@ const TABS = [
 ];
 
 export function AdminPage() {
-  const { hasRole } = useAuth();
+  const { hasRole, isLoading: isAuthLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('users');
   const [users, setUsers] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -46,6 +46,10 @@ export function AdminPage() {
       setIsLoading(false);
     }
   };
+
+  if (isAuthLoading) {
+    return <div className="p-8 text-center text-slate-500 font-medium">Loading...</div>;
+  }
 
   if (!hasRole(['admin'])) {
     return <div className="p-8 text-center text-red-500 font-bold">Unauthorized Access</div>;

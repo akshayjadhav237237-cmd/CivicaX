@@ -216,8 +216,11 @@ export function GovernmentGrievanceQueue() {
         api.get('/government/grievances', { params: { status: statusFilter } }),
         api.get('/civic/departments'),
       ]);
-      setGrievances(gRes.data.data || []);
-      setDepartments(dRes.data.departments || dRes.data.data || []);
+      const gData = gRes.data?.data || gRes.data || [];
+      setGrievances(Array.isArray(gData) ? gData : []);
+
+      const dData = dRes.data?.departments || dRes.data?.data || dRes.data || [];
+      setDepartments(Array.isArray(dData) ? dData : []);
     } catch (_) {
       toast.error('Failed to load grievances');
     } finally {

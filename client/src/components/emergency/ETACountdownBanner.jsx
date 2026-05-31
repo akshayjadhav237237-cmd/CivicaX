@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useThemeStore } from '../../stores/themeStore';
 
 /**
  * ETACountdownBanner
@@ -9,6 +10,8 @@ import { useState, useEffect, useRef } from 'react';
  *   prediction — full flood prediction object from the flood API (may be null)
  */
 export default function ETACountdownBanner({ prediction }) {
+  const { isDark } = useThemeStore();
+
   // ── Guard: only render when overflowing and ETA ≤ 30 min ─────────────────
   const shouldShow =
     prediction?.riverStatus?.isOverflowing === true &&
@@ -135,7 +138,7 @@ export default function ETACountdownBanner({ prediction }) {
                 margin: 0,
                 fontWeight: 700,
                 fontSize: '0.875rem',   /* text-sm */
-                color: '#991B1B',       /* text-red-800 */
+                color: isDark ? '#FCA5A5' : '#991B1B',       /* text-red-800 */
                 letterSpacing: '0.02em',
               }}
             >
@@ -153,7 +156,7 @@ export default function ETACountdownBanner({ prediction }) {
                 fontFamily: 'monospace',
                 fontSize: '1.875rem',   /* text-3xl */
                 fontWeight: 900,        /* font-black */
-                color: '#B91C1C',       /* text-red-700 */
+                color: isDark ? '#FCA5A5' : '#B91C1C',       /* text-red-700 */
                 lineHeight: 1.1,
               }}
             >
@@ -165,7 +168,7 @@ export default function ETACountdownBanner({ prediction }) {
               style={{
                 margin: 0,
                 fontSize: '0.75rem',    /* text-xs */
-                color: '#DC2626',       /* text-red-600 */
+                color: isDark ? '#F87171' : '#DC2626',       /* text-red-600 */
               }}
             >
               Estimated arrival based on river velocity{' '}

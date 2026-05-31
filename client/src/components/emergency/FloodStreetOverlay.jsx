@@ -35,9 +35,9 @@ function buildPopupHtml(street) {
   return `
     <div style="min-width:160px;padding:4px">
       <b style="font-size:13px">${streetName}</b><br/>
-      <span style="color:#64748b;font-size:12px">Water depth: <b>${waterDepthM.toFixed(2)} m</b></span><br/>
-      <span style="font-size:11px;padding:2px 6px;border-radius:4px;background:${color};color:white">${level.toUpperCase()}</span><br/>
-      <span style="color:#64748b;font-size:12px">Fills in: ${fillTimeMinutes.toFixed(0)} min</span>
+      <span style="color:#64748b;font-size:12px">Water depth: <b>${(waterDepthM ?? 0).toFixed(2)} m</b></span><br/>
+      <span style="font-size:11px;padding:2px 6px;border-radius:4px;background:${color};color:white">${(level || '').toUpperCase()}</span><br/>
+      <span style="color:#64748b;font-size:12px">Fills in: ${(fillTimeMinutes ?? 0).toFixed(0)} min</span>
     </div>
   `.trim();
 }

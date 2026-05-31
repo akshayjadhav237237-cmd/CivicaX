@@ -77,7 +77,7 @@ function FactorBar({ label, contribution, weight, value, unit, source }) {
 function StatCard({ icon: Icon, label, value, unit, color = '#3b82f6', sub }) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.7)',
+      background: 'var(--bg-card)',
       border: '1px solid #e2e8f0',
       borderRadius: 12,
       padding: '10px 12px',
@@ -266,7 +266,7 @@ export function FloodRiskPanel({ socket }) {
       {/* Factor contribution bars */}
       {Object.keys(factors).length > 0 && (
         <div style={{
-          background: 'rgba(248,250,252,0.8)', borderRadius: 10,
+          background: 'var(--bg-card)', borderRadius: 10,
           border: '1px solid #e2e8f0', padding: '12px 14px',
         }}>
           <p style={{

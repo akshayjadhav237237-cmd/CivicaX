@@ -8,20 +8,31 @@ import { GlassBadge } from '../components/ui/GlassBadge';
 export function AlertsPage() {
   const [alerts, setAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [levelFilter, setLevelFilter] = useState('all');
 
   useEffect(() => { fetchAlertHistory(); }, []);
 
   const fetchAlertHistory = async () => {
     setIsLoading(true);
     try {
-      const { data } = await api.get('/emergency/alerts/active');
-      setAlerts(data);
+      const response = await api.get('/emergency/alerts');
+      const data = response.data?.data || response.data || [];
+      setAlerts(Array.isArray(data) ? data : []);
     } catch {
       toast.error('Failed to load alert history');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const filteredAlerts = alerts.filter(alert => {
+    const matchesSearch = !searchQuery || 
+      (alert.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (alert.description || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesLevel = levelFilter === 'all' || alert.level === levelFilter;
+    return matchesSearch && matchesLevel;
+  });
 
   return (
     <div className="flex flex-col gap-8 max-w-5xl mx-auto w-full">
@@ -40,6 +51,8 @@ export function AlertsPage() {
           <input
             type="text"
             placeholder="Search alerts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-9 pr-4 py-2 rounded-lg text-sm focus:outline-none"
             style={{
               background: 'var(--input-bg)',
@@ -51,6 +64,8 @@ export function AlertsPage() {
         <div className="flex items-center gap-2">
           <Filter size={16} style={{ color: 'var(--text-muted)' }} />
           <select
+            value={levelFilter}
+            onChange={(e) => setLevelFilter(e.target.value)}
             className="rounded-lg px-3 py-2 text-sm focus:outline-none cursor-pointer"
             style={{
               background: 'var(--input-bg)',
@@ -70,13 +85,13 @@ export function AlertsPage() {
       <div className="flex flex-col gap-4">
         {isLoading ? (
           <div className="text-center py-12" style={{ color: 'var(--text-muted)' }}>Loading history...</div>
-        ) : alerts.length === 0 ? (
+        ) : filteredAlerts.length === 0 ? (
           <GlassCard className="text-center py-16">
             <History size={48} className="mx-auto mb-4" style={{ color: 'var(--text-muted)' }} />
-            <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>No past alerts found.</p>
+            <p className="font-medium" style={{ color: 'var(--text-secondary)' }}>No alerts found matching search criteria.</p>
           </GlassCard>
         ) : (
-          alerts.map(alert => (
+          filteredAlerts.map(alert => (
             <GlassCard key={alert.id} padding="p-5 sm:p-6" className="flex flex-col sm:flex-row gap-4 sm:gap-6 hover:shadow-md transition-shadow">
               {/* Date column */}
               <div

@@ -38,8 +38,9 @@ export function GovernmentAlertsFeed({ onDispatch }) {
   const fetchEvents = async () => {
     setIsLoading(true);
     try {
-      const res = await api.get('/government/satellite-events');
-      setEvents(res.data.data || []);
+      const response = await api.get('/government/satellite-events');
+      const data = response.data?.data || response.data || [];
+      setEvents(Array.isArray(data) ? data : []);
     } catch (err) {
       // Check if FIRMS is unconfigured via health endpoint
       if (err.response?.status === 403) return;

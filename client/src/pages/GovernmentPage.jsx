@@ -166,8 +166,13 @@ export function GovernmentPage() {
         api.get('/government/impact-summary'),
         api.get('/emergency/safe-zones')
       ]);
+      const rawLogs = auditRes.data?.data?.logs ?? auditRes.data?.logs ?? auditRes.data?.data ?? [];
+      const logs = Array.isArray(rawLogs) ? rawLogs.map(log => ({
+        ...log,
+        details: log.details || log.payload || {}
+      })) : [];
       setData({
-        auditLogs: auditRes.data?.data ?? auditRes.data?.logs ?? [],
+        auditLogs: logs,
         impact: impactRes.data?.data ?? impactRes.data ?? null,
         safeZones: safeRes.data?.data ?? safeRes.data?.safeZones ?? safeRes.data ?? [],
       });
@@ -200,7 +205,12 @@ export function GovernmentPage() {
       
       // Refresh audit logs
       const auditRes = await api.get('/government/audit-log', { params: { limit: 10 } });
-      setData(prev => ({ ...prev, auditLogs: auditRes.data.logs }));
+      const rawLogs = auditRes.data?.data?.logs ?? auditRes.data?.logs ?? auditRes.data?.data ?? [];
+      const logs = Array.isArray(rawLogs) ? rawLogs.map(log => ({
+        ...log,
+        details: log.details || log.payload || {}
+      })) : [];
+      setData(prev => ({ ...prev, auditLogs: logs }));
     } catch (err) {
       toast.error(err.message || 'Failed to broadcast alert');
     }
@@ -427,12 +437,7 @@ export function GovernmentPage() {
                         </span>
                       </td>
                       <td className="py-3 text-right">
-                        <button 
-                          onClick={() => alert(JSON.stringify(log.payload, null, 2))}
-                          className="text-blue-500 hover:text-blue-700 text-xs font-semibold uppercase underline-offset-4 hover:underline"
-                        >
-                          View Payload
-                        </button>
+                        {typeof log.details === 'object' ? Object.entries(log.details).map(([k,v]) => <span key={k}>{k}: {String(v)} </span>) : log.details}
                       </td>
                     </tr>
                   ))}

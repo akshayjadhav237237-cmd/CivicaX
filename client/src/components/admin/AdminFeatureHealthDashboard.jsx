@@ -73,8 +73,9 @@ export function AdminFeatureHealthDashboard() {
 
   const fetchReports = useCallback(async () => {
     try {
-      const res = await api.get('/admin/feature-health');
-      setReports(res.data.data || []);
+      const response = await api.get('/admin/feature-health');
+      const data = response.data?.data || response.data || [];
+      setReports(Array.isArray(data) ? data : []);
       setLastChecked(new Date());
     } catch { /* silently handle */ }
     finally { setIsLoading(false); }
@@ -92,8 +93,9 @@ export function AdminFeatureHealthDashboard() {
   const handleRunCheck = async () => {
     setIsRunning(true);
     try {
-      const res = await api.post('/admin/feature-health/run');
-      setReports(res.data.data || []);
+      const response = await api.post('/admin/feature-health/run');
+      const data = response.data?.data || response.data || [];
+      setReports(Array.isArray(data) ? data : []);
       setLastChecked(new Date());
       toast.success('Feature health check complete');
     } catch { toast.error('Check failed'); }

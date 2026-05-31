@@ -24,8 +24,9 @@ export function AdminWhitelistPanel() {
   const fetchOfficials = async (q = '') => {
     setIsLoading(true);
     try {
-      const res = await api.get('/admin/whitelist', { params: q ? { q } : {} });
-      setOfficials(res.data.data || []);
+      const response = await api.get('/admin/whitelist', { params: q ? { q } : {} });
+      const data = response.data?.data || response.data || [];
+      setOfficials(Array.isArray(data) ? data : []);
     } catch { toast.error('Failed to load whitelist'); }
     finally { setIsLoading(false); }
   };

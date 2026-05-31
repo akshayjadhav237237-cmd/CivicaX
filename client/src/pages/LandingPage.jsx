@@ -317,7 +317,7 @@ export function LandingPage() {
           <section>
             <GlassCard className="relative overflow-hidden group">
               <div className="absolute inset-0 bg-blue-600 mix-blend-overlay opacity-10 group-hover:opacity-20 transition-opacity" />
-              <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-white/90 to-transparent z-10 hidden sm:block pointer-events-none" />
+              <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-white/90 dark:from-slate-900/90 to-transparent z-10 hidden sm:block pointer-events-none" />
 
               <div className="flex flex-col sm:flex-row items-center gap-10 p-8 sm:p-12">
                 <div className="w-full sm:w-1/2 relative z-20">

@@ -11,8 +11,9 @@ export function FloodHistoryChart({ history }) {
     );
   }
 
+  const labels = ['50m ago', '40m ago', '30m ago', '20m ago', '10m ago', 'Now'];
   const chartData = [...history].reverse().map((h, i) => ({
-    label: i === history.length - 1 ? 'Now' : `${history.length - 1 - i}h ago`,
+    label: labels[labels.length - history.length + i] || 'Now',
     ratio: ALERT_RATIO[h.alertLevel] ?? 0.2,
     alertLevel: h.alertLevel,
   }));

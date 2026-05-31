@@ -35,7 +35,7 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => response,
   async (error) => {
     const originalRequest = error.config;
 

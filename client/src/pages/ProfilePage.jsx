@@ -48,7 +48,7 @@ export function ProfilePage() {
     <div className="flex flex-col gap-8 max-w-4xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-3" style={{ fontFamily: 'var(--font-heading)' }}>
             <User className="text-blue-500" /> Account Identity
           </h1>
           <p className="text-slate-600">Manage your persona, emergency contact details, and role.</p>
@@ -63,13 +63,13 @@ export function ProfilePage() {
               {user?.name?.charAt(0) || 'U'}
             </div>
             
-            <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: 'var(--font-heading)' }}>{user?.name}</h2>
+            <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200" style={{ fontFamily: 'var(--font-heading)' }}>{user?.name}</h2>
             <p className="text-sm text-slate-500 mb-6 flex items-center justify-center gap-1">
               <Shield size={14} className="text-blue-500" />
               <span className="capitalize">{user?.role.replace('_', ' ')}</span> Account
             </p>
 
-            <div className="w-full h-px bg-slate-200 my-2" />
+            <div className="w-full h-px bg-slate-200 dark:bg-slate-700 my-2" />
 
             <div className="w-full flex flex-col gap-3 py-4 text-sm text-slate-600 text-left">
               <div className="flex items-center gap-3"><Mail size={16} className="text-slate-400" /> <span className="truncate">{user?.email}</span></div>
@@ -77,7 +77,7 @@ export function ProfilePage() {
               <div className="flex items-center gap-3"><Phone size={16} className="text-slate-400" /> <span>{user?.phone || 'Not provided'}</span></div>
             </div>
 
-            <div className="w-full h-px bg-slate-200 my-2" />
+            <div className="w-full h-px bg-slate-200 dark:bg-slate-700 my-2" />
 
             <GlassButton variant="ghost" onClick={handleLogout} className="w-full mt-4 text-red-600 hover:text-red-700 hover:bg-red-50 justify-center">
               <LogOut size={16} /> Sign Out Securely
@@ -88,7 +88,7 @@ export function ProfilePage() {
         {/* Edit Form */}
         <div className="col-span-1 md:col-span-2">
           <GlassCard padding="p-6 md:p-8">
-            <h3 className="text-xl font-bold text-slate-800 mb-6" style={{ fontFamily: 'var(--font-heading)' }}>Update Information</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6" style={{ fontFamily: 'var(--font-heading)' }}>Update Information</h3>
             
             <form onSubmit={handleUpdate} className="flex flex-col gap-5">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -131,7 +131,7 @@ export function ProfilePage() {
                 />
               </div>
 
-              <div className="bg-blue-50/50 border border-blue-100 p-4 rounded-xl mt-4 flex items-start gap-3">
+              <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 p-4 rounded-xl mt-4 flex items-start gap-3">
                 <CheckCircle size={20} className="text-blue-500 shrink-0 mt-0.5" />
                 <p className="text-sm text-blue-800 leading-relaxed">
                   Your phone number will be used exclusively for highly critical push notifications via the NDMA emergency SMS gateway in the event of an internet blackout.

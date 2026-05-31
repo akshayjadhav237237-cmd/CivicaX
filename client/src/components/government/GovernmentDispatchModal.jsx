@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
+import L from 'leaflet';
 import { GlassModal } from '../ui/GlassModal';
 import { GlassButton } from '../ui/GlassButton';
 import { GlassInput } from '../ui/GlassInput';
@@ -7,6 +8,18 @@ import { Ambulance, Shield, Flame, Wrench, HeartPulse, Waves, Loader2, MapPin } 
 import api from '../../services/api';
 import toast from 'react-hot-toast';
 import 'leaflet/dist/leaflet.css';
+
+// Fix Leaflet default icon path issues in Vite
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  iconRetinaUrl: markerIcon2x,
+  shadowUrl: markerShadow,
+});
 
 const SERVICE_TYPES = [
   { id: 'ambulance',    label: 'Ambulance',     icon: Ambulance,    color: 'bg-red-100 text-red-700 border-red-300' },

@@ -31,13 +31,22 @@ export function RegisterPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    if (!formData.name || !formData.email || !formData.password || !formData.city) {
+    const { name, email, password, city, officialId, phone } = formData;
+    if (!name || !email || !password || !city) {
       setError('Please fill in all required fields');
       return;
     }
     setIsSubmitting(true);
     try {
-      const result = await register(formData);
+      const payload = {
+        name,
+        email,
+        password,
+        city,
+        ...(phone?.trim() ? { phone: phone.trim() } : {}),
+        ...(officialId?.trim() ? { officialId: officialId.trim() } : {}),
+      };
+      const result = await register(payload);
       if (result.success) {
         toast.success('Account created successfully!');
         navigate('/dashboard');
