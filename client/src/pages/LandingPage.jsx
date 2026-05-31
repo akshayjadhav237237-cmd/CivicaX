@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
 import { ShieldAlert, HardHat, AlertTriangle, ArrowRight, Github, ExternalLink, Sun, Moon } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassButton } from '../components/ui/GlassButton';
 import { useThemeStore } from '../stores/themeStore';
+import api from '../services/api';
 
 /* ── Reusable scroll-reveal wrapper ────────────────────────────── */
 function Reveal({ children, delay = 0, className = '' }) {
@@ -52,6 +53,44 @@ function CountUp({ target, suffix = '' }) {
 export function LandingPage() {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useThemeStore();
+
+  const [activeAlerts, setActiveAlerts] = useState([]);
+  const [stats, setStats] = useState({
+    activeAlerts: 0,
+    resolvedGrievances: 1420,
+    safeZones: 12,
+    activeResponders: 380,
+  });
+
+  useEffect(() => {
+    const fetchActiveAlerts = async () => {
+      try {
+        const res = await api.get('/emergency/alerts/active');
+        const data = res.data?.data || res.data || [];
+        setActiveAlerts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to fetch active alerts for marquee:', err);
+      }
+    };
+    const fetchStats = async () => {
+      try {
+        const res = await api.get('/stats/public');
+        const data = res.data?.data || res.data;
+        if (data) {
+          setStats({
+            activeAlerts: data.activeAlerts ?? 0,
+            resolvedGrievances: data.resolvedGrievances ?? 1420,
+            safeZones: data.safeZones ?? 12,
+            activeResponders: data.activeResponders ?? 380,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch public stats:', err);
+      }
+    };
+    fetchActiveAlerts();
+    fetchStats();
+  }, []);
 
   /* ── Refs ────────────────────────────────────────────────────── */
   const navRef = useRef(null);
@@ -103,6 +142,29 @@ export function LandingPage() {
 
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden" style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
+      <style>{`
+        @keyframes marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+          display: inline-flex;
+          animation: marquee 25s linear infinite;
+        }
+      `}</style>
+
+      {/* Marquee Banner */}
+      {activeAlerts.length > 0 && (
+        <div className="w-full bg-red-600 text-white text-xs font-bold py-2 overflow-hidden relative select-none z-[99] border-b border-red-700">
+          <div className="flex gap-8 whitespace-nowrap animate-marquee">
+            {[...activeAlerts, ...activeAlerts, ...activeAlerts, ...activeAlerts].map((alert, idx) => (
+              <span key={idx} className="flex items-center gap-1.5 uppercase mr-8">
+                🚨 {alert.level.toUpperCase()}: {alert.title} — {alert.description.slice(0, 100)}...
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Navbar */}
       <nav
@@ -146,13 +208,13 @@ export function LandingPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="w-full rounded-[2rem] overflow-hidden relative shadow-[0_24px_64px_rgba(31,38,135,0.12)] border border-white/80"
+            className="w-full rounded-[2rem] overflow-hidden relative shadow-[0_24px_64px_rgba(31,38,135,0.12)] border border-white/80 dark:border-slate-800"
           >
             {/* Parallax background layer */}
             <div ref={heroBgRef} className="absolute inset-0 will-change-transform">
               <div className="absolute inset-0 animated-gradient-bg opacity-90" />
             </div>
-            <div className="absolute inset-0 bg-white/30 backdrop-blur-3xl" />
+            <div className="absolute inset-0 bg-white/30 dark:bg-slate-950/40 backdrop-blur-3xl" />
 
             <div className="relative z-10 p-10 sm:p-20 flex flex-col items-center text-center">
               <motion.div
@@ -204,11 +266,12 @@ export function LandingPage() {
 
         {/* Quick Stats */}
         <Reveal>
-          <div className="grid grid-cols-3 gap-6 text-center">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             {[
-              { value: 98,  suffix: '%', label: 'Alert Accuracy' },
-              { value: 240, suffix: 's', label: 'Avg Response Time' },
-              { value: 12,  suffix: 'k+', label: 'Citizens Protected' },
+              { value: stats.activeAlerts, suffix: '', label: 'Active Live Alerts' },
+              { value: stats.resolvedGrievances, suffix: '', label: 'Resolved Grievances' },
+              { value: stats.safeZones, suffix: '', label: 'Safe Relief Camps' },
+              { value: stats.activeResponders, suffix: '', label: 'Active Responders' },
             ].map(({ value, suffix, label }) => (
               <div key={label} className="glass-card p-6">
                 <p className="text-3xl font-extrabold text-blue-500" style={{ fontFamily: 'var(--font-heading)' }}>
@@ -351,6 +414,18 @@ export function LandingPage() {
         </Reveal>
 
       </main>
+
+      {/* Powered by partners strip */}
+      <div className="text-center py-6 border-t border-slate-200/10 dark:border-slate-800/20 max-w-7xl mx-auto w-full">
+        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">Powered by Global Earth Intelligence</p>
+        <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-slate-500 dark:text-slate-400 font-bold text-xs select-none opacity-60">
+          <span>🛰️ NASA LANCE</span>
+          <span>🛰️ NASA SMAP</span>
+          <span>⛰️ USGS SRTM</span>
+          <span>🗺️ OPENSTREETMAP</span>
+          <span>🌍 GOOGLE EARTH</span>
+        </div>
+      </div>
 
       {/* Footer */}
       <footer className="bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 text-slate-400 py-10 px-6 mt-auto relative z-50">

@@ -6,12 +6,13 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
 const { authenticate } = require('../middleware/auth');
 const logger = require('../config/logger');
+const prisma = require('../config/prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 const registerSchema = z.object({
   name: z.string().min(2).max(100),
@@ -192,6 +193,146 @@ router.put('/me', authenticate, async (req, res) => {
   } catch (err) {
     logger.error('Profile update error:', err);
     res.status(500).json({ success: false, error: 'Update failed', code: 'UPDATE_ERROR' });
+  }
+});
+
+const createMailTransport = async () => {
+  if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    return nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '587'),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
+      },
+    });
+  }
+  
+  logger.info('[Auth] SMTP env credentials missing, using Ethereal email fallback');
+  const testAccount = await nodemailer.createTestAccount();
+  return nodemailer.createTransport({
+    host: 'smtp.ethereal.email',
+    port: 587,
+    secure: false,
+    auth: {
+      user: testAccount.user,
+      pass: testAccount.pass,
+    },
+  });
+};
+
+/**
+ * POST /api/v1/auth/forgot-password
+ * Input: { email }
+ * Output: { success, message, previewUrl? }
+ */
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Email is required', code: 'EMAIL_REQUIRED' });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      // Return success to prevent email enumeration
+      return res.json({ success: true, message: 'If this email exists, a password reset link has been sent.' });
+    }
+
+    // Generate token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 3600 * 1000); // 1 hour expiration
+
+    // Delete existing tokens for this email and create new one
+    await prisma.passwordResetToken.deleteMany({ where: { email } });
+    await prisma.passwordResetToken.create({
+      data: {
+        email,
+        token,
+        expiresAt,
+      },
+    });
+
+    const clientUrl = process.env.CLIENT_URL || `${req.protocol}://${req.get('host')}`;
+    const resetLink = `${clientUrl}/reset-password?token=${token}`;
+
+    const transporter = await createMailTransport();
+    const mailOptions = {
+      from: '"CivicaX Support" <noreply@civicax.org>',
+      to: email,
+      subject: 'CivicaX Password Reset Request',
+      text: `You requested a password reset. Please click on the link to reset your password: ${resetLink}`,
+      html: `
+        <div style="font-family: sans-serif; padding: 20px; color: #333;">
+          <h2>CivicaX Password Reset</h2>
+          <p>You requested a password reset for your CivicaX account.</p>
+          <p>Please click the button below to reset your password. This link is valid for 1 hour.</p>
+          <div style="margin: 24px 0;">
+            <a href="${resetLink}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">Reset Password</a>
+          </div>
+          <p style="font-size: 12px; color: #666;">If you didn't request this, you can safely ignore this email.</p>
+        </div>
+      `,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    let previewUrl = null;
+    if (transporter.options.host === 'smtp.ethereal.email') {
+      previewUrl = nodemailer.getTestMessageUrl(info);
+      logger.info(`[Auth] Ethereal reset email preview: ${previewUrl}`);
+    }
+
+    res.json({
+      success: true,
+      message: 'Password reset link sent successfully',
+      previewUrl,
+    });
+  } catch (err) {
+    logger.error('Forgot password error:', err);
+    res.status(500).json({ success: false, error: 'Failed to process forgot password request', code: 'FORGOT_PASSWORD_ERROR' });
+  }
+});
+
+/**
+ * POST /api/v1/auth/reset-password
+ * Input: { token, password }
+ * Output: { success, message }
+ */
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password } = req.body;
+    if (!token || !password) {
+      return res.status(400).json({ success: false, error: 'Token and password are required', code: 'BAD_REQUEST' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 8 characters long', code: 'PASSWORD_TOO_SHORT' });
+    }
+
+    const resetToken = await prisma.passwordResetToken.findUnique({ where: { token } });
+    if (!resetToken || resetToken.expiresAt < new Date()) {
+      return res.status(400).json({ success: false, error: 'Invalid or expired reset token', code: 'INVALID_TOKEN' });
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12);
+    
+    // Perform update and token deletion in a transaction
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { email: resetToken.email },
+        data: { passwordHash },
+      }),
+      prisma.passwordResetToken.delete({
+        where: { token },
+      }),
+    ]);
+
+    logger.info(`[Auth] Password successfully reset for user: ${resetToken.email}`);
+    res.json({ success: true, message: 'Password has been reset successfully' });
+  } catch (err) {
+    logger.error('Reset password error:', err);
+    res.status(500).json({ success: false, error: 'Failed to reset password', code: 'RESET_PASSWORD_ERROR' });
   }
 });
 

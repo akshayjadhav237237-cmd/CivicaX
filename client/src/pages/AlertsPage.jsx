@@ -10,6 +10,8 @@ export function AlertsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
 
   useEffect(() => { fetchAlertHistory(); }, []);
 
@@ -31,7 +33,22 @@ export function AlertsPage() {
       (alert.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
       (alert.description || '').toLowerCase().includes(searchQuery.toLowerCase());
     const matchesLevel = levelFilter === 'all' || alert.level === levelFilter;
-    return matchesSearch && matchesLevel;
+    
+    // Date filter
+    const alertDate = new Date(alert.createdAt);
+    let matchesDate = true;
+    if (startDate) {
+      const start = new Date(startDate);
+      start.setHours(0, 0, 0, 0);
+      matchesDate = matchesDate && alertDate >= start;
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      matchesDate = matchesDate && alertDate <= end;
+    }
+
+    return matchesSearch && matchesLevel && matchesDate;
   });
 
   return (
@@ -61,6 +78,37 @@ export function AlertsPage() {
             }}
           />
         </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">From:</span>
+          <input
+            type="date"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+            className="rounded-lg px-2.5 py-1.5 text-xs focus:outline-none cursor-pointer"
+            style={{
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              color: 'var(--text-primary)',
+            }}
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">To:</span>
+          <input
+            type="date"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+            className="rounded-lg px-2.5 py-1.5 text-xs focus:outline-none cursor-pointer"
+            style={{
+              background: 'var(--input-bg)',
+              border: '1px solid var(--input-border)',
+              color: 'var(--text-primary)',
+            }}
+          />
+        </div>
+
         <div className="flex items-center gap-2">
           <Filter size={16} style={{ color: 'var(--text-muted)' }} />
           <select

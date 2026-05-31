@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { ShieldAlert, MapPin, Eye, Zap, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ShieldAlert, MapPin, Eye, Zap, AlertTriangle, CheckCircle2, Search, Filter } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -46,6 +46,9 @@ export function SafetyPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmedIds, setConfirmedIds] = useState(getConfirmedIds());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [urgencyFilter, setUrgencyFilter] = useState('all');
 
   const [formData, setFormData] = useState({
     incidentType: 'suspicious_activity',
@@ -159,17 +162,29 @@ export function SafetyPage() {
     }
   };
 
-  const urgentReports = reports.filter(r => r.urgency === 'immediate');
-  const otherReports = reports.filter(r => r.urgency !== 'immediate');
+  const filteredReports = reports.filter(r => {
+    const matchesSearch = 
+      r.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.address?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.incidentType?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesType = typeFilter === 'all' || r.incidentType === typeFilter;
+    const matchesUrgency = urgencyFilter === 'all' || r.urgency === urgencyFilter;
+    
+    return matchesSearch && matchesType && matchesUrgency;
+  });
+
+  const urgentReports = filteredReports.filter(r => r.urgency === 'immediate');
+  const otherReports = filteredReports.filter(r => r.urgency !== 'immediate');
 
   return (
     <div className="flex flex-col gap-8 max-w-7xl mx-auto w-full">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3" style={{ fontFamily: 'var(--font-heading)' }}>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-slate-100 mb-2 flex items-center gap-3" style={{ fontFamily: 'var(--font-heading)' }}>
             <ShieldAlert className="text-red-500" /> Safety Watch
           </h1>
-          <p className="text-slate-600">Crowdsourced public safety threat monitoring.</p>
+          <p className="text-slate-600 dark:text-slate-400">Crowdsourced public safety threat monitoring.</p>
         </div>
 
         {hasRole(['citizen', 'admin', 'government']) && (
@@ -178,6 +193,47 @@ export function SafetyPage() {
           </GlassButton>
         )}
       </div>
+
+      {/* Filters */}
+      <GlassCard padding="p-4" className="flex flex-wrap items-center gap-4">
+        <div className="flex-1 min-w-[200px] relative">
+          <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" />
+          <input 
+            type="text" 
+            placeholder="Search address or description..." 
+            className="w-full pl-9 pr-4 py-2 rounded-lg bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-blue-400"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter size={16} className="text-slate-400 dark:text-slate-500" />
+          <select 
+            className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+            value={typeFilter}
+            onChange={e => setTypeFilter(e.target.value)}
+          >
+            <option value="all">All Incident Types</option>
+            <option value="civil_unrest">Civil Unrest / Riot</option>
+            <option value="suspicious_activity">Robbery / Suspicious Activity</option>
+            <option value="medical_emergency">Medical Emergency</option>
+            <option value="violence">Violence / Assault</option>
+            <option value="road_accident">Road Accident</option>
+            <option value="other">Other Threat</option>
+          </select>
+        </div>
+        <div className="flex items-center gap-2">
+          <select 
+            className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+            value={urgencyFilter}
+            onChange={e => setUrgencyFilter(e.target.value)}
+          >
+            <option value="all">All Urgencies</option>
+            <option value="immediate">Immediate Threat</option>
+            <option value="non_urgent">Non-Urgent</option>
+          </select>
+        </div>
+      </GlassCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

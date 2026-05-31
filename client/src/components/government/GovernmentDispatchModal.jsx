@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import { GlassModal } from '../ui/GlassModal';
@@ -37,23 +37,37 @@ function MapPinSelector({ onPin }) {
   return null;
 }
 
+
 export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, onSuccess }) {
   const [form, setForm] = useState({
     serviceType: '',
     quantity: 1,
     priority: 'standard',
     notes: '',
-    destinationLat: sourceEvent?.latitude || 18.7557,
-    destinationLng: sourceEvent?.longitude || 73.4091,
-    destinationLabel: sourceEvent?.title || '',
+    destinationLat: 18.7557,
+    destinationLng: 73.4091,
+    destinationLabel: '',
   });
-  const [pinPosition, setPinPosition] = useState(
-    sourceEvent?.latitude
-      ? [sourceEvent.latitude, sourceEvent.longitude]
-      : [18.7557, 73.4091]
-  );
+  const [pinPosition, setPinPosition] = useState([18.7557, 73.4091]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const mapRef = useRef(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const lat = sourceEvent?.latitude || 18.7557;
+      const lng = sourceEvent?.longitude || 73.4091;
+      setPinPosition([lat, lng]);
+      setForm({
+        serviceType: '',
+        quantity: 1,
+        priority: 'standard',
+        notes: '',
+        destinationLat: lat,
+        destinationLng: lng,
+        destinationLabel: sourceEvent?.title || '',
+      });
+    }
+  }, [isOpen, sourceEvent]);
 
   const handlePin = (latlng) => {
     setPinPosition([latlng.lat, latlng.lng]);
@@ -167,6 +181,7 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
           </p>
           <div className="h-44 rounded-xl overflow-hidden border border-white/30">
             <MapContainer
+              key={`${isOpen}-${sourceEvent?.id || 'none'}`}
               center={pinPosition}
               zoom={12}
               style={{ height: '100%', width: '100%' }}

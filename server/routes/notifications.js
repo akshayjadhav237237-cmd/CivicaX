@@ -3,12 +3,11 @@
  * Manages in-app notifications for users
  */
 const express = require('express');
-const { PrismaClient } = require('@prisma/client');
 const { authenticate } = require('../middleware/auth');
 const logger = require('../config/logger');
+const prisma = require('../config/prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 /**
  * GET /api/v1/notifications

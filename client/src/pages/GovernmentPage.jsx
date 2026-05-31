@@ -99,31 +99,36 @@ export function GovernmentPage() {
   };
 
   // Pure-frontend resource calculator — NDMA formula
-  const calculateResources = (e) => {
+  // Connect resource calculator to the backend
+  const calculateResources = async (e) => {
     e.preventDefault();
     const pop = Number(calcParams.population);
     if (!pop || pop <= 0) return toast.error('Please enter a valid population number');
 
-    const multipliers = {
-      flood:     { boats: 0.067, injury: 0.05 },
-      landslide: { boats: 0,     injury: 0.08 },
-      both:      { boats: 0.067, injury: 0.1  },
-    };
-    const severityMultiplier = { moderate: 1, severe: 1.5, catastrophic: 2 };
-    const m = multipliers[calcParams.disasterType] || multipliers.flood;
-    const s = severityMultiplier[calcParams.severity] || 1;
-
-    const boats   = Math.ceil(pop * m.boats * s);
-    const ambs    = Math.ceil(pop * m.injury * s);
-    const kits    = Math.ceil(pop * 3 * s);
-    const medic   = Math.ceil(pop * 0.02 * s);
-    const budget  = boats * 50000 + ambs * 30000 + kits * 500 + medic * 35000;
-
-    setCalcResult({
-      resources: { boats, ambulances: ambs, reliefKits: kits, medicalPersonnel: medic },
-      budgetEstimateINR: budget,
-    });
-    toast.success('Resources estimated');
+    try {
+      const payload = {
+        population: pop,
+        disasterType: calcParams.disasterType === 'flood' ? 'flash_flood' : calcParams.disasterType,
+        severityLevel: calcParams.severity,
+      };
+      
+      const response = await api.post('/government/resource-estimate', payload);
+      const data = response.data?.data || response.data;
+      
+      setCalcResult({
+        resources: {
+          boats: data.resources.rescueBoats,
+          ambulances: data.resources.ambulances,
+          reliefKits: data.resources.reliefKits,
+          medicalPersonnel: data.resources.medicalPersonnel,
+        },
+        budgetEstimateINR: data.budgetINR,
+      });
+      toast.success('Resources estimated via backend calculator');
+    } catch (err) {
+      console.error('[GovernmentPage] Resource calculation failed:', err);
+      toast.error(err.response?.data?.error || err.message || 'Failed to calculate resources via backend');
+    }
   };
 
   // Fetch dispatches separately so they can be refreshed independently

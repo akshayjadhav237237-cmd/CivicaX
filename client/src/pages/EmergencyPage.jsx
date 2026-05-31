@@ -21,6 +21,8 @@ import LandslideOverlay      from '../components/emergency/LandslideOverlay';
 import { ZonePolygons }          from '../components/emergency/ZonePolygons';
 import { MapLayerControls }      from '../components/emergency/MapLayerControls';
 import { initFloodAlertNotifier } from '../services/floodAlertNotifier';
+import CCTVConfirmationPanel from '../components/emergency/CCTVConfirmationPanel';
+import HyperlocalAlert from '../components/emergency/HyperlocalAlert';
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
@@ -198,10 +200,10 @@ export function EmergencyPage() {
     <div className="flex flex-col gap-0">
       {/* ETA Countdown Banner — only shows when river is overflowing with ≤30 min ETA */}
       <ETACountdownBanner prediction={floodPrediction} />
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-140px)] min-h-[600px]">
+    <div className="flex flex-col lg:flex-row gap-6 h-auto lg:h-[calc(100vh-140px)] lg:min-h-[600px] pb-16 lg:pb-0">
       
       {/* Sidebar Panel */}
-      <div className="w-full lg:w-[400px] flex flex-col gap-6 overflow-y-auto pr-2 no-scrollbar">
+      <div className="w-full lg:w-[400px] flex flex-col gap-6 order-2 lg:order-1 overflow-y-visible lg:overflow-y-auto pr-2 no-scrollbar">
         
         {/* Active Alerts List */}
         <section>
@@ -243,6 +245,13 @@ export function EmergencyPage() {
               ))
             )}
           </div>
+          
+          <div className="mt-4">
+            <HyperlocalAlert 
+              onEvacuate={(fromLat, fromLng, safeZone) => fetchEvacRoute(fromLat, fromLng, safeZone.latitude, safeZone.longitude)} 
+              safeZones={safeZones} 
+            />
+          </div>
         </section>
 
         {/* Satellite Intelligence Panel */}
@@ -271,10 +280,15 @@ export function EmergencyPage() {
           )}
         </section>
 
+        {/* CCTV Confirmation Panel */}
+        <section>
+          <CCTVConfirmationPanel alertLevel={floodPrediction?.alertLevel} />
+        </section>
+
       </div>
 
       {/* Main Map Container */}
-      <div className="flex-1 rounded-2xl overflow-hidden border border-slate-200/60 shadow-[0_8px_32px_rgba(31,38,135,0.08)] relative z-0">
+      <div className="w-full h-[400px] lg:h-full flex-1 rounded-2xl overflow-hidden border border-slate-200/60 shadow-[0_8px_32px_rgba(31,38,135,0.08)] relative z-0 order-1 lg:order-2">
         <MapContainer 
           center={[location.lat, location.lng]} 
           zoom={13} 

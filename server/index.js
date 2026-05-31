@@ -12,6 +12,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const cookieParser = require('cookie-parser');
+const compression = require('compression');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
 const logger = require('./config/logger');
@@ -26,6 +27,7 @@ const governmentRoutes = require('./routes/government');
 const governmentExtraRoutes = require('./routes/government-extra');
 const adminRoutes = require('./routes/admin');
 const notificationRoutes = require('./routes/notifications');
+const publicStatsRoutes = require('./routes/public-stats');
 
 // Background services — each loaded in isolation so a bad import never kills startup
 let startWeatherPoller, startEONETPoller, startFIRMSPoller, startAPIHealthMonitor, startFeatureHealthChecker;
@@ -59,6 +61,7 @@ const io = new Server(httpServer, {
 app.set('io', io);
 
 // Middleware
+app.use(compression());
 app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
@@ -83,6 +86,7 @@ app.use('/api/v1/government',   governmentRoutes);
 app.use('/api/v1/government',   governmentExtraRoutes);
 app.use('/api/v1/admin',        adminRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/stats',        publicStatsRoutes);
 
 // Health check
 app.get('/api/v1/health', (_req, res) => {

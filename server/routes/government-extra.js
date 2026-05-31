@@ -5,14 +5,13 @@
  */
 const express = require('express');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
 const { authenticate } = require('../middleware/auth');
 const { roleGuard } = require('../middleware/roleGuard');
 const { sendSMS } = require('../services/notificationService');
 const logger = require('../config/logger');
+const prisma = require('../config/prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 const govGuard = [authenticate, roleGuard('government', 'admin')];
 

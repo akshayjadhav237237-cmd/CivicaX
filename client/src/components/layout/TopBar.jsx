@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Bell, Menu, Search, Sun, Moon } from 'lucide-react';
 import { useNotificationStore } from '../../stores/notificationStore';
@@ -15,8 +15,16 @@ export function TopBar({ onMenuClick }) {
   const notifications = useNotificationStore((state) => state.notifications);
   const markAsRead = useNotificationStore((state) => state.markAsRead);
   const markAllAsRead = useNotificationStore((state) => state.markAllAsRead);
+  const fetchNotifications = useNotificationStore((state) => state.fetchNotifications);
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // refresh every minute
+    return () => clearInterval(interval);
+  }, [fetchNotifications]);
 
   const pathMap = {
     '/dashboard':  'Dashboard',
@@ -70,17 +78,29 @@ export function TopBar({ onMenuClick }) {
 
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Search */}
-          <div
-            className="hidden sm:flex items-center rounded-full px-4 py-1.5 shadow-sm focus-within:ring-2 focus-within:ring-blue-400/30 transition-all"
-            style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
-          >
-            <Search size={16} style={{ color: 'var(--text-muted)' }} />
-            <input
-              type="text"
-              placeholder="Search ID or Zone..."
-              className="bg-transparent border-none outline-none text-sm px-2 w-48"
-              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}
-            />
+          <div className="flex items-center relative">
+            <button
+              onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+              className="sm:hidden p-2 rounded-full transition-all"
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)', color: 'var(--text-primary)' }}
+              aria-label="Toggle search"
+            >
+              <Search size={16} />
+            </button>
+            <div
+              className={`${
+                isSearchExpanded ? 'flex absolute right-0 top-12 z-50 w-48' : 'hidden'
+              } sm:flex items-center rounded-full px-4 py-1.5 shadow-sm focus-within:ring-2 focus-within:ring-blue-400/30 transition-all`}
+              style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
+            >
+              <Search size={16} style={{ color: 'var(--text-muted)' }} className="hidden sm:block" />
+              <input
+                type="text"
+                placeholder="Search ID or Zone..."
+                className="bg-transparent border-none outline-none text-sm px-2 w-full"
+                style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}
+              />
+            </div>
           </div>
 
           {/* Dark Mode Toggle */}
@@ -104,7 +124,7 @@ export function TopBar({ onMenuClick }) {
           <button
             className="relative p-2.5 rounded-full shadow-sm transition-all"
             style={{ background: 'var(--input-bg)', border: '1px solid var(--input-border)' }}
-            onClick={() => setIsDrawerOpen(true)}
+            onClick={() => { fetchNotifications(); setIsDrawerOpen(true); }}
             aria-label="View notifications"
           >
             <Bell size={20} style={{ color: 'var(--text-primary)' }} />

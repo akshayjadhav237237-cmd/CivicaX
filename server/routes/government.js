@@ -4,14 +4,13 @@
  */
 const express = require('express');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
 const { authenticate } = require('../middleware/auth');
 const { roleGuard } = require('../middleware/roleGuard');
 const { calculateResources } = require('../services/resourceCalculator');
 const logger = require('../config/logger');
+const prisma = require('../config/prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // All government routes require authentication + government/admin role
 router.use(authenticate, roleGuard('government', 'admin'));
@@ -63,7 +62,12 @@ router.put('/safe-zones/:id/activate', async (req, res) => {
     });
 
     const io = req.app.get('io');
-    io.emit('zone:status-change', { type: 'safe_zone_status', safeZone });
+    if (io) {
+      io.emit('zone:status-change', { type: 'safe_zone_status', safeZone });
+      if (safeZone.status === 'activated') {
+        io.emit('camp:activated', safeZone);
+      }
+    }
 
     logger.info(`Safe zone ${safeZone.name} status changed to ${safeZone.status} by ${req.user.email}`);
     res.json({ success: true, data: safeZone, message: `Camp ${safeZone.status === 'activated' ? 'activated' : 'status updated'}` });

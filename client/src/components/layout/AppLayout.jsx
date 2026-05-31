@@ -62,7 +62,7 @@ export function AppLayout() {
             transition={{ type: 'spring', damping: 25, stiffness: 200 }}
             className="md:hidden fixed top-0 left-0 bottom-0 z-50 w-64 shadow-2xl"
           >
-            <Sidebar />
+            <Sidebar mobile={true} />
           </motion.div>
         )}
       </AnimatePresence>

@@ -4,19 +4,18 @@
  */
 const express = require('express');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
 const { authenticate } = require('../middleware/auth');
 const { roleGuard } = require('../middleware/roleGuard');
 const { getSatelliteStatus } = require('../services/satelliteService');
 const { sendSMS } = require('../services/notificationService');
 const logger = require('../config/logger');
 const { predict: floodPredict } = require('../modules/hydrology/floodOrchestrator');
+const prisma = require('../config/prisma');
 
 let turf;
 try { turf = require('@turf/turf'); } catch (_) { turf = null; }
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 /**
  * GET /api/v1/emergency/zones
@@ -522,6 +521,58 @@ router.get('/camera-feeds', async (_req, res) => {
   } catch (err) {
     logger.error('Error fetching camera feeds:', err);
     res.status(500).json({ success: false, error: 'Failed to fetch camera feeds', code: 'DB_ERROR' });
+  }
+});
+
+/**
+ * POST /api/v1/emergency/flood-prediction/trigger
+ * Triggers a manual flood prediction cycle for a specific zone and returns the result.
+ */
+router.post('/flood-prediction/trigger', async (req, res) => {
+  const { zoneId } = req.body;
+  let lat = parseFloat(req.body.lat);
+  let lng = parseFloat(req.body.lng);
+
+  if (!zoneId) {
+    return res.status(400).json({ success: false, error: 'zoneId is required', code: 'VALIDATION_ERROR' });
+  }
+
+  try {
+    const zone = await prisma.emergencyZone.findUnique({ where: { id: zoneId } });
+    if (!zone) {
+      return res.status(404).json({ success: false, error: 'Zone not found', code: 'NOT_FOUND' });
+    }
+
+    if (!lat || !lng) {
+      const coords = zone.geojson?.coordinates?.[0];
+      if (coords && coords.length > 0) {
+        // coords[0] is [lng, lat] or a list of coords
+        // Let's get the first point coordinate or average them
+        if (Array.isArray(coords[0])) {
+          lng = coords[0][0];
+          lat = coords[0][1];
+        } else {
+          lng = coords[0];
+          lat = coords[1];
+        }
+      }
+    }
+
+    // Default fallbacks for demo
+    lat = lat || 30.735;
+    lng = lng || 79.067;
+
+    const io = req.app.get('io');
+    const fresh = await floodPredict(lat, lng, zoneId, zone.name, io);
+
+    res.json({
+      success: true,
+      data: fresh,
+      message: 'On-demand prediction triggered successfully',
+    });
+  } catch (err) {
+    logger.error('[flood-prediction-trigger] Error:', err.message);
+    res.status(500).json({ success: false, error: 'Failed to run prediction on-demand', code: 'PIPELINE_ERROR', detail: err.message });
   }
 });
 

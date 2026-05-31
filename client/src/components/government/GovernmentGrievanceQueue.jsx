@@ -11,6 +11,17 @@ import { GlassBadge } from '../ui/GlassBadge';
 import { GlassModal } from '../ui/GlassModal';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { GrievanceImageGallery } from '../civic/GrievanceImageGallery';
+import Papa from 'papaparse';
+
+const resolveImageUrl = (img) => {
+  if (!img) return '';
+  if (img.startsWith('http')) return img;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
+  const origin = baseUrl.replace('/api/v1', '');
+  return `${origin}${img}`;
+};
+
 
 const CATEGORY_ICONS = {
   pothole:             '🛣️',
@@ -206,6 +217,8 @@ export function GovernmentGrievanceQueue() {
   const [expandedId, setExpandedId] = useState(null);
   const [approveTarget, setApproveTarget] = useState(null);
   const [rejectTarget, setRejectTarget] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [deptFilter, setDeptFilter] = useState('all');
 
   useEffect(() => { fetchAll(); }, [statusFilter]);
 
@@ -228,6 +241,38 @@ export function GovernmentGrievanceQueue() {
     }
   };
 
+  const exportToCSV = () => {
+    if (filteredGrievances.length === 0) {
+      toast.error('No grievances to export');
+      return;
+    }
+    const csvData = filteredGrievances.map(g => ({
+      ID: g.id,
+      Title: g.title,
+      Description: g.description,
+      Status: g.status,
+      Category: g.category,
+      Address: g.address || 'N/A',
+      Latitude: g.latitude || 'N/A',
+      Longitude: g.longitude || 'N/A',
+      Budget: g.approvedBudget ? `₹${g.approvedBudget}` : 'N/A',
+      Department: g.assignedDepartment?.name || 'Unassigned',
+      'Resolution Days': g.estimatedResolutionDays || 'N/A',
+      'Created At': new Date(g.createdAt).toLocaleString(),
+    }));
+    const csv = Papa.unparse(csvData);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `civicax_grievances_${statusFilter}_${new Date().toISOString().slice(0,10)}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('CSV exported successfully');
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-3">
@@ -238,33 +283,79 @@ export function GovernmentGrievanceQueue() {
 
   const filters = ['submitted', 'under_review', 'assigned', 'in_progress', 'resolved', 'rejected'];
 
+  const filteredGrievances = grievances.filter(g => {
+    const matchesSearch = !searchQuery || 
+      (g.title || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+      (g.description || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (g.address || '').toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesDept = deptFilter === 'all' || g.assignedDepartmentId === deptFilter;
+    
+    return matchesSearch && matchesDept;
+  });
+
   return (
     <div className="space-y-4">
-      {/* Status filter pills */}
-      <div className="flex gap-2 flex-wrap">
-        {filters.map(s => (
-          <button
-            key={s}
-            onClick={() => setStatusFilter(s)}
-            className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all capitalize ${
-              statusFilter === s
-                ? 'bg-blue-600 text-white shadow-sm'
-                : 'bg-white/50 text-slate-600 hover:bg-white/70 border border-slate-200'
-            }`}
-          >
-            {s.replace('_', ' ')}
-          </button>
-        ))}
+      {/* Status filter pills & Export CSV */}
+      <div className="flex flex-wrap justify-between items-center gap-3">
+        <div className="flex gap-2 flex-wrap">
+          {filters.map(s => (
+            <button
+              key={s}
+              onClick={() => {
+                setStatusFilter(s);
+                setSearchQuery('');
+                setDeptFilter('all');
+              }}
+              className={`text-xs px-3 py-1.5 rounded-full font-medium transition-all capitalize ${
+                statusFilter === s
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-white/50 text-slate-600 hover:bg-white/70 border border-slate-200'
+              }`}
+            >
+              {s.replace('_', ' ')}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={exportToCSV}
+          className="text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-900/30 px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-colors cursor-pointer"
+        >
+          📥 Export CSV
+        </button>
       </div>
 
-      {grievances.length === 0 && (
+      {/* Search and Department Filter */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="flex-1 min-w-[200px] relative">
+          <input
+            type="text"
+            placeholder="Search by title, description, or address..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full pl-3 pr-4 py-2 rounded-lg bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm focus:outline-none focus:border-blue-400"
+          />
+        </div>
+        <select
+          value={deptFilter}
+          onChange={e => setDeptFilter(e.target.value)}
+          className="bg-white/50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 text-slate-850 dark:text-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none"
+        >
+          <option value="all">All Departments</option>
+          {departments.map(d => (
+            <option key={d.id} value={d.id}>{d.name}</option>
+          ))}
+        </select>
+      </div>
+
+      {filteredGrievances.length === 0 && (
         <div className="glass-card p-8 text-center">
           <ClipboardList size={32} className="mx-auto text-slate-300 mb-3"/>
-          <p className="text-slate-500 text-sm">No {statusFilter.replace('_', ' ')} grievances</p>
+          <p className="text-slate-500 text-sm">No matching {statusFilter.replace('_', ' ')} grievances</p>
         </div>
       )}
 
-      {grievances.map(g => {
+      {filteredGrievances.map(g => {
         const isExpanded = expandedId === g.id;
         return (
           <div key={g.id} className="glass-card p-4">
@@ -314,7 +405,13 @@ export function GovernmentGrievanceQueue() {
 
             {/* Expanded detail */}
             {isExpanded && (
-              <div className="mt-3 pt-3 border-t border-slate-100 space-y-1">
+              <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                {g.images && g.images.length > 0 && (
+                  <div className="mb-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Attachments</p>
+                    <GrievanceImageGallery images={g.images.map(resolveImageUrl)} />
+                  </div>
+                )}
                 {g.assignedDepartment && (
                   <p className="text-xs text-slate-600">🏢 Assigned to: <strong>{g.assignedDepartment.name}</strong></p>
                 )}

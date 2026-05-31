@@ -89,19 +89,45 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
     }
   };
 
+  const handleRefresh = async () => {
+    if (!zoneId || loading) return;
+    setLoading(true);
+    try {
+      const toastId = toast.loading('Running flood prediction models...');
+      const response = await api.post('/emergency/flood-prediction/trigger', { zoneId });
+      const data = response.data?.data || response.data;
+      setPrediction(data);
+      if (onPredictionLoad) {
+        onPredictionLoad(data);
+      }
+      toast.success('Prediction models executed successfully.', { id: toastId });
+    } catch (err) {
+      console.error('[FloodPredictionPanel] Refresh error:', err);
+      toast.error(err?.response?.data?.message ?? 'Failed to execute prediction models.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!zoneId) {
       setPrediction(null);
       return;
     }
 
+    setPrediction(null); // Reset prediction to trigger skeleton on zone change
     setLoading(true);
-    fetchPrediction().finally(() => setLoading(false));
+
+    // Show loading skeleton for 3 seconds on first load of this zoneId
+    const timer = setTimeout(() => {
+      fetchPrediction().finally(() => setLoading(false));
+    }, 3000);
 
     // Auto-refetch every 10 minutes
     const interval = setInterval(fetchPrediction, 600000);
 
     return () => {
+      clearTimeout(timer);
       clearInterval(interval);
     };
   }, [zoneId]);
@@ -176,9 +202,18 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
             {zoneName ?? `Zone ${zoneId}`}
           </h2>
 
-          <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${badgeCls}`}>
-            {alertLevel ?? 'unknown'}
-          </span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 px-2 py-0.5 rounded transition duration-200 flex items-center gap-1 disabled:opacity-50"
+            >
+              🔄 {loading ? 'Running...' : 'Refresh'}
+            </button>
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${badgeCls}`}>
+              {alertLevel ?? 'unknown'}
+            </span>
+          </div>
         </div>
 
         <div className="flex items-center gap-3 text-xs text-slate-400">

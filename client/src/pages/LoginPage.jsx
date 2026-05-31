@@ -119,7 +119,7 @@ export function LoginPage() {
               disabled={isSubmitting}
             />
             <div className="flex justify-end mt-1">
-              <a href="#" className="text-sm font-semibold text-blue-500 hover:text-blue-400">Forgot password?</a>
+              <Link to="/forgot-password" className="text-sm font-semibold text-blue-500 hover:text-blue-400">Forgot password?</Link>
             </div>
             <GlassButton type="submit" disabled={isSubmitting} className="w-full mt-2">
               {isSubmitting ? 'Authenticating...' : 'Sign In'}

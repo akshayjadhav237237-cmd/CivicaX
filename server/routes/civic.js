@@ -4,16 +4,15 @@
  */
 const express = require('express');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
 const multer = require('multer');
 const path = require('path');
 const { randomUUID } = require('crypto');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 const { roleGuard } = require('../middleware/roleGuard');
 const logger = require('../config/logger');
+const prisma = require('../config/prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
 // Multer upload configuration — stores to /uploads/civic/
 const storage = multer.diskStorage({

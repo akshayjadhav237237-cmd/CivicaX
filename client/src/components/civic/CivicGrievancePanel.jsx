@@ -4,6 +4,15 @@ import { GlassModal } from '../ui/GlassModal';
 import { GlassButton } from '../ui/GlassButton';
 import api from '../../services/api';
 import toast from 'react-hot-toast';
+import { GrievanceImageGallery } from './GrievanceImageGallery';
+
+const resolveImageUrl = (img) => {
+  if (!img) return '';
+  if (img.startsWith('http')) return img;
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api/v1';
+  const origin = baseUrl.replace('/api/v1', '');
+  return `${origin}${img}`;
+};
 
 const STATUS_COLOR = {
   submitted:    'bg-slate-100 text-slate-600',
@@ -74,7 +83,22 @@ function SubmitGrievanceModal({ isOpen, onClose, onSuccess }) {
         <div>
           <label className="text-xs font-semibold text-slate-600 block mb-1">Photos (optional, max 3)</label>
           <input type="file" accept="image/*" multiple onChange={e => setImages(Array.from(e.target.files).slice(0,3))}/>
-          {images.length > 0 && <p className="text-xs text-green-600 mt-1">{images.length} photo(s) selected</p>}
+          {images.length > 0 && (
+            <div className="flex gap-2 mt-2">
+              {images.map((file, i) => (
+                <div key={i} className="relative w-12 h-12 rounded-lg overflow-hidden border border-slate-200">
+                  <img src={URL.createObjectURL(file)} alt="Preview" className="w-full h-full object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => setImages(prev => prev.filter((_, idx) => idx !== i))}
+                    className="absolute top-0.5 right-0.5 bg-red-500 text-white rounded-full w-3.5 h-3.5 flex items-center justify-center text-[8px] hover:bg-red-600 font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         <div className="flex gap-3">
           <GlassButton variant="ghost" onClick={onClose} className="flex-1">Cancel</GlassButton>
@@ -125,19 +149,29 @@ function GrievanceCard({ grievance }) {
         </button>
       </div>
 
-      {isOpen && grievance.updates?.length > 0 && (
+      {isOpen && (
         <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Timeline</p>
-          {grievance.updates.map((u, i) => (
-            <div key={i} className="flex gap-2 text-xs">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"/>
-              <div>
-                <span className="font-medium text-slate-700 capitalize">{u.status?.replace('_',' ')}</span>
-                {u.note && <p className="text-slate-500 mt-0.5">{u.note}</p>}
-                <p className="text-slate-400">{new Date(u.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</p>
-              </div>
+          {grievance.images && grievance.images.length > 0 && (
+            <div className="mb-2">
+              <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Attachments</p>
+              <GrievanceImageGallery images={grievance.images.map(resolveImageUrl)} />
             </div>
-          ))}
+          )}
+          <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Timeline</p>
+          {grievance.updates?.length > 0 ? (
+            grievance.updates.map((u, i) => (
+              <div key={i} className="flex gap-2 text-xs">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"/>
+                <div>
+                  <span className="font-medium text-slate-700 capitalize">{u.status?.replace('_',' ')}</span>
+                  {u.note && <p className="text-slate-500 mt-0.5">{u.note}</p>}
+                  <p className="text-slate-400">{new Date(u.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'})}</p>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-xs text-slate-400">No updates yet.</p>
+          )}
           {/* Feedback option for resolved grievances */}
           {grievance.status === 'resolved' && !grievance.feedback && (
             <GlassButton size="sm" variant="ghost" onClick={() => setIsFeedbackOpen(true)} className="text-xs gap-1 mt-2">

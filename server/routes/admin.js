@@ -5,15 +5,14 @@
  */
 const express = require('express');
 const { z } = require('zod');
-const { PrismaClient } = require('@prisma/client');
 const { authenticate } = require('../middleware/auth');
 const { roleGuard } = require('../middleware/roleGuard');
 const { runHealthChecks } = require('../services/apiHealthMonitor');
 const { runFeatureChecks } = require('../services/featureHealthChecker');
 const logger = require('../config/logger');
+const prisma = require('../config/prisma');
 
 const router = express.Router();
-const prisma = new PrismaClient();
 const adminGuard = [authenticate, roleGuard('admin')];
 
 // ─── Official ID Whitelist ──────────────────────────────────────────────────

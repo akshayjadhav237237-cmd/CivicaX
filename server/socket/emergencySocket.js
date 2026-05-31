@@ -31,6 +31,11 @@ const setupSocketHandlers = (io) => {
       logger.info(`Socket ${socket.id} joined government room`);
     });
 
+    socket.on('camp:activate', (data) => {
+      io.emit('camp:activated', data);
+      logger.info(`WebSocket broadcast camp:activated:`, data);
+    });
+
     socket.on('disconnect', () => {
       logger.info(`WebSocket client disconnected: ${socket.id}`);
     });

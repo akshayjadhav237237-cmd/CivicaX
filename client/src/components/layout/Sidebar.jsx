@@ -14,7 +14,7 @@ import {
   ClipboardList
 } from 'lucide-react';
 
-export function Sidebar() {
+export function Sidebar({ mobile = false }) {
   const { user } = useAuth();
   const { isDark } = useThemeStore();
 
@@ -33,7 +33,7 @@ export function Sidebar() {
   const visibleItems = navItems.filter((item) => item.roles.includes(user?.role));
 
   return (
-    <div className="hidden md:flex flex-col w-[260px] h-screen fixed left-0 top-0 glass-nav z-40">
+    <div className={`${mobile ? 'flex w-full' : 'hidden md:flex w-[260px]'} flex-col h-screen fixed left-0 top-0 glass-nav z-40`}>
       {/* Logo */}
       <div className="p-6 flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
