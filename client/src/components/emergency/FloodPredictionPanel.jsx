@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '../ui/GlassCard';
 import api from '../../services/api';
@@ -53,9 +53,15 @@ function SectionDivider({ title }) {
 }
 
 // ─── Loading skeleton ─────────────────────────────────────────────────────────
-function LoadingSkeleton() {
+function LoadingSkeleton({ message }) {
   return (
     <GlassCard padding="p-5" className="flex flex-col gap-4">
+      {message && (
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-semibold animate-pulse mb-1">
+          <span className="text-base">🛰️</span>
+          <span>{message}</span>
+        </div>
+      )}
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
@@ -71,6 +77,9 @@ function LoadingSkeleton() {
 export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
   const [prediction, setPrediction] = useState(null);
   const [loading, setLoading]       = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [statusMessage, setStatusMessage]   = useState('');
+  const retryTimeoutRef = useRef(null);
 
   // Fetch helper
   const fetchPrediction = async () => {
@@ -89,46 +98,117 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
     }
   };
 
-  const handleRefresh = async () => {
-    if (!zoneId || loading) return;
+  const loadData = async (isRetry = false) => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
     setLoading(true);
+    setStatusMessage('');
+    setLoadingMessage('Checking data freshness...');
+
     try {
-      const toastId = toast.loading('Running flood prediction models...');
-      const response = await api.post('/emergency/flood-prediction/trigger', { zoneId });
-      const data = response.data?.data || response.data;
-      setPrediction(data);
-      if (onPredictionLoad) {
-        onPredictionLoad(data);
+      // Step 1: Check general flood-risk health/status
+      const riskRes = await api.get('/emergency/flood-risk');
+      const riskData = riskRes.data?.data || riskRes.data;
+
+      const computedAt = riskData?.computedAt || riskData?.snapshotAt || riskData?.timestamp;
+      const isStale = !computedAt || (Date.now() - new Date(computedAt).getTime()) > FRESH_THRESHOLD_MS;
+      const isMissing = !riskData || riskData.score == null;
+
+      if (isStale || isMissing || isRetry) {
+        console.log('[FloodPredictionPanel] Stale or missing data detected. Triggering on-demand prediction...');
+        setLoadingMessage('Fetching live satellite data...');
+
+        // Step 2: Post trigger with 30s timeout using AbortController
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        try {
+          await api.post(
+            '/emergency/flood-prediction/trigger',
+            { zoneId, lat: 30.735, lng: 79.067 },
+            { signal: controller.signal }
+          );
+          clearTimeout(timeoutId);
+        } catch (postErr) {
+          clearTimeout(timeoutId);
+          console.error('[FloodPredictionPanel] Trigger POST failed:', postErr);
+
+          setStatusMessage('Satellite data temporarily unavailable — retrying in 2 minutes');
+          setLoading(false);
+          setLoadingMessage('');
+
+          retryTimeoutRef.current = setTimeout(() => {
+            loadData(true);
+          }, 120000);
+          return;
+        }
       }
-      toast.success('Prediction models executed successfully.', { id: toastId });
+
+      // Step 3: Fetch latest prediction for this zone
+      const predictionRes = await api.get(`/emergency/flood-prediction/${zoneId}`);
+      const predictionData = predictionRes.data?.data || predictionRes.data;
+
+      if (predictionData && Object.keys(predictionData).length > 0 && predictionData.alertLevel) {
+        setPrediction(predictionData);
+        if (onPredictionLoad) {
+          onPredictionLoad(predictionData);
+        }
+        setStatusMessage('');
+      } else {
+        throw new Error('Incomplete prediction data returned');
+      }
     } catch (err) {
-      console.error('[FloodPredictionPanel] Refresh error:', err);
-      toast.error(err?.response?.data?.message ?? 'Failed to execute prediction models.');
+      console.error('[FloodPredictionPanel] Load data error:', err);
+      if (prediction) {
+        toast.error('Failed to sync latest prediction data.');
+      } else {
+        setStatusMessage('Satellite data temporarily unavailable — retrying in 2 minutes');
+        retryTimeoutRef.current = setTimeout(() => {
+          loadData(true);
+        }, 120000);
+      }
     } finally {
       setLoading(false);
+      setLoadingMessage('');
     }
+  };
+
+  const handleRefresh = async () => {
+    if (!zoneId || loading) return;
+    setPrediction(null);
+    loadData(true);
   };
 
   useEffect(() => {
     if (!zoneId) {
       setPrediction(null);
+      setStatusMessage('');
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
       return;
     }
 
-    setPrediction(null); // Reset prediction to trigger skeleton on zone change
-    setLoading(true);
-
-    // Show loading skeleton for 3 seconds on first load of this zoneId
-    const timer = setTimeout(() => {
-      fetchPrediction().finally(() => setLoading(false));
-    }, 3000);
+    setPrediction(null);
+    loadData();
 
     // Auto-refetch every 10 minutes
-    const interval = setInterval(fetchPrediction, 600000);
+    const interval = setInterval(() => {
+      if (!loading && !retryTimeoutRef.current) {
+        fetchPrediction();
+      }
+    }, REFETCH_INTERVAL_MS);
 
     return () => {
-      clearTimeout(timer);
       clearInterval(interval);
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
     };
   }, [zoneId]);
 
@@ -144,9 +224,28 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
     );
   }
 
+  // ── Status Message / Fallback Card ─────────────────────────────────────────
+  if (statusMessage && !prediction) {
+    return (
+      <GlassCard>
+        <div className="flex flex-col items-center justify-center py-10 text-center px-4 text-slate-500">
+          <span style={{ fontSize: 32 }}>⚠️</span>
+          <p className="mt-3 text-sm font-semibold text-slate-700">{statusMessage}</p>
+          <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+            </span>
+            <span>Checking backup channels...</span>
+          </div>
+        </div>
+      </GlassCard>
+    );
+  }
+
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading && !prediction) {
-    return <LoadingSkeleton />;
+    return <LoadingSkeleton message={loadingMessage} />;
   }
 
   // ── No data yet / pipeline hasn't run yet ──────────────────────────────────

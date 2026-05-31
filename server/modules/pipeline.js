@@ -48,6 +48,7 @@ async function runDisasterPipeline(io) {
   _isRunning = true;
   const cycleStart = Date.now();
   logger.info('[Pipeline] ═══ Starting disaster intelligence cycle ═══');
+  const fetchStart = Date.now();
 
   try {
     // ── Step 1–5: Fetch all data sources concurrently ─────────────────────
@@ -64,6 +65,9 @@ async function runDisasterPipeline(io) {
       fetchSRTMElevation(),
       fetchMandakiniGeometry(),
     ]);
+
+    const fetchDuration = ((Date.now() - fetchStart) / 1000).toFixed(1);
+    logger.info(`[Pipeline] Timing: API Fetch took ${fetchDuration}s`);
 
     // Extract values — use fallbacks for any rejected promises
     const rain = rainResult.status === 'fulfilled'
@@ -97,13 +101,19 @@ async function runDisasterPipeline(io) {
     );
 
     // ── Step 6: Compute flood risk ────────────────────────────────────────
+    const computeStart = Date.now();
     const riskResult = await computeFloodRisk(rain, gpm, soil, terrain, waterways);
+    const computeDuration = ((Date.now() - computeStart) / 1000).toFixed(1);
+    logger.info(`[Pipeline] Timing: Flood risk computation took ${computeDuration}s`);
 
     // Cache for instant API serving
     _lastRiskResult = riskResult;
 
     // ── Step 7: Persist and emit ──────────────────────────────────────────
+    const dbStart = Date.now();
     await processRiskResult(riskResult, io);
+    const dbDuration = ((Date.now() - dbStart) / 1000).toFixed(1);
+    logger.info(`[Pipeline] Timing: DB persistence and Socket.io emit took ${dbDuration}s`);
 
     const duration = ((Date.now() - cycleStart) / 1000).toFixed(1);
     logger.info(
