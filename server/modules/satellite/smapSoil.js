@@ -78,13 +78,32 @@ function extractGranuleFilename(granule) {
 }
 
 /**
+ * Extract dynamic OPeNDAP base URL from CMR links if available.
+ */
+function getOpendapBaseUrl(granule) {
+  const links = granule.links || [];
+  const opendapLink = links.find(
+    (l) => l.href && (l.href.includes('opendap.earthdata.nasa.gov') || l.rel?.includes('service'))
+  );
+  if (opendapLink) {
+    let href = opendapLink.href.replace(/\?.*$/, '');
+    href = href.replace(/\.ascii$/, '').replace(/\.html$/, '');
+    return href;
+  }
+  return null;
+}
+
+/**
  * Fetch the actual soil moisture value for Kedarnath from OPeNDAP ASCII endpoint.
  * Returns a number (m³/m³) or null on failure.
  */
-async function fetchSMAPValueFromOpendap(granuleFilename, token) {
+async function fetchSMAPValueFromOpendap(opendapBaseUrl, granuleFilename, token) {
+  const baseUrl = opendapBaseUrl || `${OPENDAP_BASE_URL}/${granuleFilename}`;
+  
+  // URL-encode the square brackets to prevent 400 Bad Request
   const url =
-    `${OPENDAP_BASE_URL}/${granuleFilename}.ascii` +
-    `?Soil_Moisture_Retrieval_Data_AM/soil_moisture[${KEDARNATH_ROW}][${KEDARNATH_COL}]`;
+    `${baseUrl}.ascii` +
+    `?Soil_Moisture_Retrieval_Data_AM/soil_moisture%5B${KEDARNATH_ROW}%5D%5B${KEDARNATH_COL}%5D`;
 
   logger.info(`[SMAP] Fetching real value from OPeNDAP: ${url}`);
 
@@ -92,7 +111,7 @@ async function fetchSMAPValueFromOpendap(granuleFilename, token) {
     signal: AbortSignal.timeout(TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${token}`,
-      'User-Agent': 'CivicaX-DisasterPipeline/1.0',
+      'User-Agent': 'CivicaX/1.0',
       Accept: 'text/plain, */*',
     },
   });
@@ -128,6 +147,8 @@ async function fetchSMAPValueFromOpendap(granuleFilename, token) {
  */
 async function fetchSMAPSoil() {
   const earthdataToken = process.env.NASA_EARTHDATA_TOKEN;
+  console.log('[SMAP] Token present:', !!process.env.NASA_EARTHDATA_TOKEN);
+  console.log('[SMAP] Token value preview:', process.env.NASA_EARTHDATA_TOKEN?.slice(0, 8));
 
   try {
     // Step 1 — CMR granule search
@@ -170,7 +191,8 @@ async function fetchSMAPSoil() {
 
       if (granuleFilename) {
         try {
-          const realValue = await fetchSMAPValueFromOpendap(granuleFilename, earthdataToken);
+          const opendapBaseUrl = getOpendapBaseUrl(granule);
+          const realValue = await fetchSMAPValueFromOpendap(opendapBaseUrl, granuleFilename, earthdataToken);
 
           if (realValue !== null) {
             logger.info(
