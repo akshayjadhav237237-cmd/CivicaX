@@ -1,0 +1,515 @@
+/* ===================================================================
+ * CivicaX — Liquid Glass Design System
+ * Global CSS Variables + Base Styles
+ * Google Sans (body) + Google Sans Display (headings) — loaded via Google Fonts
+ * ================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&family=Google+Sans+Display:wght@400;500;600;700&display=swap');
+
+@import "tailwindcss";
+
+/* ─── Light Mode Tokens ─────────────────────────────────────────── */
+:root {
+  /* Base Backgrounds */
+  --bg-base:       #EEF1F5;
+  --bg-secondary:  #F5F7FA;
+  --bg-card:       rgba(255, 255, 255, 0.55);
+  --bg-card-border:rgba(255, 255, 255, 0.75);
+  --bg-nav:        rgba(255, 255, 255, 0.45);
+
+  /* Glass Surfaces */
+  --glass-bg:            rgba(255, 255, 255, 0.55);
+  --glass-bg-strong:     rgba(255, 255, 255, 0.75);
+  --glass-bg-nav:        rgba(255, 255, 255, 0.45);
+  --glass-border:        rgba(255, 255, 255, 0.75);
+  --glass-border-subtle: rgba(255, 255, 255, 0.5);
+  --glass-shadow:        0 8px 32px rgba(31, 38, 135, 0.08);
+  --glass-shadow-heavy:  0 12px 48px rgba(31, 38, 135, 0.14);
+  --glass-blur:          blur(20px) saturate(160%);
+  --glass-blur-light:    blur(12px) saturate(140%);
+  --glass-blur-nav:      blur(24px);
+
+  /* Text */
+  --text-primary:   #0F172A;
+  --text-secondary: #475569;
+  --text-muted:     #64748B;
+
+  /* Inputs */
+  --input-bg:          rgba(255, 255, 255, 0.6);
+  --input-border:      rgba(203, 213, 225, 0.7);
+  --input-text:        #0F172A;
+  --input-placeholder: #94A3B8;
+
+  /* Misc */
+  --shadow:    0 8px 32px rgba(31, 38, 135, 0.08);
+  --divider:   rgba(0, 0, 0, 0.06);
+  --hover-bg:  rgba(0, 0, 0, 0.04);
+  --badge-bg:  rgba(0, 0, 0, 0.06);
+
+  /* Brand Colors */
+  --color-primary:       #3B82F6;
+  --color-primary-dark:  #2563EB;
+  --color-primary-light: #60A5FA;
+  --color-danger:        #EF4444;
+  --color-warning:       #F97316;
+  --color-safe:          #22C55E;
+  --color-text:          #1E293B;
+  --color-text-muted:    #64748B;
+  --color-text-light:    #94A3B8;
+
+  /* Alert Level Colors */
+  --alert-watch-bg:       rgba(250, 204, 21, 0.15);
+  --alert-watch-border:   rgba(250, 204, 21, 0.5);
+  --alert-watch-text:     #854D0E;
+  --alert-warning-bg:     rgba(249, 115, 22, 0.15);
+  --alert-warning-border: rgba(249, 115, 22, 0.5);
+  --alert-warning-text:   #9A3412;
+  --alert-critical-bg:    rgba(239, 68, 68, 0.15);
+  --alert-critical-border:rgba(239, 68, 68, 0.5);
+  --alert-critical-text:  #991B1B;
+  --alert-safe-bg:        rgba(34, 197, 94, 0.15);
+  --alert-safe-border:    rgba(34, 197, 94, 0.5);
+  --alert-safe-text:      #14532D;
+
+  /* Shadows & Radii */
+  --radius-sm:   12px;
+  --radius-md:   16px;
+  --radius-lg:   20px;
+  --radius-xl:   24px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --font-body:    'Google Sans', system-ui, sans-serif;
+  --font-heading: 'Google Sans Display', 'Google Sans', system-ui, sans-serif;
+
+  /* Layout */
+  --sidebar-width: 260px;
+  --topbar-height: 64px;
+}
+
+/* ─── Dark Mode Tokens ──────────────────────────────────────────── */
+.dark {
+  /* Base backgrounds — dark but not pure black */
+  --bg-base:        #0F172A;
+  --bg-secondary:   #1E293B;
+  --bg-card:        rgba(30, 41, 59, 0.85);
+  --bg-card-border: rgba(255, 255, 255, 0.12);
+  --bg-nav:         rgba(15, 23, 42, 0.95);
+
+  --glass-bg:            rgba(30, 41, 59, 0.7);
+  --glass-bg-strong:     rgba(30, 41, 59, 0.9);
+  --glass-bg-nav:        rgba(15, 23, 42, 0.95);
+  --glass-border:        rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(255, 255, 255, 0.08);
+  --glass-shadow:        0 8px 32px rgba(0, 0, 0, 0.5);
+  --glass-shadow-heavy:  0 12px 48px rgba(0, 0, 0, 0.7);
+
+  /* Text — must always be bright enough to read easily */
+  --text-primary:   #F8FAFC;
+  --text-secondary: #CBD5E1;
+  --text-muted:     #94A3B8;
+
+  /* Inputs — must be clearly visible */
+  --input-bg:          rgba(51, 65, 85, 0.8);
+  --input-border:      rgba(148, 163, 184, 0.3);
+  --input-text:        #F8FAFC;
+  --input-placeholder: #94A3B8;
+
+  /* Interactive elements */
+  --shadow:   0 8px 32px rgba(0, 0, 0, 0.5);
+  --divider:  rgba(255, 255, 255, 0.10);
+  --hover-bg: rgba(255, 255, 255, 0.08);
+  --badge-bg: rgba(255, 255, 255, 0.10);
+
+  --color-text:       #F8FAFC;
+  --color-text-muted: #CBD5E1;
+  --color-text-light: #94A3B8;
+
+  /* Alert badges — brighter for dark bg */
+  --alert-watch-bg:       rgba(250, 204, 21, 0.15);
+  --alert-watch-border:   rgba(250, 204, 21, 0.35);
+  --alert-watch-text:     #FDE68A;
+  --alert-warning-bg:     rgba(249, 115, 22, 0.15);
+  --alert-warning-border: rgba(249, 115, 22, 0.35);
+  --alert-warning-text:   #FDBA74;
+  --alert-critical-bg:    rgba(239, 68, 68, 0.15);
+  --alert-critical-border:rgba(239, 68, 68, 0.35);
+  --alert-critical-text:  #FCA5A5;
+  --alert-safe-bg:        rgba(34, 197, 94, 0.15);
+  --alert-safe-border:    rgba(34, 197, 94, 0.35);
+  --alert-safe-text:      #86EFAC;
+}
+
+/* ─── Global Smooth Transition ──────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.2s ease,
+    box-shadow 0.3s ease;
+}
+
+/* Don't interrupt framer-motion transform/opacity animations */
+[data-projection-id], [style*="transform"], [style*="opacity"] {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease,
+    color 0.2s ease !important;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+
+/* ─── Glass Surface Utilities ───────────────────────────────────── */
+.glass-card {
+  background: var(--bg-card);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.glass-card-strong {
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--bg-card-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.glass-nav {
+  background: var(--bg-nav);
+  backdrop-filter: var(--glass-blur-nav);
+  -webkit-backdrop-filter: var(--glass-blur-nav);
+  border-right: 1px solid var(--bg-card-border);
+  box-shadow: var(--shadow);
+}
+
+/* ─── Input Global Overrides (dark mode) ────────────────────────── */
+/* Ensures ALL inputs across the app (even inline-styled) are readable */
+.dark input,
+.dark textarea,
+.dark select {
+  background: rgba(51, 65, 85, 0.8) !important;
+  color: #F8FAFC !important;
+  border-color: rgba(148, 163, 184, 0.3) !important;
+  caret-color: #F8FAFC;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #94A3B8 !important;
+  opacity: 1;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* Fix select option background in dark mode */
+.dark select option {
+  background: #1E293B;
+  color: #F8FAFC;
+}
+
+/* ─── Table / List Dark Mode Overrides ──────────────────────────── */
+.dark table {
+  color: #F8FAFC;
+}
+
+.dark th {
+  color: #CBD5E1 !important;
+  background: rgba(51, 65, 85, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+.dark td {
+  color: #E2E8F0 !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+.dark tr:hover td {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+/* ─── Hardcoded Tailwind Color Overrides ────────────────────────── */
+/* These catch any Tailwind text-slate-* / text-gray-* classes on dark mode */
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700 {
+  color: #F8FAFC !important;
+}
+
+.dark .text-slate-600,
+.dark .text-slate-500 {
+  color: #CBD5E1 !important;
+}
+
+.dark .text-slate-400 {
+  color: #94A3B8 !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: #F8FAFC !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500 {
+  color: #CBD5E1 !important;
+}
+
+/* Fix hardcoded backgrounds on light cards/panels */
+.dark .bg-white,
+.dark .bg-slate-50,
+.dark .bg-gray-50 {
+  background: rgba(30, 41, 59, 0.85) !important;
+}
+
+.dark .bg-slate-100,
+.dark .bg-gray-100 {
+  background: rgba(51, 65, 85, 0.6) !important;
+}
+
+/* Fix borders */
+.dark .border-slate-200,
+.dark .border-gray-200,
+.dark .border-slate-100,
+.dark .border-gray-100 {
+  border-color: rgba(255, 255, 255, 0.10) !important;
+}
+
+.dark .border-slate-300,
+.dark .border-gray-300 {
+  border-color: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* Divide lines */
+.dark .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Fix inline bg-white/X or bg-slate/X that are baked in as Tailwind utilities */
+.dark [class*="bg-white\/"],
+.dark [class*="bg-slate-50\/"],
+.dark [class*="bg-gray-50\/"] {
+  background: rgba(30, 41, 59, 0.7) !important;
+}
+
+/* ─── Alert banners / error boxes ───────────────────────────────── */
+.dark .bg-red-50  { background: rgba(239, 68, 68, 0.12) !important; }
+.dark .bg-orange-50 { background: rgba(249, 115, 22, 0.12) !important; }
+.dark .bg-yellow-50 { background: rgba(250, 204, 21, 0.12) !important; }
+.dark .bg-green-50  { background: rgba(34, 197, 94, 0.12) !important; }
+.dark .bg-blue-50   { background: rgba(59, 130, 246, 0.12) !important; }
+
+.dark .border-red-200    { border-color: rgba(239, 68, 68, 0.35) !important; }
+.dark .border-orange-200 { border-color: rgba(249, 115, 22, 0.35) !important; }
+.dark .border-yellow-200 { border-color: rgba(250, 204, 21, 0.35) !important; }
+.dark .border-green-200  { border-color: rgba(34, 197, 94, 0.35) !important; }
+.dark .border-blue-200   { border-color: rgba(59, 130, 246, 0.35) !important; }
+
+.dark .text-red-700    { color: #FCA5A5 !important; }
+.dark .text-orange-700 { color: #FDBA74 !important; }
+.dark .text-yellow-700 { color: #FDE68A !important; }
+.dark .text-green-700  { color: #86EFAC !important; }
+.dark .text-blue-700   { color: #93C5FD !important; }
+.dark .text-red-800    { color: #FCA5A5 !important; }
+.dark .text-red-900    { color: #FECACA !important; }
+.dark .text-red-800\/80 { color: rgba(252, 165, 165, 0.8) !important; }
+
+/* Fix icon container backgrounds */
+.dark .bg-blue-100   { background: rgba(59, 130, 246, 0.15) !important; }
+.dark .bg-orange-100 { background: rgba(249, 115, 22, 0.15) !important; }
+.dark .bg-red-100    { background: rgba(239, 68, 68, 0.15) !important; }
+.dark .bg-green-100  { background: rgba(34, 197, 94, 0.15) !important; }
+.dark .bg-yellow-100 { background: rgba(250, 204, 21, 0.15) !important; }
+.dark .bg-indigo-100 { background: rgba(99, 102, 241, 0.15) !important; }
+.dark .bg-purple-100 { background: rgba(168, 85, 247, 0.15) !important; }
+
+/* Keep icon text colors in dark mode — don't override branded colors */
+.dark .text-blue-600   { color: #60A5FA !important; }
+.dark .text-orange-600 { color: #FB923C !important; }
+.dark .text-red-600    { color: #F87171 !important; }
+.dark .text-green-600  { color: #4ADE80 !important; }
+.dark .text-yellow-600 { color: #FBBF24 !important; }
+.dark .text-indigo-600 { color: #818CF8 !important; }
+.dark .text-purple-600 { color: #C084FC !important; }
+
+/* Active nav state in dark */
+.dark .bg-blue-50 { background: rgba(59, 130, 246, 0.12) !important; }
+.dark .text-blue-700 { color: #93C5FD !important; }
+
+/* ─── Demo credentials / info box overrides ─────────────────────── */
+.dark .bg-slate-50\/50 {
+  background: rgba(51, 65, 85, 0.5) !important;
+  color: #CBD5E1 !important;
+}
+
+/* ─── Dropdown Menus ─────────────────────────────────────────────── */
+.dark .dropdown-menu {
+  background: rgba(15, 23, 42, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #F8FAFC;
+}
+
+.dark .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* ─── Glass Input utility class ──────────────────────────────────── */
+.glass-input {
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius-sm);
+  color: var(--input-text);
+  transition: all 0.2s;
+}
+
+.glass-input::placeholder {
+  color: var(--input-placeholder);
+}
+
+.glass-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* ─── Alert Level Utilities ─────────────────────────────────────── */
+.badge-watch    { background: var(--alert-watch-bg);    border: 1px solid var(--alert-watch-border);    color: var(--alert-watch-text); }
+.badge-warning  { background: var(--alert-warning-bg);  border: 1px solid var(--alert-warning-border);  color: var(--alert-warning-text); }
+.badge-critical { background: var(--alert-critical-bg); border: 1px solid var(--alert-critical-border); color: var(--alert-critical-text); }
+.badge-safe     { background: var(--alert-safe-bg);     border: 1px solid var(--alert-safe-border);     color: var(--alert-safe-text); }
+
+/* ─── Scrollbar Styling ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.7); }
+
+/* ─── Leaflet Map Overrides ─────────────────────────────────────── */
+.leaflet-container {
+  border-radius: inherit;
+  font-family: var(--font-body);
+}
+.leaflet-popup-content-wrapper {
+  background: var(--glass-bg-strong) !important;
+  backdrop-filter: var(--glass-blur-light) !important;
+  border: 1px solid var(--bg-card-border) !important;
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow) !important;
+  color: var(--text-primary) !important;
+}
+.leaflet-popup-tip { background: var(--glass-bg-strong) !important; }
+
+/* Dark mode map inversion */
+.dark .leaflet-tile {
+  filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9);
+}
+.dark .leaflet-container {
+  background: #0F172A;
+}
+
+/* ─── Animated Gradient Background ─────────────────────────────── */
+@keyframes gradientShift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-gradient-bg {
+  background: linear-gradient(-45deg, #dbeafe, #ede9fe, #dcfce7, #e0f2fe);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+
+.dark .animated-gradient-bg {
+  background: linear-gradient(-45deg, #0F172A, #1E1B4B, #1E293B, #0F172A);
+  background-size: 400% 400%;
+  animation: gradientShift 12s ease infinite;
+}
+
+/* ─── Loading Skeleton ──────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgba(203, 213, 225, 0.4);
+  border-radius: var(--radius-sm);
+}
+.dark .skeleton { background: rgba(255, 255, 255, 0.06); }
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: shimmer 1.5s infinite;
+}
+.dark .skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+}
+
+/* ─── Dark Modal / Drawer surfaces ──────────────────────────────── */
+.dark .glass-modal-surface {
+  background: rgba(15, 23, 42, 0.97) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: var(--text-primary);
+}
+.dark .glass-drawer-surface {
+  background: rgba(15, 23, 42, 0.97) !important;
+  border-left-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* ─── Utility: Hide scrollbar but allow scroll ──────────────────── */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* ─── Focus Visible Ring ────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ─── Stat card number text ─────────────────────────────────────── */
+.dark .stat-value {
+  color: #F8FAFC !important;
+}
+
+/* ─── Tab / pill inactive states ────────────────────────────────── */
+.dark [class*="text-slate"][class*="hover"] {
+  color: #94A3B8;
+}

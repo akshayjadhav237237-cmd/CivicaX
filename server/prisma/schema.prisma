@@ -1,0 +1,796 @@
+// CivicaX Prisma Schema
+// PostgreSQL with PostGIS for geospatial support
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  citizen
+  department_op
+  government
+  admin
+}
+
+enum AlertLevel {
+  yellow
+  orange
+  red
+  green
+}
+
+enum ReportStatus {
+  submitted
+  assigned
+  in_progress
+  resolved
+}
+
+enum CivicCategory {
+  pothole
+  broken_streetlight
+  waste_management
+  drainage
+  water_supply
+  other
+}
+
+enum SafeZoneStatus {
+  available
+  activated
+  at_capacity
+}
+
+enum SafeZoneType {
+  school
+  stadium
+  community_hall
+  government_building
+  other
+}
+
+enum IncidentType {
+  civil_unrest
+  suspicious_activity
+  medical_emergency
+  violence
+  road_accident
+  other
+}
+
+enum Urgency {
+  immediate
+  non_urgent
+}
+
+enum SafetyReportStatus {
+  pending
+  dispatched
+  resolved
+}
+
+model User {
+  id                String    @id @default(uuid())
+  name              String
+  email             String    @unique
+  passwordHash      String    @map("password_hash")
+  role              UserRole  @default(citizen)
+  city              String?
+  phone             String?
+  smsAlertsEnabled  Boolean   @default(false) @map("sms_alerts_enabled")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+
+  civicReports        CivicReport[]
+  safetyReports       SafetyReport[]
+  notifications       Notification[]
+  alertsCreated       EmergencyAlert[]
+  auditLogs           AuditLog[]
+  timelineChanges     CivicReportTimeline[]
+
+  // Three-portal relations
+  dispatches              EmergencyDispatch[]    @relation("DispatchedBy")
+  grievancesSubmitted     CivicGrievance[]       @relation("GrievanceSubmittedBy")
+  grievancesReviewed      CivicGrievance[]       @relation("GrievanceReviewedBy")
+  grievanceUpdates        GrievanceUpdate[]      @relation("GrievanceUpdatedBy")
+  whitelistEntriesAdded   WhitelistedOfficial[]  @relation("WhitelistAddedBy")
+
+  @@map("users")
+}
+
+model EmergencyZone {
+  id          String      @id @default(uuid())
+  name        String
+  level       AlertLevel  @default(green)
+  geojson     Json        // GeoJSON polygon
+  description String?
+  createdAt   DateTime    @default(now()) @map("created_at")
+  updatedAt   DateTime    @updatedAt @map("updated_at")
+
+  alerts      EmergencyAlert[]
+
+  @@map("emergency_zones")
+}
+
+model EmergencyAlert {
+  id               String      @id @default(uuid())
+  zoneId           String      @map("zone_id")
+  zone             EmergencyZone @relation(fields: [zoneId], references: [id])
+  level            AlertLevel
+  title            String
+  description      String
+  evacuationOrder  Boolean     @default(false) @map("evacuation_order")
+  isActive         Boolean     @default(true) @map("is_active")
+  createdBy        String      @map("created_by")
+  creator          User        @relation(fields: [createdBy], references: [id])
+  createdAt        DateTime    @default(now()) @map("created_at")
+  updatedAt        DateTime    @updatedAt @map("updated_at")
+
+  @@index([isActive])
+  @@index([zoneId])
+  @@index([level])
+  @@index([createdAt])
+  @@map("emergency_alerts")
+}
+
+model SafeZone {
+  id          String          @id @default(uuid())
+  name        String
+  type        SafeZoneType
+  latitude    Float
+  longitude   Float
+  capacity    Int
+  status      SafeZoneStatus  @default(available)
+  address     String?
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+
+  @@map("safe_zones")
+}
+
+model CivicDepartment {
+  id          String          @id @default(uuid())
+  name        String
+  categories  String[]
+  email       String?
+  phone       String?
+
+  reports     CivicReport[]
+  grievances  CivicGrievance[]
+
+  @@map("civic_departments")
+}
+
+model CivicReport {
+  id               String          @id @default(uuid())
+  userId           String          @map("user_id")
+  user             User            @relation(fields: [userId], references: [id])
+  category         CivicCategory
+  description      String
+  latitude         Float
+  longitude        Float
+  address          String?
+  images           String[]        @default([])
+  status           ReportStatus    @default(submitted)
+  departmentId     String?         @map("department_id")
+  department       CivicDepartment? @relation(fields: [departmentId], references: [id])
+  assignedOfficer  String?         @map("assigned_officer")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  resolvedAt       DateTime?       @map("resolved_at")
+
+  timeline         CivicReportTimeline[]
+
+  @@index([status])
+  @@index([userId])
+  @@index([createdAt])
+  @@index([category])
+  @@map("civic_reports")
+}
+
+model CivicReportTimeline {
+  id          String        @id @default(uuid())
+  reportId    String        @map("report_id")
+  report      CivicReport   @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  status      ReportStatus
+  note        String?
+  changedById String?       @map("changed_by")
+  changedBy   User?         @relation(fields: [changedById], references: [id])
+  changedAt   DateTime      @default(now()) @map("changed_at")
+
+  @@map("civic_report_timeline")
+}
+
+model SafetyReport {
+  id               String              @id @default(uuid())
+  userId           String?             @map("user_id")
+  user             User?               @relation(fields: [userId], references: [id])
+  incidentType     IncidentType        @map("incident_type")
+  latitude         Float
+  longitude        Float
+  address          String?
+  description      String
+  urgency          Urgency             @default(non_urgent)
+  credibilityScore Int                 @default(1) @map("credibility_score")
+  images           String[]            @default([])
+  status           SafetyReportStatus  @default(pending)
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  @@index([urgency])
+  @@index([createdAt])
+  @@index([userId])
+  @@map("safety_reports")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id])
+  type      String
+  title     String
+  body      String
+  isRead    Boolean   @default(false) @map("is_read")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model ElevationData {
+  id          String    @id @default(uuid())
+  latitude    Float
+  longitude   Float
+  elevationM  Float     @map("elevation_m")
+  region      String
+  sequence    Int       // for ordering cross-section points
+
+  @@map("elevation_data")
+}
+
+model PopulationDensity {
+  id              String  @id @default(uuid())
+  regionName      String  @map("region_name")
+  densityPerSqkm  Float   @map("density_per_sqkm")
+
+  @@map("population_density")
+}
+
+model AuditLog {
+  id        String    @id @default(uuid())
+  userId    String?   @map("user_id")
+  user      User?     @relation(fields: [userId], references: [id])
+  action    String
+  payload   Json?
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  @@map("audit_log")
+}
+
+// ─────────────────────────────────────────────
+// Three-Portal System — Phase 1 Additions
+// ─────────────────────────────────────────────
+
+enum SatelliteSource {
+  EONET
+  FIRMS
+  LANCE
+  OPEN_METEO
+}
+
+enum SatelliteSeverity {
+  low
+  medium
+  high
+  critical
+}
+
+enum DispatchServiceType {
+  ambulance
+  police
+  fire
+  rescue
+  medical
+  flood_rescue
+}
+
+enum DispatchStatus {
+  dispatched
+  en_route
+  on_scene
+  completed
+}
+
+enum GrievanceStatus {
+  submitted
+  under_review
+  approved
+  rejected
+  assigned
+  in_progress
+  resolved
+}
+
+enum GrievancePriority {
+  low
+  medium
+  high
+  critical
+}
+
+enum GrievanceFeedbackRating {
+  one
+  two
+  three
+  four
+  five
+}
+
+enum ApiHealthStatus {
+  healthy
+  degraded
+  down
+  unconfigured
+}
+
+enum FeatureHealthStatus {
+  passing
+  failing
+  warning
+}
+
+// Satellite-detected natural events (EONET, FIRMS, etc.)
+model SatelliteEvent {
+  id              String             @id @default(uuid())
+  source          SatelliteSource
+  eventType       String             @map("event_type")
+  title           String
+  description     String             @db.Text
+  latitude        Float?
+  longitude       Float?
+  severity        SatelliteSeverity  @default(low)
+  rawData         Json               @map("raw_data")
+  situationalDesc String?            @map("situational_desc") @db.Text
+  detectedAt      DateTime           @map("detected_at")
+  expiresAt       DateTime?          @map("expires_at")
+  isActive        Boolean            @default(true) @map("is_active")
+  sourceEventId   String?            @unique @map("source_event_id") // prevent duplicates
+  createdAt       DateTime           @default(now()) @map("created_at")
+
+  dispatches      EmergencyDispatch[]
+
+  @@map("satellite_events")
+}
+
+// Emergency service dispatches created by government officials
+model EmergencyDispatch {
+  id               String              @id @default(uuid())
+  satelliteEventId String?             @map("satellite_event_id")
+  satelliteEvent   SatelliteEvent?     @relation(fields: [satelliteEventId], references: [id])
+  emergencyAlertId String?             @map("emergency_alert_id")
+  dispatchedById   String              @map("dispatched_by_id")
+  dispatchedBy     User                @relation("DispatchedBy", fields: [dispatchedById], references: [id])
+  serviceType      DispatchServiceType @map("service_type")
+  quantity         Int                 @default(1)
+  destinationLat   Float               @map("destination_lat")
+  destinationLng   Float               @map("destination_lng")
+  destinationLabel String?             @map("destination_label")
+  priority         String              @default("standard")
+  notes            String?
+  status           DispatchStatus      @default(dispatched)
+  dispatchedAt     DateTime            @default(now()) @map("dispatched_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  @@map("emergency_dispatches")
+}
+
+// Civilian grievances (go through government approval workflow)
+model CivicGrievance {
+  id                       String            @id @default(uuid())
+  submittedById            String            @map("submitted_by_id")
+  submittedBy              User              @relation("GrievanceSubmittedBy", fields: [submittedById], references: [id])
+  category                 String
+  title                    String
+  description              String            @db.Text
+  latitude                 Float?
+  longitude                Float?
+  address                  String?
+  images                   String[]          @default([])
+  status                   GrievanceStatus   @default(submitted)
+  reviewedById             String?           @map("reviewed_by_id")
+  reviewedBy               User?             @relation("GrievanceReviewedBy", fields: [reviewedById], references: [id])
+  approvedBudget           Float?            @map("approved_budget")
+  assignedDepartmentId     String?           @map("assigned_department_id")
+  assignedDepartment       CivicDepartment?  @relation(fields: [assignedDepartmentId], references: [id])
+  priority                 GrievancePriority @default(medium)
+  estimatedResolutionDays  Int?              @map("estimated_resolution_days")
+  internalNotes            String?           @map("internal_notes") @db.Text
+  rejectionReason          String?           @map("rejection_reason") @db.Text
+  resolutionNotes          String?           @map("resolution_notes") @db.Text
+  createdAt                DateTime          @default(now()) @map("created_at")
+  updatedAt                DateTime          @updatedAt @map("updated_at")
+  resolvedAt               DateTime?         @map("resolved_at")
+
+  updates     GrievanceUpdate[]
+  feedback    GrievanceFeedback?
+
+  @@map("civic_grievances")
+}
+
+// Timeline entries for grievance status changes
+model GrievanceUpdate {
+  id          String         @id @default(uuid())
+  grievanceId String         @map("grievance_id")
+  grievance   CivicGrievance @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+  updatedById String         @map("updated_by_id")
+  updatedBy   User           @relation("GrievanceUpdatedBy", fields: [updatedById], references: [id])
+  status      GrievanceStatus
+  note        String?        @db.Text
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@map("grievance_updates")
+}
+
+// Citizen satisfaction feedback after grievance resolution
+model GrievanceFeedback {
+  id          String                  @id @default(uuid())
+  grievanceId String                  @unique @map("grievance_id")
+  grievance   CivicGrievance          @relation(fields: [grievanceId], references: [id], onDelete: Cascade)
+  rating      GrievanceFeedbackRating
+  comment     String?
+  createdAt   DateTime                @default(now()) @map("created_at")
+
+  @@map("grievance_feedback")
+}
+
+// Government official IDs whitelisted for auto role assignment
+model WhitelistedOfficial {
+  id           String    @id @default(uuid())
+  officialId   String    @unique @map("official_id")
+  name         String
+  jurisdiction String
+  addedById    String?   @map("added_by_id")
+  addedBy      User?     @relation("WhitelistAddedBy", fields: [addedById], references: [id])
+  isActive     Boolean   @default(true) @map("is_active")
+  addedAt      DateTime  @default(now()) @map("added_at")
+
+  @@map("whitelisted_officials")
+}
+
+// External API health check logs
+model ApiHealthLog {
+  id             String          @id @default(uuid())
+  apiName        String          @map("api_name")
+  endpoint       String
+  status         ApiHealthStatus
+  responseTimeMs Int?            @map("response_time_ms")
+  errorMessage   String?         @map("error_message")
+  checkedAt      DateTime        @default(now()) @map("checked_at")
+
+  @@map("api_health_logs")
+}
+
+// Internal feature health check results
+model FeatureHealthReport {
+  id           String              @id @default(uuid())
+  page         String
+  feature      String
+  status       FeatureHealthStatus
+  responseMs   Int?                @map("response_ms")
+  errorMessage String?             @map("error_message")
+  checkedAt    DateTime            @default(now()) @map("checked_at")
+
+  @@map("feature_health_reports")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Satellite Disaster Intelligence Pipeline — Phase 2 Additions
+// Do NOT modify existing models above. All additions below are new tables only.
+// Target: Mandakini River Basin, Kedarnath, Uttarakhand
+// ─────────────────────────────────────────────────────────────────────────────
+
+enum FloodRiskLevel {
+  green
+  yellow
+  orange
+  red
+}
+
+// Timestamped composite readings from all satellite sources (one per pipeline run)
+model FloodSnapshot {
+  id                String         @id @default(uuid())
+  zoneId            String         @map("zone_id")
+  riskScore         Float          @map("risk_score")         // 0–100 composite score
+  riskLevel         FloodRiskLevel @map("risk_level")
+  rainfallMmHr      Float          @map("rainfall_mm_hr")     // current rain rate
+  forecast24hMm     Float          @map("forecast_24h_mm")    // 24h total forecast
+  soilMoistureM3    Float          @map("soil_moisture_m3")   // volumetric water content
+  valleySlope       Float          @map("valley_slope")       // m/m terrain slope
+  soilSource        String         @map("soil_source")        // 'SMAP' | 'default_fallback'
+  terrainSource     String         @map("terrain_source")     // 'open_elevation' | 'opentopo' | 'hardcoded_fallback'
+  rainSource        String         @map("rain_source")        // 'open_meteo' | 'GPM_IMERG'
+  overflowDetected  Boolean        @default(false) @map("overflow_detected")
+  factorsJson       Json           @map("factors_json")       // full factor breakdown
+  recommendation    String         @db.Text
+  snapshotAt        DateTime       @map("snapshot_at")
+  createdAt         DateTime       @default(now()) @map("created_at")
+
+  floodZoneRisks    FloodZoneRisk[]
+
+  @@index([riskLevel])
+  @@index([snapshotAt])
+  @@index([createdAt])
+  @@index([zoneId])
+  @@map("flood_snapshots")
+}
+
+// Per-street-segment flood risk records (populated when overflow detected)
+// Each record represents one OSM road segment with estimated water depth and flow direction.
+model FloodZoneRisk {
+  id               String         @id @default(uuid())
+  osmSegmentId     String         @unique @map("osm_segment_id")  // OSM way ID as string
+  snapshotId       String?        @map("snapshot_id")
+  snapshot         FloodSnapshot? @relation(fields: [snapshotId], references: [id])
+  segmentName      String?        @map("segment_name")
+  highway          String?        // 'primary', 'secondary', 'residential', etc.
+  latitude         Float          // centroid lat
+  longitude        Float          // centroid lng
+  geometry         Json           // GeoJSON LineString of the road segment
+  waterDepthM      Float          @default(0) @map("water_depth_m")    // estimated water depth
+  flowDirection    String?        @map("flow_direction")                // 'downvalley' | 'lateral' | 'upvalley'
+  riskLevel        FloodRiskLevel @default(green) @map("risk_level")
+  riskScore        Int            @default(0) @map("risk_score")       // parent composite score
+  lengthKm         Float?         @map("length_km")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  @@index([riskLevel])
+  @@index([snapshotId])
+  @@index([updatedAt])
+  @@map("flood_zone_risks")
+}
+
+// RTSP camera feed registry (polled every 60s by cameraPoller.js)
+model CameraFeed {
+  id                      String    @id @default(uuid())
+  name                    String
+  rtspUrl                 String    @map("rtsp_url")
+  latitude                Float
+  longitude               Float
+  locationLabel           String?   @map("location_label")
+  isActive                Boolean   @default(true) @map("is_active")
+  isOnline                Boolean   @default(false) @map("is_online")
+  latencyMs               Int?      @map("latency_ms")
+  lastPolledAt            DateTime? @map("last_polled_at")
+  lastWaterDetected       Boolean   @default(false) @map("last_water_detected")
+  lastDetectionConfidence Float     @default(0) @map("last_detection_confidence")
+  lastDetectionMethod     String    @default("stub_cv") @map("last_detection_method")
+  connectionError         String?   @map("connection_error")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @updatedAt @map("updated_at")
+
+  @@map("camera_feeds")
+}
+
+// Raw API response cache — prevents redundant fetches within same cycle
+model SatelliteDataRaw {
+  id          String   @id @default(uuid())
+  source      String   // 'open_meteo' | 'GPM_IMERG' | 'SMAP' | 'open_elevation' | 'overpass'
+  payloadJson Json     @map("payload_json")
+  fetchedAt   DateTime @map("fetched_at")
+  expiresAt   DateTime @map("expires_at")
+  isStale     Boolean  @default(false) @map("is_stale")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([source, fetchedAt])
+  @@map("satellite_data_raw")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Flood Prediction Intelligence Layer — Phase 3 Additions
+// Hydrology pipeline output: runoff → Manning's → inundation → landslide
+// ─────────────────────────────────────────────────────────────────────────────
+
+model FloodPrediction {
+  id             String   @id @default(cuid())
+  zoneId         String   @map("zone_id")
+  alertLevel     String   @map("alert_level")   // 'green'|'yellow'|'orange'|'red'
+  predictionData Json     @map("prediction_data") // full orchestrator output
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  @@index([zoneId])
+  @@index([createdAt])
+  @@map("flood_predictions")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("password_reset_tokens")
+}
+
+model SOSSignal {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  latitude   Float
+  longitude  Float
+  message    String    @default("EMERGENCY — I need help")
+  status     String    @default("active") // 'active' | 'resolved'
+  resolvedBy String?   @map("resolved_by")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  resolvedAt DateTime? @map("resolved_at")
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("sos_signals")
+}
+
+model RoadClosure {
+  id           String   @id @default(uuid())
+  roadName     String   @map("road_name")
+  blockageType String   @map("blockage_type")
+  severity     String
+  latitude     Float
+  longitude    Float
+  photoUrl     String?  @map("photo_url")
+  status       String   @default("active") // 'active' | 'cleared'
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("road_closures")
+}
+
+model MissingPerson {
+  id                   String   @id @default(uuid())
+  name                 String
+  age                  Int
+  gender               String
+  lastKnownLat         Float    @map("last_known_lat")
+  lastKnownLng         Float    @map("last_known_lng")
+  description          String   @db.Text
+  photoUrl             String?  @map("photo_url")
+  reporterContact      String   @map("reporter_contact")
+  reporterRelationship String   @map("reporter_relationship")
+  status               String   @default("active") // 'active' | 'found'
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("missing_persons")
+}
+
+model RiverGaugeReading {
+  id              String   @id @default(uuid())
+  discharge       Float    // in m³/s
+  trend24h        Float?   // change rate
+  dangerStatus    String   // 'normal' | 'watch' | 'warning' | 'critical'
+  forecast        Json?    // 7-day forecast data
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  @@map("river_gauge_readings")
+}
+
+model HospitalCapacity {
+  id                 String   @id @default(uuid())
+  name               String
+  distanceKm         Float    @map("distance_km")
+  totalBeds          Int      @map("total_beds")
+  availableBeds      Int      @map("available_beds")
+  icuBeds            Int      @map("icu_beds")
+  ambulancesTotal    Int      @map("ambulances_total")
+  ambulancesDeployed Int      @map("ambulances_deployed")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("hospital_capacities")
+}
+
+model BloodBankStatus {
+  id         String   @id @default(uuid())
+  hospitalId String   @unique @map("hospital_id")
+  aPositive  Int      @default(0) @map("a_positive")
+  bPositive  Int      @default(0) @map("b_positive")
+  oPositive  Int      @default(0) @map("o_positive")
+  abPositive Int      @default(0) @map("ab_positive")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("blood_bank_statuses")
+}
+
+model DispatchSuggestion {
+  id                 String   @id @default(uuid())
+  zoneId             String   @map("zone_id")
+  suggestedResources Json     @map("suggested_resources")
+  riskScore          Float    @map("risk_score")
+  autoGenerated      Boolean  @default(true) @map("auto_generated")
+  status             String   @default("pending") // 'pending' | 'approved' | 'dismissed'
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("dispatch_suggestions")
+}
+
+model SMSLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  phoneNumber String   @map("phone_number")
+  message     String   @db.Text
+  status      String   @default("sent") // 'sent' | 'failed'
+  error       String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("sms_logs")
+}
+
+model NotificationDelivery {
+  id        String   @id @default(uuid())
+  alertId   String   @map("alert_id")
+  channel   String   // 'websocket' | 'sms' | 'push' | 'view'
+  count     Int      @default(0)
+  timestamp DateTime @default(now()) @map("timestamp")
+
+  @@map("notification_deliveries")
+}
+
+model DisasterEventReport {
+  id                 String   @id @default(uuid())
+  peakRainfall       Float    @map("peak_rainfall")
+  peakSoilSaturation Float    @map("peak_soil_saturation")
+  maxRiskScore       Float    @map("max_risk_score")
+  durationHours      Float    @map("duration_hours")
+  streetsFlagged     Int      @map("streets_flagged")
+  populationAffected Int      @map("population_affected")
+  sosSignals         Int      @map("sos_signals")
+  dispatchesCount    Int      @map("dispatches_count")
+  smsSent            Int      @map("sms_sent")
+  summary            String   @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  @@map("disaster_event_reports")
+}
+
+model MutualAidRequest {
+  id          String   @id @default(uuid())
+  resourceType String   @map("resource_type")
+  quantity    Int
+  urgency     String   // 'immediate' | 'high' | 'standard'
+  location    String
+  description String   @db.Text
+  status      String   @default("pending") // 'pending' | 'acknowledged' | 'en_route' | 'delivered'
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("mutual_aid_requests")
+}
+
+model Volunteer {
+  id           String   @id @default(uuid())
+  name         String
+  skills       String[]
+  languages    String[]
+  availability String   // 'immediate' | '2h' | '24h'
+  vehicle      String   // 'yes' | 'no'
+  latitude     Float
+  longitude    Float
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("volunteers")
+}
+
+model DroneFeed {
+  id        String   @id @default(uuid())
+  name      String
+  rtspUrl   String   @map("rtsp_url")
+  status    String   @default("awaiting_feed") // 'awaiting_feed' | 'active' | 'offline'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("drone_feeds")
+}
+

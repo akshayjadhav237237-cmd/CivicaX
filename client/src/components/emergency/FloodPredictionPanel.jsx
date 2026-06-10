@@ -1,0 +1,460 @@
+import { useEffect, useState, useRef } from 'react';
+import toast from 'react-hot-toast';
+import { GlassCard } from '../ui/GlassCard';
+import api from '../../services/api';
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+const REFETCH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
+const FRESH_THRESHOLD_MS  = 10 * 60 * 1000; // <10 min = "Live"
+
+// ─── Alert level badge styles ─────────────────────────────────────────────────
+const ALERT_BADGE = {
+  green:  'bg-green-100  text-green-700  border border-green-300',
+  yellow: 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+  orange: 'bg-orange-100 text-orange-700 border border-orange-300',
+  red:    'bg-red-100    text-red-700    border border-red-300',
+};
+
+// ─── Small helpers ────────────────────────────────────────────────────────────
+function ProgressBar({ percent, colorClass }) {
+  const clamped = Math.min(Math.max(percent, 0), 100);
+  return (
+    <div className="w-full h-1.5 rounded-full bg-slate-200 mt-1">
+      <div
+        className={`h-1.5 rounded-full transition-all duration-500 ${colorClass}`}
+        style={{ width: `${clamped}%` }}
+      />
+    </div>
+  );
+}
+
+function DataRow({ icon, label, children }) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="text-base leading-none mt-0.5">{icon}</span>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs text-slate-500">{label}</p>
+        <div className="font-bold text-sm text-slate-800 leading-snug">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+function SectionDivider({ title }) {
+  return (
+    <div className="flex items-center gap-2 pt-1">
+      <div className="flex-1 h-px bg-slate-200" />
+      <span className="text-xs font-semibold text-slate-400 uppercase tracking-wide whitespace-nowrap">
+        {title}
+      </span>
+      <div className="flex-1 h-px bg-slate-200" />
+    </div>
+  );
+}
+
+// ─── Loading skeleton ─────────────────────────────────────────────────────────
+function LoadingSkeleton({ message }) {
+  return (
+    <GlassCard padding="p-5" className="flex flex-col gap-4">
+      {message && (
+        <div className="flex items-center gap-2 text-sm text-slate-500 font-semibold animate-pulse mb-1">
+          <span className="text-base">🛰️</span>
+          <span>{message}</span>
+        </div>
+      )}
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div
+          key={i}
+          className="h-5 rounded-lg bg-slate-200 animate-pulse"
+          style={{ width: `${70 + (i % 3) * 10}%` }}
+        />
+      ))}
+    </GlassCard>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
+  const [prediction, setPrediction] = useState(null);
+  const [loading, setLoading]       = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
+  const [statusMessage, setStatusMessage]   = useState('');
+  const retryTimeoutRef = useRef(null);
+
+  // Fetch helper
+  const fetchPrediction = async () => {
+    if (!zoneId) return;
+    try {
+      console.log(`[FloodPredictionPanel] Fetching flood prediction for zone: ${zoneId}`);
+      const response = await api.get(`/emergency/flood-prediction/${zoneId}`);
+      const data = response.data?.data || response.data;
+      setPrediction(data);
+      if (onPredictionLoad) {
+        onPredictionLoad(data);
+      }
+    } catch (err) {
+      console.error('[FloodPredictionPanel] Error fetching prediction:', err);
+      toast.error(err?.response?.data?.message ?? 'Failed to fetch flood prediction.');
+    }
+  };
+
+  const loadData = async (isRetry = false) => {
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+
+    setLoading(true);
+    setStatusMessage('');
+    setLoadingMessage('Checking data freshness...');
+
+    try {
+      // Step 1: Check general flood-risk health/status
+      const riskRes = await api.get('/emergency/flood-risk');
+      const riskData = riskRes.data?.data || riskRes.data;
+
+      const computedAt = riskData?.computedAt || riskData?.snapshotAt || riskData?.timestamp;
+      const isStale = !computedAt || (Date.now() - new Date(computedAt).getTime()) > FRESH_THRESHOLD_MS;
+      const isMissing = !riskData || riskData.score == null;
+
+      if (isStale || isMissing || isRetry) {
+        console.log('[FloodPredictionPanel] Stale or missing data detected. Triggering on-demand prediction...');
+        setLoadingMessage('Fetching live satellite data...');
+
+        // Step 2: Post trigger with 30s timeout using AbortController
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        try {
+          await api.post(
+            '/emergency/flood-prediction/trigger',
+            { zoneId, lat: 30.735, lng: 79.067 },
+            { signal: controller.signal }
+          );
+          clearTimeout(timeoutId);
+        } catch (postErr) {
+          clearTimeout(timeoutId);
+          console.error('[FloodPredictionPanel] Trigger POST failed:', postErr);
+
+          setStatusMessage('Satellite data temporarily unavailable — retrying in 2 minutes');
+          setLoading(false);
+          setLoadingMessage('');
+
+          retryTimeoutRef.current = setTimeout(() => {
+            loadData(true);
+          }, 120000);
+          return;
+        }
+      }
+
+      // Step 3: Fetch latest prediction for this zone
+      const predictionRes = await api.get(`/emergency/flood-prediction/${zoneId}`);
+      const predictionData = predictionRes.data?.data || predictionRes.data;
+
+      if (predictionData && Object.keys(predictionData).length > 0 && predictionData.alertLevel) {
+        setPrediction(predictionData);
+        if (onPredictionLoad) {
+          onPredictionLoad(predictionData);
+        }
+        setStatusMessage('');
+      } else {
+        throw new Error('Incomplete prediction data returned');
+      }
+    } catch (err) {
+      console.error('[FloodPredictionPanel] Load data error:', err);
+      if (prediction) {
+        toast.error('Failed to sync latest prediction data.');
+      } else {
+        setStatusMessage('Satellite data temporarily unavailable — retrying in 2 minutes');
+        retryTimeoutRef.current = setTimeout(() => {
+          loadData(true);
+        }, 120000);
+      }
+    } finally {
+      setLoading(false);
+      setLoadingMessage('');
+    }
+  };
+
+  const handleRefresh = async () => {
+    if (!zoneId || loading) return;
+    setPrediction(null);
+    loadData(true);
+  };
+
+  useEffect(() => {
+    if (!zoneId) {
+      setPrediction(null);
+      setStatusMessage('');
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+      return;
+    }
+
+    setPrediction(null);
+    loadData();
+
+    // Auto-refetch every 10 minutes
+    const interval = setInterval(() => {
+      if (!loading && !retryTimeoutRef.current) {
+        fetchPrediction();
+      }
+    }, REFETCH_INTERVAL_MS);
+
+    return () => {
+      clearInterval(interval);
+      if (retryTimeoutRef.current) {
+        clearTimeout(retryTimeoutRef.current);
+        retryTimeoutRef.current = null;
+      }
+    };
+  }, [zoneId]);
+
+  // ── No zone selected ───────────────────────────────────────────────────────
+  if (!zoneId) {
+    return (
+      <GlassCard>
+        <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+          <span style={{ fontSize: 32 }}>🗺️</span>
+          <p className="mt-3 text-sm font-medium">Select a zone to see flood prediction</p>
+        </div>
+      </GlassCard>
+    );
+  }
+
+  // ── Status Message / Fallback Card ─────────────────────────────────────────
+  if (statusMessage && !prediction) {
+    return (
+      <GlassCard>
+        <div className="flex flex-col items-center justify-center py-10 text-center px-4 text-slate-500">
+          <span style={{ fontSize: 32 }}>⚠️</span>
+          <p className="mt-3 text-sm font-semibold text-slate-700">{statusMessage}</p>
+          <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500" />
+            </span>
+            <span>Checking backup channels...</span>
+          </div>
+        </div>
+      </GlassCard>
+    );
+  }
+
+  // ── Loading ────────────────────────────────────────────────────────────────
+  if (loading && !prediction) {
+    return <LoadingSkeleton message={loadingMessage} />;
+  }
+
+  // ── No data yet / pipeline hasn't run yet ──────────────────────────────────
+  if (!prediction || Object.keys(prediction).length === 0 || (!prediction.rainfall && !prediction.soilMoisture)) {
+    return (
+      <GlassCard>
+        <div className="flex flex-col items-center justify-center py-10 text-slate-400">
+          <span style={{ fontSize: 32 }}>🛰️</span>
+          <p className="mt-3 text-sm font-medium">Awaiting first satellite pass...</p>
+        </div>
+      </GlassCard>
+    );
+  }
+
+  // ── Derived values ─────────────────────────────────────────────────────────
+  const {
+    alertLevel,
+    timestamp,
+    rainfall,
+    soilMoisture,
+    riverStatus,
+    runoff,
+    populationAtRisk,
+    resourcesNeeded,
+    summary,
+  } = prediction;
+
+  const isLive        = timestamp && (Date.now() - new Date(timestamp).getTime()) < FRESH_THRESHOLD_MS;
+  const badgeCls      = ALERT_BADGE[alertLevel] ?? ALERT_BADGE.green;
+  const showResources = alertLevel === 'orange' || alertLevel === 'red';
+
+  // Soil moisture bar colour
+  const soilBarColor =
+    soilMoisture?.saturationPercent > 80 ? 'bg-red-500'
+    : soilMoisture?.saturationPercent > 50 ? 'bg-yellow-500'
+    : 'bg-blue-400';
+
+  // River capacity bar colour
+  const capacityPercent = riverStatus ? Math.round(riverStatus.overflowRatio * 100) : 0;
+  const capacityBarColor = capacityPercent > 100 ? 'bg-red-500' : 'bg-blue-400';
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  return (
+    <GlassCard padding="p-5" className="flex flex-col gap-4">
+
+      {/* ── Header ── */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <h2
+            className="text-base font-bold text-slate-800 truncate"
+            style={{ fontFamily: 'var(--font-heading)' }}
+          >
+            {zoneName ?? `Zone ${zoneId}`}
+          </h2>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleRefresh}
+              disabled={loading}
+              className="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600 px-2 py-0.5 rounded transition duration-200 flex items-center gap-1 disabled:opacity-50"
+            >
+              🔄 {loading ? 'Running...' : 'Refresh'}
+            </button>
+            <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full capitalize ${badgeCls}`}>
+              {alertLevel ?? 'unknown'}
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 text-xs text-slate-400">
+          {timestamp && (
+            <span>Last updated: {new Date(timestamp).toLocaleTimeString()}</span>
+          )}
+          {isLive && (
+            <span className="flex items-center gap-1">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+              </span>
+              <span className="text-green-600 font-medium">Live</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* ── Rainfall ── */}
+      {rainfall && (
+        <DataRow icon="🌧" label="Rainfall">
+          {rainfall?.current != null ? `${rainfall.current.toFixed(1)} mm/hr current` : 'Awaiting first satellite pass...'}
+          &nbsp;|&nbsp;
+          {rainfall?.forecast24h != null ? `${rainfall.forecast24h.toFixed(1)} mm 24h forecast` : 'Awaiting first satellite pass...'}
+        </DataRow>
+      )}
+
+      {/* ── Soil Saturation ── */}
+      {soilMoisture && (
+        <DataRow icon="💧" label="Soil Saturation">
+          {soilMoisture?.saturationPercent != null ? (
+            <>
+              {soilMoisture.saturationPercent}%
+              <ProgressBar percent={soilMoisture.saturationPercent} colorClass={soilBarColor} />
+            </>
+          ) : (
+            'Awaiting first satellite pass...'
+          )}
+        </DataRow>
+      )}
+
+      {/* ── River Velocity ── */}
+      {riverStatus && (
+        <DataRow icon="🌊" label="River Velocity">
+          {riverStatus.velocityMs} m/s ({riverStatus.velocityKmh} km/h)
+        </DataRow>
+      )}
+
+      {/* ── River Capacity ── */}
+      {riverStatus && (
+        <DataRow icon="⚡" label="River Capacity">
+          {capacityPercent}%
+          <ProgressBar percent={capacityPercent} colorClass={capacityBarColor} />
+        </DataRow>
+      )}
+
+      {/* ── Overflow ── */}
+      {riverStatus && (
+        <DataRow icon="📍" label="Overflow">
+          {riverStatus.isOverflowing ? (
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-red-100 text-red-700 border border-red-300 font-semibold">
+              YES
+            </span>
+          ) : (
+            <span className="inline-block px-2 py-0.5 rounded-full text-xs bg-green-100 text-green-700 border border-green-300 font-semibold">
+              NO
+            </span>
+          )}
+        </DataRow>
+      )}
+
+      {/* ── ETA to city (only if overflowing) ── */}
+      {riverStatus?.isOverflowing && riverStatus.etaMinutes != null && (
+        <DataRow icon="⏱" label="ETA to city">
+          {Math.round(riverStatus.etaMinutes)} minutes
+        </DataRow>
+      )}
+
+      {/* ── Population at risk (only if overflowing) ── */}
+      {riverStatus?.isOverflowing && populationAtRisk != null && (
+        <DataRow icon="👥" label="Population at risk">
+          {populationAtRisk.toLocaleString()}
+        </DataRow>
+      )}
+
+      {/* ── Runoff section ── */}
+      {runoff && (
+        <>
+          <SectionDivider title="Runoff" />
+          <div className="flex flex-col gap-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-xs text-slate-500">Curve Number</span>
+              <span className="font-bold text-slate-800">{runoff.curveNumber}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-xs text-slate-500">Runoff</span>
+              <span className="font-bold text-slate-800">{runoff.runoffPercent}% of rainfall</span>
+            </div>
+            {runoff.explanation && (
+              <p className="text-xs text-slate-500 italic leading-snug">{runoff.explanation}</p>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── Resources section (orange / red only) ── */}
+      {showResources && resourcesNeeded && (
+        <>
+          <SectionDivider title="Resources Needed" />
+          <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+            <DataRow icon="🚤" label="Rescue Boats">
+              {resourcesNeeded.rescueBoats}
+            </DataRow>
+            <DataRow icon="🚑" label="Ambulances">
+              {resourcesNeeded.ambulances}
+            </DataRow>
+            <DataRow icon="📦" label="Relief Kits">
+              {resourcesNeeded.reliefKits.toLocaleString()}
+            </DataRow>
+            <DataRow icon="🚌" label="Evacuation Buses">
+              {resourcesNeeded.evacuationBuses}
+            </DataRow>
+          </div>
+        </>
+      )}
+
+      {/* ── Summary box ── */}
+      {summary && (
+        <div
+          style={{
+            background: 'var(--bg-card)',
+            borderRadius: 12,
+            padding: '10px 12px',
+            border: '1px solid rgba(0,0,0,0.08)',
+          }}
+        >
+          <p style={{ fontSize: 13, fontStyle: 'italic', color: '#475569', lineHeight: 1.5 }}>
+            {summary}
+          </p>
+        </div>
+      )}
+
+    </GlassCard>
+  );
+}
