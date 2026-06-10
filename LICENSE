@@ -1,9 +1,158 @@
-MIT License
+CIVICAX PROPRIETARY LICENSE
+Version 1.0 — June 2025
 
-Copyright (c) 2026 CivicaX
+Copyright (c) 2025 Akshay Jadhav (akshayjadhav237237-cmd)
+All Rights Reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+NOTICE: This software and its underlying concepts, architecture, and design
+are the exclusive intellectual property of the copyright holder.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. DEFINITIONS
+
+   "Software" means the CivicaX platform including all source code, object
+   code, compiled binaries, configuration files, database schemas, API
+   designs, UI/UX designs, algorithms, data models, documentation,
+   satellite hydrology pipeline, flood prediction engine, and all
+   associated intellectual property contained in this repository.
+
+   "Concept" means the original idea, approach, design pattern, system
+   architecture, or business logic embodied within the Software, including
+   but not limited to: the multi-portal disaster intelligence architecture,
+   the satellite-to-flood-risk scoring pipeline, the AI-generated
+   government briefing system, and the real-time civic management framework.
+
+   "You" or "Licensee" means any individual, organization, company,
+   or legal entity that accesses, reads, downloads, or otherwise interacts
+   with this Software.
+
+   "Commercial Use" means any use of the Software or Concept intended for
+   or resulting in financial compensation, business advantage, or
+   incorporation into a commercial product or service.
+
+2. GRANT OF RIGHTS — VIEWING ONLY
+
+   Subject to the terms of this License, you are granted a limited,
+   non-exclusive, non-transferable, revocable right to:
+
+   (a) VIEW the source code of this Software for personal educational
+       reference only.
+
+   No other rights are granted. All other rights are expressly reserved
+   by the copyright holder.
+
+3. RESTRICTIONS — WHAT YOU MAY NOT DO
+
+   Without the prior explicit written permission of the copyright holder,
+   you MAY NOT:
+
+   (a) COPY, reproduce, or duplicate any portion of the Software or Concept,
+       in whole or in part, in any medium or format.
+
+   (b) MODIFY, adapt, translate, reverse-engineer, decompile, disassemble,
+       or create derivative works based on the Software or Concept.
+
+   (c) DISTRIBUTE, publish, sublicense, sell, rent, lease, transfer,
+       or otherwise make available the Software or any portion thereof
+       to any third party.
+
+   (d) USE the Software or any portion thereof in any project, product,
+       service, or application — whether personal, academic, commercial,
+       governmental, or non-profit.
+
+   (e) REPLICATE the Concept, architecture, design patterns, or system
+       ideas of this Software in another codebase or product, even if
+       written from scratch in a different programming language or
+       technology stack.
+
+   (f) PATENT any method, process, or system derived from or inspired
+       by the Software or Concept.
+
+   (g) CLAIM ownership or co-authorship of the Software or Concept.
+
+   (h) REMOVE, alter, or obscure this License notice or any copyright
+       attribution from any copy or portion of the Software.
+
+4. INTELLECTUAL PROPERTY
+
+   The Software and Concept are protected by copyright law, trade secret
+   law, and applicable international intellectual property treaties.
+
+   The copyright holder retains all intellectual property rights in and to
+   the Software and Concept, including all patents, copyrights, trademarks,
+   and trade secrets therein.
+
+   Nothing in this License shall be construed to grant any rights in the
+   trademarks, service marks, or logos of the copyright holder.
+
+5. NO IMPLIED LICENSE
+
+   No license is granted by implication, estoppel, or otherwise. The
+   absence of an explicit prohibition does not constitute permission.
+   Only rights expressly granted in Section 2 are conveyed.
+
+6. TERMINATION
+
+   This License and the rights granted hereunder will terminate
+   automatically and immediately if You fail to comply with any term or
+   condition of this License. Upon termination, You must immediately:
+
+   (a) Cease all use of the Software and Concept.
+   (b) Destroy all copies, full or partial, of the Software in your
+       possession or control.
+
+   The copyright holder reserves the right to seek injunctive relief,
+   damages, and any other available legal remedies for violation of
+   this License.
+
+7. DISCLAIMER OF WARRANTIES
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+   EXPRESS OR IMPLIED. THE COPYRIGHT HOLDER MAKES NO WARRANTIES,
+   REPRESENTATIONS, OR CONDITIONS OF ANY KIND, EXPRESS, STATUTORY,
+   OR IMPLIED, INCLUDING, WITHOUT LIMITATION, ANY IMPLIED WARRANTIES
+   OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE, OR
+   NON-INFRINGEMENT.
+
+8. LIMITATION OF LIABILITY
+
+   TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL
+   THE COPYRIGHT HOLDER BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR IN
+   CONNECTION WITH THIS SOFTWARE OR THE USE OR INABILITY TO USE IT,
+   EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
+
+9. GOVERNING LAW
+
+   This License shall be governed by and construed in accordance with
+   the laws of India, without regard to its conflict of law provisions.
+   Any disputes arising under or in connection with this License shall
+   be subject to the exclusive jurisdiction of the competent courts
+   located in India.
+
+10. CONTACT & PERMISSIONS
+
+    To request a commercial license, usage permission, partnership, or
+    any other rights not expressly granted in this License, contact:
+
+        Akshay Jadhav
+        GitHub: https://github.com/akshayjadhav237237-cmd
+        Repository: https://github.com/akshayjadhav237237-cmd/CivicaX
+
+    Written permission must be obtained before any use beyond viewing.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+BY ACCESSING, READING, CLONING, OR FORKING THIS REPOSITORY, YOU
+ACKNOWLEDGE THAT YOU HAVE READ THIS LICENSE, UNDERSTAND IT, AND
+AGREE TO BE BOUND BY ITS TERMS AND CONDITIONS.
+
+IF YOU DO NOT AGREE TO THE TERMS OF THIS LICENSE, YOU MUST IMMEDIATELY
+CEASE ALL ACCESS TO AND USE OF THE SOFTWARE.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Copyright (c) 2025 Akshay Jadhav — All Rights Reserved.

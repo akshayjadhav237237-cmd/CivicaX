@@ -8,7 +8,7 @@
 
 [![Live Demo](https://img.shields.io/badge/🌐_Live_App-civicax.vercel.app-6366f1?style=for-the-badge)](https://civicax.vercel.app)
 [![API](https://img.shields.io/badge/⚡_Backend_API-Railway-22c55e?style=for-the-badge)](https://civicax-production.up.railway.app)
-[![License: MIT](https://img.shields.io/badge/License-MIT-f59e0b?style=for-the-badge)](./LICENSE)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-dc2626?style=for-the-badge)](./LICENSE)
 
 [![React](https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
@@ -344,7 +344,16 @@ Risk Score = (Rainfall × 0.35) + (Forecast × 0.30) + (Soil Moisture × 0.25) +
 
 ## 📄 License
 
-This project is licensed under the **MIT License** — see the [LICENSE](./LICENSE) file for details.
+This project is protected under a **Custom Proprietary License**.
+
+- ✅ You **may view** the source code for educational reference
+- ❌ You **may NOT** copy, use, modify, or redistribute any part of this code or concept
+- ❌ You **may NOT** replicate the architecture or ideas in another project — even if rewritten from scratch
+- ❌ You **may NOT** use this commercially without explicit written permission
+
+> **© 2025 Akshay Jadhav — All Rights Reserved.**
+> Written permission required for any use beyond viewing. See [LICENSE](./LICENSE) for full terms.
+
 
 ---
 
