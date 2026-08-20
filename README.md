@@ -1,115 +1,120 @@
 <div align="center">
 
-<img src="https://img.shields.io/badge/CivicaX-Disaster%20Intelligence%20Platform-0ea5e9?style=for-the-badge&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0xMiAyTDIgN2wxMCA1IDEwLTVMMTIgMnpNMiAxN2wxMCA1IDEwLTVNMiAxMmwxMCA1IDEwLTUiLz48L3N2Zz4=" alt="CivicaX" />
+# 🏛️ CivicaX
+### **Next-Generation Hyperlocal Disaster Intelligence & Civic Command Ecosystem**
+*Empowering Himalayan River Basins with Physics-Based Flood Modeling, Satellite Hydrology, and Real-Time Autonomous Emergency Dispatch.*
 
-# 🌊 CivicaX — Disaster Intelligence Command Center
+<br/>
 
-### *Real-time flood prediction · AI-powered emergency dispatch · Satellite hydrology pipeline*
+[![Live Production Demo](https://img.shields.io/badge/🌐_Live_Demo-civicax--indol.vercel.app-6366f1?style=for-the-badge&logo=vercel&logoColor=white)](https://civicax-indol.vercel.app)
+[![API Gateway](https://img.shields.io/badge/⚡_API_Gateway-Railway_Production-22c55e?style=for-the-badge&logo=railway&logoColor=white)](https://civicax-production.up.railway.app)
+[![Proprietary License](https://img.shields.io/badge/License-Proprietary_v1.0-dc2626?style=for-the-badge&logo=open-access&logoColor=white)](./LICENSE)
+[![GitHub Stars](https://img.shields.io/github/stars/akshayjadhav237237-cmd/CivicaX?style=for-the-badge&color=eab308&logo=github)](https://github.com/akshayjadhav237237-cmd/CivicaX/stargazers)
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_App-civicax.vercel.app-6366f1?style=for-the-badge)](https://civicax.vercel.app)
-[![API](https://img.shields.io/badge/⚡_Backend_API-Railway-22c55e?style=for-the-badge)](https://civicax-production.up.railway.app)
-[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-dc2626?style=for-the-badge)](./LICENSE)
+<br/>
 
-[![React](https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)](https://nodejs.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org)
-[![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=flat-square&logo=socketdotio)](https://socket.io)
-[![Prisma](https://img.shields.io/badge/Prisma-2D3748?style=flat-square&logo=prisma)](https://prisma.io)
-[![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Leaflet](https://img.shields.io/badge/Leaflet_Maps-199900?style=flat-square&logo=leaflet)](https://leafletjs.com)
+<!-- Tech Stack Matrix Badges -->
+<p align="center">
+  <img src="https://img.shields.io/badge/React_18-20232A?style=flat-square&logo=react&logoColor=61DAFB" alt="React 18" />
+  <img src="https://img.shields.io/badge/Vite_8-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat-square&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/Leaflet_Maps-199900?style=flat-square&logo=leaflet&logoColor=white" alt="Leaflet" />
+  <img src="https://img.shields.io/badge/Node.js_20-339933?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js" />
+  <img src="https://img.shields.io/badge/Express_5-000000?style=flat-square&logo=express&logoColor=white" alt="Express" />
+  <img src="https://img.shields.io/badge/Socket.io-010101?style=flat-square&logo=socketdotio&logoColor=white" alt="Socket.io" />
+  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=flat-square&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Prisma_ORM-2D3748?style=flat-square&logo=prisma&logoColor=white" alt="Prisma" />
+  <img src="https://img.shields.io/badge/Google_Gemini_1.5-8E75B2?style=flat-square&logo=googlegemini&logoColor=white" alt="Gemini" />
+</p>
+
+[Explore Live Web App](https://civicax-indol.vercel.app) • [View Architecture](#-system-architecture) • [Demo Accounts](#-one-click-demo-credentials) • [API Reference](#-api-endpoints-cheatsheet) • [License Notice](#-intellectual-property--license)
+
+---
 
 </div>
 
+<br/>
+
+## 🎯 Executive Overview
+
+**CivicaX** is an end-to-end disaster management and civic administration command platform engineered specifically for flash flood and cloudburst vulnerabilities in the **Mandakini River Basin (Kedarnath, Uttarakhand)**.
+
+By combining **real-time satellite telemetry**, **Manning's open-channel fluid dynamics**, **high-resolution SRTM elevation slope models**, and **Google Gemini AI intelligence**, CivicaX bridges the gap between raw hydrological sensors and instant municipal action.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   CORE CAPABILITIES                                     │
+├────────────────────────┬────────────────────────┬───────────────────────────────────────┤
+│  🌊 Early Detection    │  📡 Real-Time Dispatch │  🏛️ Multi-Agency Synergy              │
+│  10-min satellite loop │  Sub-second WebSocket  │  Synchronized portals for Citizens,   │
+│  with automated runoff │  broadcasts for SOS &  │  Responders, Civic Depts, Government  │
+│  & street-inundation.  │  road blockages.       │  Magistrates & System Administrators. │
+└────────────────────────┴────────────────────────┴───────────────────────────────────────┘
+```
+
 ---
 
-## 📖 What is CivicaX?
+## 🧭 Navigation Index
 
-**CivicaX** is a full-stack, AI-augmented disaster intelligence platform built for the **Mandakini River Basin / Kedarnath** region. It continuously ingests satellite hydrology data — rainfall, soil moisture, river levels, and topographic slope — runs them through a physics-based flood engine, and delivers real-time risk scores to citizens, emergency responders, civic managers, and government officials — all from a single unified command center.
-
-> **Built for:** District Collectors, Emergency Responders, Civic Field Teams, and Citizens in flood-prone Himalayan river basins.
+- [✨ Four Pillars of CivicaX](#-four-pillars-of-civicax)
+- [🛰️ Satellite Hydrology & Physics Pipeline](#️-satellite-hydrology--physics-pipeline)
+- [🏗️ System Architecture](#-system-architecture)
+- [🗺️ Street-Level Micro-Zone Inundation Engine](#️-street-level-micro-zone-inundation-engine)
+- [👥 One-Click Demo Credentials](#-one-click-demo-credentials)
+- [🔌 API Endpoints Cheatsheet](#-api-endpoints-cheatsheet)
+- [⚡ Real-Time WebSocket Matrix](#-real-time-websocket-matrix)
+- [🚀 Quickstart & Local Deployment](#-quickstart--local-deployment)
+- [📄 Intellectual Property & License](#-intellectual-property--license)
 
 ---
 
-## ✨ Feature Overview
+## ✨ Four Pillars of CivicaX
 
-<table>
+<table width="100%">
 <tr>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 🛰️ Satellite Hydrology Pipeline
-- **Open-Meteo** rainfall fetch every 10 minutes
-- **NASA GPM IMERG** precipitation with graceful fallback
-- **NASA SMAP** soil moisture (live API)
-- **SRTM** elevation & slope analysis
-- **Overpass OSM** street network ingestion
-- **Manning's equation** hydraulic routing
-- Flood snapshots saved to DB every cycle
-- Runs immediately on server startup (no cold-start delay)
+### 🌊 Pillar I: Emergency Response & Hydrology
+*Engineered for first-responders, NDRF units, and field commanders.*
+
+- 🗺️ **Interactive Tactical Map**: Vector-rendered Leaflet map featuring real-time water depth contours and landslide hazard zones.
+- 🔴 **Live SOS Beaconing**: Instant GPS pin broadcasting with status updates from citizens trapped in hazard areas.
+- 🚧 **Dynamic Road Closures**: Real-time obstacle logging to prevent emergency vehicle routing into submerged paths.
+- 📸 **CCTV Telemetry Verification**: Real-time cross-referencing between satellite triggers and riverbank optical sensors.
 
 </td>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 🌊 Flood Risk Engine
-- Physics-based composite scoring:
-  - Rain `0.35` · Forecast `0.30` · Soil `0.25` · Slope `0.10`
-- Street-level flood spread routing
-- Per-segment `FloodZoneRisk` records
-- `alertLevel`: `green` → `yellow` → `orange` → `red`
-- River ETA (minutes to overflow) calculation
-- AI-generated situation summaries (Gemini 1.5 Flash)
-- Government briefing generation for District Collectors
+### 🏛️ Pillar II: Government Command Center
+*Designed for District Collectors, Magistrates, and Disaster Management Authorities.*
+
+- 📋 **AI Situation Briefings**: Autonomous Google Gemini 1.5 Flash summaries translating technical telemetry into executive briefs.
+- 🏢 **Relief Camp Logistics**: Live bed capacity, food rationing, and medical supplies monitoring across safe zones.
+- 🔍 **Missing Persons Registry**: Centralized searchable registry with photograph tracking and family reunification alerts.
+- 🛡️ **Dam & Structural Safety**: Reservoir capacity stress metrics and downstream warning thresholds.
 
 </td>
 </tr>
 <tr>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 🚨 Emergency Responder Portal
-- Live **Leaflet map** with real-time WebSocket layers
-- Flood street overlay with risk-coloured segments
-- Landslide risk overlay
-- Safe zone & evacuation camp markers
-- Active alert markers with severity badges
-- Dispatch unit tracking
-- SOS management with coordinate pinning
-- Road closure reporting & status tracking
+### 🛠️ Pillar III: Civic Grievance & Infrastructure
+*Streamlining urban maintenance and public utility repairs.*
+
+- 📸 **Visual Grievance Reports**: Citizen submissions with geo-tagged images for potholes, broken streetlights, and drainage blocks.
+- 🏢 **Departmental Routing**: Automated dispatch to Sanitation, Public Works (PWD), Electrical, and Water Supply boards.
+- ⏳ **SLA & Resolution Pipeline**: Multi-stage ticket tracker (`Submitted` → `Assigned` → `In Progress` → `Resolved`).
 
 </td>
-<td width="50%">
+<td width="50%" valign="top">
 
-### 🏛️ Government Command Center
-- Situation map — all layers in one view
-- Active flood alerts with AI-generated official briefings
-- Resource allocation dashboard
-- Relief camp capacity monitoring
-- Missing persons registry
-- Volunteer deployment coordination
-- Medical resource tracking
-- Dam structural risk assessment
+### 👤 Pillar IV: Citizen Life Safety & Watch
+*Personal safety radar in the pocket of every resident and pilgrim.*
 
-</td>
-</tr>
-<tr>
-<td width="50%">
-
-### 🛠️ Civic Manager Portal
-- Public infrastructure issue reporting
-- Pothole, streetlight & waste complaints
-- Department-level dispatch assignment
-- Status tracking (Open → In Progress → Resolved)
-- Citizen feedback loop
-
-</td>
-<td width="50%">
-
-### 👤 Citizen App
-- Personal dashboard with local risk level
-- Push notifications (browser) for flood alerts
-- Nearby safe zones & evacuation routes
-- Safety watch crowdsourced reports
-- Community credibility scoring
-- Missing person reports
+- 🔔 **Instant Browser Push Alerts**: Native notifications for critical flash flood threats and evacuation notices.
+- 🧭 **Hyperlocal Safe Routes**: Immediate navigation toward the nearest elevated terrain and operational relief shelter.
+- 🤝 **Community Verification**: Crowdsourced incident reporting backed by automated community trust scoring.
+- 📶 **Offline Demo Resilience**: Seamless simulated data layer ensuring continuity during network dropouts.
 
 </td>
 </tr>
@@ -117,255 +122,223 @@
 
 ---
 
-## 🏗️ Architecture
+## 🛰️ Satellite Hydrology & Physics Pipeline
+
+CivicaX executes an automated multi-source ingestion pipeline on server boot and recurring every **10 minutes**:
+
+```mermaid
+flowchart LR
+    subgraph DataIngestion[Telemetry Ingestion]
+        A[Open-Meteo API] --> E[Hydrology Orchestrator]
+        B[NASA GPM IMERG] --> E
+        C[NASA SMAP Soil API] --> E
+        D[SRTM 30m Elevation] --> E
+    end
+
+    subgraph PhysicsEngine[Physics & Inundation Model]
+        E --> F[SCS Curve Runoff Model]
+        F --> G[Manning's Open-Channel Flow]
+        G --> H[Street-Level Flood Risk Vector]
+    end
+
+    subgraph IntelligenceLayer[Intelligence & Broadcast]
+        H --> I[Gemini 1.5 AI Briefing]
+        H --> J[PostgreSQL / Prisma Snapshot]
+        H --> K[Socket.io Broadcast Room]
+    end
+```
+
+### 🧮 Physics-Based Composite Scoring Formula
+
+The core algorithm computes a normalised composite risk factor $R \in [0, 1]$:
+
+$$R = (P_{\text{rain}} \times 0.35) + (P_{\text{forecast}} \times 0.30) + (S_{\text{soil}} \times 0.25) + (\theta_{\text{slope}} \times 0.10)$$
+
+| Risk Score Range | Alert Tier | Visual Grading | Recommended Action |
+| :--- | :---: | :---: | :--- |
+| **0.00 – 0.39** | 🟢 **GREEN** | `#10B981` | Normal baseline monitoring; safe conditions. |
+| **0.40 – 0.59** | 🟡 **YELLOW** | `#F59E0B` | Elevated advisory; mobilize field observers. |
+| **0.60 – 0.79** | 🟠 **ORANGE** | `#F97316` | High hazard; stage evacuation transports. |
+| **0.80 – 1.00** | 🔴 **RED** | `#EF4444` | Immediate life-safety emergency; mandatory evacuation. |
+
+---
+
+## 🏗️ System Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        CivicaX Platform                         │
-├─────────────────────────┬───────────────────────────────────────┤
-│       FRONTEND          │              BACKEND                   │
-│  React 18 + Vite        │   Node.js / Express                   │
-│  Tailwind CSS           │   Socket.io (real-time)               │
-│  Framer Motion          │   Prisma ORM                          │
-│  Leaflet Maps           │   PostgreSQL (Railway)                │
-│  Recharts               │   Google Gemini 1.5 Flash (AI)        │
-│  Zustand (state)        │                                       │
-├─────────────────────────┴───────────────────────────────────────┤
-│                   SATELLITE DATA PIPELINE                        │
-│  Open-Meteo · NASA GPM IMERG · NASA SMAP · SRTM · OSM          │
-│  → floodEngine.js → FloodSnapshot → FloodZoneRisk              │
-│  → Socket.io broadcast → Live UI update                         │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────────────────────┐
+│                                    CIVICAX ECOSYSTEM                                     │
+└────────────────────────────────────────────┬─────────────────────────────────────────────┘
+                                             │
+               ┌─────────────────────────────┴─────────────────────────────┐
+               ▼                                                           ▼
+┌──────────────────────────────┐                           ┌──────────────────────────────┐
+│       CLIENT LAYER           │                           │       BACKEND SERVICES       │
+│  • React 18 + Vite SPA       │                           │  • Express 5 REST API        │
+│  • Tailwind CSS 4 Design     │ ◄─── REST & WebSockets ──►│  • Socket.io Gateway         │
+│  • Leaflet Interactive Maps  │                           │  • Prisma ORM Layer          │
+│  • Zustand State Management  │                           │  • Hydrology Engine Module   │
+│  • Glassmorphism Design      │                           │  • Google Gemini AI Pipeline │
+└──────────────────────────────┘                           └──────────────┬───────────────┘
+                                                                          │
+                                           ┌──────────────────────────────┴────────────────┐
+                                           ▼                                               ▼
+                            ┌──────────────────────────────┐                ┌──────────────────────────────┐
+                            │      DATA STORAGE LAYER      │                │   EXTERNAL SATELLITE APIS    │
+                            │  • PostgreSQL Database       │                │  • Open-Meteo Weather        │
+                            │  • Multi-Tenant Schema       │                │  • NASA GPM Precipitation    │
+                            │  • Micro-Zone Risk Tables    │                │  • NASA SMAP Soil Moisture   │
+                            │  • Offline Memory Fallbacks  │                │  • Overpass OSM Vector Grid  │
+                            └──────────────────────────────┘                └──────────────────────────────┘
 ```
 
 ---
 
-## 🗂️ Project Structure
+## 🗺️ Street-Level Micro-Zone Inundation Engine
+
+CivicaX breaks down the complex topography of the Mandakini Basin into granular micro-zones:
 
 ```
-CivicaX/
-├── client/                     # React + Vite frontend
-│   └── src/
-│       ├── components/
-│       │   ├── emergency/      # FloodPredictionPanel, FloodHistoryChart
-│       │   ├── government/     # ActiveFloodAlerts, GovernmentSituationMap
-│       │   ├── map/            # FloodStreetOverlay, LandslideOverlay
-│       │   └── civic/          # IssueCard, DispatchPanel
-│       ├── pages/              # LandingPage, EmergencyPage, GovernmentPage ...
-│       ├── services/           # floodAlertNotifier.js (push notifications)
-│       └── stores/             # Zustand auth + alert stores
-│
-├── server/                     # Node.js / Express backend
-│   ├── index.js                # App entry + route registration
-│   ├── modules/
-│   │   ├── hydrology/
-│   │   │   ├── floodEngine.js  # Physics-based flood scoring
-│   │   │   └── pipeline.js     # Satellite polling scheduler
-│   │   ├── satellite/          # Open-Meteo, GPM, SMAP, SRTM fetchers
-│   │   └── ai/                 # governmentBriefing.js (Gemini)
-│   ├── routes/                 # emergency, civic, admin, sos, medical ...
-│   ├── socket/                 # Real-time event handlers
-│   └── prisma/schema.prisma    # Full DB schema (20+ models)
-│
-├── railway.json                # Railway deployment config
-└── SETUP.md                    # Local dev setup guide
+🏔️ Kedarnath Temple Ridge (3,583m)
+  ├── 📍 Zone A: Mandakini North Bank [High Velocity Inundation Corridor]
+  ├── 📍 Zone B: Temple Complex Plaza [Pedestrian & Pilgrim Concentration Area]
+  ├── 📍 Zone C: Rambara Bridge Approach [Critical Chokepoint & Evacuation Axis]
+  └── 📍 Zone D: Gaurikund Base Transit [Shelter Staging & Resource Depot]
 ```
 
 ---
 
-## 🚀 Quick Start
+## 👥 One-Click Demo Credentials
 
-### Prerequisites
-- Node.js ≥ 18
-- PostgreSQL database
-- Google Gemini API Key (free at [ai.google.dev](https://ai.google.dev))
+Access all specialized interfaces using the unified test password **`demo1234`**:
 
-### 1. Clone & Install
+| Portal Role | Demo Email Address | Password | Accessible Modules |
+| :--- | :--- | :--- | :--- |
+| 👤 **Citizen** | `citizen@civicax.demo` | `demo1234` | Personal Safety Radar, Civic Grievance, Live Alerts |
+| 🚨 **Emergency Responder** | `responder@civicax.demo` | `demo1234` | Tactical Map, SOS Rescue Console, Road Closures |
+| 🔧 **Department Operator** | `dept@civicax.demo` | `demo1234` | Civic Issue Dispatch, PWD Repair Tickets, Field Ops |
+| 🏛️ **Government Collector** | `gov@civicax.demo` | `demo1234` | AI Situation Reports, Camps, Dam Telemetry, Whitelist |
+| ⚙️ **System Admin** | `admin@civicax.demo` | `demo1234` | Full Global Access, API Health Matrix, Telemetry Pollers |
 
+---
+
+## 🔌 API Endpoints Cheatsheet
+
+### 🚨 Emergency & Hydrology
+```http
+GET    /api/v1/emergency/flood-risk           Fetch real-time composite flood risk telemetry
+GET    /api/v1/emergency/flood-history        Fetch historical prediction snapshots (last 6 cycles)
+POST   /api/v1/emergency/flood-prediction/trigger  Manually trigger on-demand satellite computation
+GET    /api/v1/emergency/alerts               Query all active emergency broadcast bulletins
+POST   /api/v1/sos                            Submit emergency distress signal with coordinates
+GET    /api/v1/roads                          Query active road closures and route obstructions
+```
+
+### 🏛️ Government & Civic Management
+```http
+GET    /api/v1/civic/grievances               Query reported municipal infrastructure issues
+POST   /api/v1/civic/grievances               Submit new grievance with photo attachment
+PATCH  /api/v1/civic/grievances/:id/status    Update ticket lifecycle (assigned, in_progress, resolved)
+GET    /api/v1/government/camps               Monitor relief shelter capacities and logistics
+GET    /api/v1/missing                        Search missing persons registry
+POST   /api/v1/volunteers                     Register disaster relief volunteer personnel
+```
+
+---
+
+## ⚡ Real-Time WebSocket Matrix
+
+All real-time streaming runs over authenticated Socket.io channels:
+
+| Event Identifier | Direction | Payload Structure | Scope / Listener |
+| :--- | :---: | :--- | :--- |
+| `zone:flood-prediction` | `Server ➔ Client` | `{ zoneId, alertLevel, riverStatus, summary }` | All active dashboards & maps |
+| `sos:new` | `Client ➔ Server ➔ Client` | `{ id, location: { lat, lon }, message, urgency }` | Responder & Government maps |
+| `alert:new` | `Server ➔ Client` | `{ id, severity, title, affectedArea, instructions }` | Citizen push & ticker banners |
+| `road:blockage` | `Server ➔ Client` | `{ roadId, lat, lon, reason, alternativeRoute }` | Tactical navigation layers |
+
+---
+
+## 🚀 Quickstart & Local Deployment
+
+### 📋 Prerequisites
+- **Node.js** v18.0.0 or higher
+- **PostgreSQL** 14+ (or Railway / Supabase Postgres instance)
+- **Google Gemini API Key** ([Get free API key](https://aistudio.google.com/))
+
+### 1️⃣ Clone the Repository
 ```bash
 git clone https://github.com/akshayjadhav237237-cmd/CivicaX.git
 cd CivicaX
-
-# Install backend dependencies
-cd server && npm install
-
-# Install frontend dependencies
-cd ../client && npm install
 ```
 
-### 2. Configure Environment
-
+### 2️⃣ Configure Environment Variables
 Create `server/.env`:
-
 ```env
-DATABASE_URL="postgresql://user:password@localhost:5432/civicax"
-JWT_SECRET="your-super-secret-jwt-key"
-GEMINI_API_KEY="your-gemini-api-key"
-PORT=5000
+PORT=3001
 NODE_ENV=development
+DATABASE_URL="postgresql://postgres:password@localhost:5432/civicax"
+JWT_SECRET="civicax_super_secret_jwt_key_2026"
+JWT_REFRESH_SECRET="civicax_super_secret_refresh_key_2026"
+GEMINI_API_KEY="your-google-gemini-api-key"
 ```
 
-### 3. Setup Database
+Create `client/.env`:
+```env
+VITE_API_BASE_URL="http://localhost:3001/api/v1"
+VITE_WS_URL="http://localhost:3001"
+```
 
+### 3️⃣ Initialize Database
 ```bash
 cd server
-npx prisma migrate dev
-npx prisma db seed
+npm install
+npx prisma generate
+npx prisma db push
+node prisma/seed.js
 ```
 
-### 4. Run Development Servers
-
+### 4️⃣ Start Development Services
 ```bash
-# Terminal 1 — Backend
-cd server && npm run dev
+# Terminal A (Backend)
+cd server
+npm run dev
 
-# Terminal 2 — Frontend
-cd client && npm run dev
+# Terminal B (Frontend)
+cd client
+npm install
+npm run dev
 ```
 
-Open **http://localhost:5173** 🎉
+Visit **`http://localhost:5173`** in your browser.
 
 ---
 
-## 🌐 Live Deployment
-
-| Service | URL | Platform |
-|---------|-----|----------|
-| 🎨 Frontend | [civicax.vercel.app](https://civicax.vercel.app) | Vercel |
-| ⚡ Backend API | [civicax-production.up.railway.app](https://civicax-production.up.railway.app) | Railway |
-| 🗄️ Database | Managed PostgreSQL | Railway |
-
----
-
-## 👥 Demo Accounts
-
-All demo accounts use password: **`demo1234`**
-
-| Role | Email | Access |
-|------|-------|--------|
-| 👤 Citizen | `citizen@civicax.demo` | Dashboard, Safety Reports, Alerts |
-| 🔧 Department Operator | `dept@civicax.demo` | Civic Manager, Issue Dispatch |
-| 🚨 Emergency Responder | `responder@civicax.demo` | Emergency Map, Dispatch, SOS |
-| 🏛️ Government Collector | `gov@civicax.demo` | Full Government Command Center |
-| ⚙️ Admin | `admin@civicax.demo` | All portals + Admin Panel |
-
----
-
-## 🔌 Key API Endpoints
+## 📄 Intellectual Property & License
 
 ```
-GET  /api/v1/emergency/flood-risk          → Current flood risk data
-GET  /api/v1/emergency/flood-history       → Last 6 prediction snapshots
-POST /api/v1/emergency/flood-prediction/trigger  → Force pipeline run
-GET  /api/v1/emergency/alerts              → Active emergency alerts
-POST /api/v1/sos                           → Submit SOS request
-GET  /api/v1/roads                         → Road closure status
-GET  /api/v1/missing                       → Missing persons registry
-POST /api/v1/volunteers                    → Volunteer registration
-GET  /health                               → Server health check
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                         CIVICAX PROPRIETARY LICENSE v1.0
+             Copyright (c) 2025-2026 Akshay Jadhav. All Rights Reserved.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
----
+This repository and its underlying architecture, hydrology formulas, user interfaces, AI prompt workflows, and data orchestration systems are **strictly proprietary**.
 
-## ⚡ Real-Time WebSocket Events
+- 👁️ **Permitted**: Public viewing and educational source inspection on GitHub.
+- 🚫 **Prohibited**: Copying, commercial exploitation, redistribution, sublicensing, or replicating the core concept in any alternative codebase without prior written authorization.
 
-| Event | Payload | Consumer |
-|-------|---------|----------|
-| `zone:flood-prediction` | `{ zoneId, alertLevel, riverStatus, summary }` | All portals |
-| `alert:new` | Alert object | Citizen, Emergency, Gov |
-| `dispatch:new` | Dispatch assignment | Emergency Responder |
-| `sos:new` | SOS location + details | Emergency Responder, Gov |
-| `road:blockage` | Road closure data | Civic Manager, Gov |
-
----
-
-## 🛠️ Tech Stack
-
-| Layer | Technologies |
-|-------|-------------|
-| **Frontend** | React 18, Vite, TailwindCSS, Framer Motion |
-| **State Management** | Zustand |
-| **Maps** | Leaflet.js + react-leaflet |
-| **Charts** | Recharts (AreaChart, trend sparklines) |
-| **Backend** | Node.js, Express.js |
-| **Real-time** | Socket.io |
-| **Database** | PostgreSQL + Prisma ORM |
-| **AI** | Google Gemini 1.5 Flash |
-| **Satellite Data** | Open-Meteo, NASA GPM IMERG, NASA SMAP, SRTM |
-| **Hydrology** | Manning's equation, composite flood scoring |
-| **Auth** | JWT + bcrypt |
-| **Deployment** | Vercel (frontend) + Railway (backend + DB) |
-
----
-
-## 🧪 Testing the Pipeline
-
-```bash
-# Trigger a manual flood prediction run
-curl -X POST https://civicax-production.up.railway.app/api/v1/emergency/flood-prediction/trigger \
-  -H "Content-Type: application/json" \
-  -d '{"lat": 30.7346, "lon": 79.0669}'
-
-# Check current flood risk
-curl https://civicax-production.up.railway.app/api/v1/emergency/flood-risk
-
-# Server health
-curl https://civicax-production.up.railway.app/health
-```
-
----
-
-## 📊 Flood Risk Scoring
-
-The `floodEngine.js` computes a composite risk score every 10 minutes:
-
-```
-Risk Score = (Rainfall × 0.35) + (Forecast × 0.30) + (Soil Moisture × 0.25) + (Slope × 0.10)
-```
-
-| Score Range | Alert Level | Action |
-|-------------|-------------|--------|
-| 0.0 – 0.39 | 🟢 `green` | Normal monitoring |
-| 0.4 – 0.59 | 🟡 `yellow` | Elevated watch |
-| 0.6 – 0.79 | 🟠 `orange` | Prepare evacuation |
-| 0.8 – 1.0+ | 🔴 `red` | Immediate evacuation |
-
----
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'feat: add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
----
-
-## 📄 License
-
-This project is protected under a **Custom Proprietary License**.
-
-- ✅ You **may view** the source code for educational reference
-- ❌ You **may NOT** copy, use, modify, or redistribute any part of this code or concept
-- ❌ You **may NOT** replicate the architecture or ideas in another project — even if rewritten from scratch
-- ❌ You **may NOT** use this commercially without explicit written permission
-
-> **© 2025 Akshay Jadhav — All Rights Reserved.**
-> Written permission required for any use beyond viewing. See [LICENSE](./LICENSE) for full terms.
-
+For licensing inquiries or governmental deployment pilots, contact **[Akshay Jadhav](https://github.com/akshayjadhav237237-cmd)**.
 
 ---
 
 <div align="center">
 
-**Built with ❤️ for disaster resilience in the Mandakini River Basin**
+**Built with pride for Himalayan climate resilience and public safety.**
 
-*Protecting communities through intelligent technology*
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com)
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app)
 
-⭐ **Star this repo if you find it useful!** ⭐
-
-[![GitHub stars](https://img.shields.io/github/stars/akshayjadhav237237-cmd/CivicaX?style=social)](https://github.com/akshayjadhav237237-cmd/CivicaX)
-[![GitHub forks](https://img.shields.io/github/forks/akshayjadhav237237-cmd/CivicaX?style=social)](https://github.com/akshayjadhav237237-cmd/CivicaX/fork)
+⭐ **If you find CivicaX impactful, please consider starring the repository!** ⭐
 
 </div>
