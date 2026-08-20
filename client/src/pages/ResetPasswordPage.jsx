@@ -87,7 +87,7 @@ export function ResetPasswordPage() {
                 <CheckCircle size={48} className="animate-bounce" />
                 <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Success!</h2>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
                 Your password has been successfully updated. You can now log in using your new credentials.
               </p>
               <GlassButton onClick={() => navigate('/login')} className="w-full mt-4">

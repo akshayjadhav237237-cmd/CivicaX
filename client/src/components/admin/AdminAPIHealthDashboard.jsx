@@ -12,10 +12,10 @@ import toast from 'react-hot-toast';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
 const STATUS_CONFIG = {
-  healthy:      { icon: CheckCircle2, color: 'text-green-600',  bg: 'bg-green-50',    border: 'border-green-200', label: 'Healthy' },
-  degraded:     { icon: AlertCircle,  color: 'text-yellow-600', bg: 'bg-yellow-50',   border: 'border-yellow-200', label: 'Degraded' },
-  down:         { icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-50',      border: 'border-red-200', label: 'Down' },
-  unconfigured: { icon: Clock,        color: 'text-slate-400',  bg: 'bg-slate-50',    border: 'border-slate-200', label: 'Unconfigured' },
+  healthy:      { icon: CheckCircle2, color: 'text-green-700 dark:text-green-300',  bg: 'bg-green-50/80 dark:bg-green-950/30',    border: 'border-green-200 dark:border-green-800/40', label: 'Healthy' },
+  degraded:     { icon: AlertCircle,  color: 'text-yellow-700 dark:text-yellow-300', bg: 'bg-yellow-50/80 dark:bg-yellow-950/30', border: 'border-yellow-200 dark:border-yellow-800/40', label: 'Degraded' },
+  down:         { icon: XCircle,      color: 'text-red-700 dark:text-red-300',       bg: 'bg-red-50/80 dark:bg-red-950/30',       border: 'border-red-200 dark:border-red-800/40', label: 'Down' },
+  unconfigured: { icon: Clock,        color: 'text-slate-500 dark:text-slate-400',   bg: 'bg-slate-50/80 dark:bg-slate-900/30',   border: 'border-slate-200 dark:border-slate-800/40', label: 'Unconfigured' },
 };
 
 function APICard({ log }) {
@@ -25,25 +25,25 @@ function APICard({ log }) {
     <div className={`glass-card p-4 border ${cfg.border} ${cfg.bg}`}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-slate-800 leading-tight">{log.apiName}</p>
-          <p className="text-xs text-slate-400 mt-0.5 truncate">{log.endpoint?.replace(/https?:\/\//,'')}</p>
+          <p className="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight">{log.apiName}</p>
+          <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5 truncate">{log.endpoint?.replace(/https?:\/\//,'')}</p>
         </div>
         <div className="flex items-center gap-1 flex-shrink-0">
           <Ic size={16} className={cfg.color}/>
-          <span className={`text-xs font-medium ${cfg.color}`}>{cfg.label}</span>
+          <span className={`text-xs font-bold ${cfg.color}`}>{cfg.label}</span>
         </div>
       </div>
       {log.responseTimeMs !== null && log.responseTimeMs !== undefined && (
-        <p className="text-xs text-slate-500 mt-2">
+        <p className="text-xs text-slate-600 dark:text-slate-300 font-medium mt-2">
           ⏱ {log.responseTimeMs}ms response
-          {log.responseTimeMs > 2000 && <span className="text-orange-500 ml-1">— slow</span>}
+          {log.responseTimeMs > 2000 && <span className="text-orange-600 dark:text-orange-400 font-bold ml-1">— slow</span>}
         </p>
       )}
       {log.errorMessage && (
-        <p className="text-xs text-red-500 mt-1 truncate" title={log.errorMessage}>{log.errorMessage}</p>
+        <p className="text-xs text-red-600 dark:text-red-400 font-medium mt-1 truncate" title={log.errorMessage}>{log.errorMessage}</p>
       )}
       {log.checkedAt && (
-        <p className="text-xs text-slate-300 mt-1">Checked {new Date(log.checkedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</p>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 font-medium">Checked {new Date(log.checkedAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'})}</p>
       )}
     </div>
   );
@@ -98,22 +98,22 @@ export function AdminAPIHealthDashboard() {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-green-500"/>
-            <span className="text-sm text-slate-600">{healthy} healthy</span>
+            <span className="text-sm font-semibold text-green-700 dark:text-green-400">{healthy} healthy</span>
           </div>
           {down > 0 && <div className="flex items-center gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-500"/>
-            <span className="text-sm text-red-600 font-medium">{down} down</span>
+            <span className="text-sm text-red-700 dark:text-red-400 font-semibold">{down} down</span>
           </div>}
           {unconfigured > 0 && <div className="flex items-center gap-1.5">
-            <div className="w-2.5 h-2.5 rounded-full bg-slate-300"/>
-            <span className="text-sm text-slate-500">{unconfigured} unconfigured</span>
+            <div className="w-2.5 h-2.5 rounded-full bg-slate-400 dark:bg-slate-500"/>
+            <span className="text-sm text-slate-600 dark:text-slate-400 font-medium">{unconfigured} unconfigured</span>
           </div>}
-          <div className="flex items-center gap-1 text-xs text-green-600">
+          <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-semibold">
             <Wifi size={12}/> Live
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {lastChecked && <span className="text-xs text-slate-400">Last: {lastChecked.toLocaleTimeString('en-IN')}</span>}
+          {lastChecked && <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Last: {lastChecked.toLocaleTimeString('en-IN')}</span>}
           <GlassButton size="sm" variant="ghost" onClick={handleRefresh} disabled={isRefreshing} className="gap-1 text-xs">
             <RefreshCw size={12} className={isRefreshing ? 'animate-spin' : ''}/> Refresh Now
           </GlassButton>

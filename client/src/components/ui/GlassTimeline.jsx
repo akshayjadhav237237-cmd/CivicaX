@@ -1,6 +1,6 @@
 /**
  * GlassTimeline — Vertical list of timeline events.
- * @param {Array} events — Array of { id, timestamp, label, description, color? }
+ * @param {Array} events — Array of { id, timestamp, label, description, color?, status? }
  */
 export function GlassTimeline({ events = [] }) {
   const colorMap = {
@@ -27,21 +27,35 @@ export function GlassTimeline({ events = [] }) {
   return (
     <div className="relative">
       {events.map((event, idx) => {
-        const dotColor = event.color || colorMap[statusColorMap[event.status] || 'gray'] || '#94A3B8';
+        const dotColor = event.color || colorMap[statusColorMap[event.status] || 'gray'] || '#3B82F6';
         const isLast = idx === events.length - 1;
         return (
-          <div key={event.id || idx} className="flex gap-4 pb-4">
+          <div key={event.id || idx} className="flex gap-3.5 pb-4">
             {/* Dot + line */}
             <div className="flex flex-col items-center">
-              <div className="w-3 h-3 rounded-full flex-shrink-0 mt-0.5" style={{ background: dotColor, boxShadow: `0 0 0 3px ${dotColor}22` }} />
-              {!isLast && <div className="w-px flex-1 mt-1" style={{ background: 'rgba(203,213,225,0.6)' }} />}
+              <div
+                className="w-3.5 h-3.5 rounded-full flex-shrink-0 mt-0.5 ring-2 ring-white dark:ring-slate-900 shadow-sm"
+                style={{ background: dotColor }}
+              />
+              {!isLast && (
+                <div
+                  className="w-0.5 flex-1 mt-1 rounded-full"
+                  style={{ background: 'var(--divider)' }}
+                />
+              )}
             </div>
             {/* Content */}
-            <div className={isLast ? '' : 'pb-1'}>
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-text)' }}>{event.label}</p>
-              {event.description && <p className="text-xs mt-0.5" style={{ color: 'var(--color-text-muted)' }}>{event.description}</p>}
+            <div className={`flex-1 min-w-0 ${isLast ? '' : 'pb-1'}`}>
+              <p className="text-sm font-semibold leading-snug" style={{ color: 'var(--text-primary)' }}>
+                {event.label}
+              </p>
+              {event.description && (
+                <p className="text-xs mt-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+                  {event.description}
+                </p>
+              )}
               {event.timestamp && (
-                <p className="text-xs mt-1" style={{ color: 'var(--color-text-light)' }}>
+                <p className="text-[11px] font-medium mt-1.5" style={{ color: 'var(--text-muted)' }}>
                   {new Date(event.timestamp).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
                 </p>
               )}
@@ -50,7 +64,9 @@ export function GlassTimeline({ events = [] }) {
         );
       })}
       {events.length === 0 && (
-        <p className="text-sm" style={{ color: 'var(--color-text-muted)' }}>No events recorded yet.</p>
+        <p className="text-sm text-center py-4" style={{ color: 'var(--text-muted)' }}>
+          No events recorded yet.
+        </p>
       )}
     </div>
   );

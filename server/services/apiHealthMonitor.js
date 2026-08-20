@@ -1,13 +1,12 @@
+const prisma = require('../config/prisma');
 /**
  * apiHealthMonitor.js — External API Health Monitor
  * Pings all integrated external APIs every 2 minutes.
  * Stores results in api_health_logs table.
  * Emits 'admin:api-health-update' WebSocket event.
  */
-const { PrismaClient } = require('@prisma/client');
 const logger = require('../config/logger');
 
-const prisma = new PrismaClient();
 const POLL_INTERVAL_MS = 2 * 60 * 1000;
 
 const APIS_TO_MONITOR = [
@@ -114,9 +113,13 @@ async function runHealthChecks(io) {
     errorMessage: r.reason?.message,
   });
 
-  // Save all results to DB
-  for (const log of logs) {
-    await prisma.apiHealthLog.create({ data: { ...log, checkedAt: new Date() } });
+  // Save all results to DB (if DB available)
+  try {
+    for (const log of logs) {
+      await prisma.apiHealthLog.create({ data: { ...log, checkedAt: new Date() } });
+    }
+  } catch (dbErr) {
+    logger.warn('[APIHealth] DB offline, skipping health log persistence');
   }
 
   const healthy = logs.filter(l => l.status === 'healthy').length;

@@ -62,8 +62,8 @@ export default function ActiveFloodAlerts({ onDispatch }) {
     return (
       <div className="glass-card p-6 flex flex-col items-center justify-center gap-3">
         <span style={{ fontSize: 40 }}>✅</span>
-        <h3 className="font-bold text-green-700">All Clear — No Active Flood Emergencies</h3>
-        <p className="text-sm text-slate-500">All zones within safe flood parameters.</p>
+        <h3 className="font-bold text-green-700 dark:text-green-300">All Clear — No Active Flood Emergencies</h3>
+        <p className="text-sm text-slate-600 dark:text-slate-400">All zones within safe flood parameters.</p>
       </div>
     );
   }
@@ -73,17 +73,17 @@ export default function ActiveFloodAlerts({ onDispatch }) {
     <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
+        <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
           <span>🌊</span> Active Flood Emergencies
         </h3>
         <div className="flex gap-2">
           {meta.orange > 0 && (
-            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded-full font-bold">
+            <span className="text-xs bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/40 px-2.5 py-1 rounded-full font-bold">
               {meta.orange} ORANGE
             </span>
           )}
           {meta.red > 0 && (
-            <span className="text-xs bg-red-100 text-red-700 px-2 py-1 rounded-full font-bold animate-pulse">
+            <span className="text-xs bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/40 px-2.5 py-1 rounded-full font-bold animate-pulse">
               {meta.red} RED
             </span>
           )}
@@ -93,7 +93,9 @@ export default function ActiveFloodAlerts({ onDispatch }) {
       {/* Alert cards */}
       {alerts.map((item, idx) => {
         const isRed = item.alertLevel === 'red';
-        const badgeBg = isRed ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700';
+        const badgeBg = isRed
+          ? 'bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/40'
+          : 'bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 border border-orange-200 dark:border-orange-800/40';
         const overflowPct = Math.round((item.riverStatus?.overflowRatio || 0) * 100);
         const eta = Math.round(item.riverStatus?.etaMinutes || 0);
         const pop = (item.populationAtRisk || 0).toLocaleString();
@@ -106,35 +108,35 @@ export default function ActiveFloodAlerts({ onDispatch }) {
           <GlassCard key={item._id ?? idx} className="p-4 mb-3">
             {/* Header row */}
             <div className="flex items-center justify-between mb-3">
-              <span className="font-bold text-slate-800 truncate">{item.zoneName ?? `Zone ${item.zoneId}`}</span>
-              <span className={`text-xs px-2 py-1 rounded-full font-bold uppercase ${badgeBg}`}>
+              <span className="font-bold text-slate-800 dark:text-slate-100 truncate">{item.zoneName ?? `Zone ${item.zoneId}`}</span>
+              <span className={`text-xs px-2.5 py-1 rounded-full font-bold uppercase ${badgeBg}`}>
                 {item.alertLevel}
               </span>
             </div>
 
             {/* Stats grid */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm mb-3">
-              <div className="text-slate-500">
+              <div className="text-slate-500 dark:text-slate-400 font-medium">
                 Overflow:{' '}
-                <span className="font-semibold text-slate-700">{overflowPct}% of capacity</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{overflowPct}% of capacity</span>
               </div>
-              <div className="text-slate-500">
+              <div className="text-slate-500 dark:text-slate-400 font-medium">
                 Pop. at risk:{' '}
-                <span className="font-semibold text-slate-700">{pop}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{pop}</span>
               </div>
-              <div className="text-slate-500">
+              <div className="text-slate-500 dark:text-slate-400 font-medium">
                 ETA:{' '}
-                <span className="font-semibold text-slate-700">{eta} min</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{eta} min</span>
               </div>
-              <div className="text-slate-500">
+              <div className="text-slate-500 dark:text-slate-400 font-medium">
                 Alert since:{' '}
-                <span className="font-semibold text-slate-700">{alertSince}</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">{alertSince}</span>
               </div>
             </div>
 
             {/* Resources row */}
             {rn && (
-              <p className="text-xs text-slate-600 mb-1">
+              <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mb-1">
                 🚤 {rn.rescueBoats} boats &nbsp;·&nbsp; 🚑 {rn.ambulances} ambulances &nbsp;·&nbsp; 📦 {(rn.reliefKits ?? 0).toLocaleString()} kits
               </p>
             )}
@@ -142,18 +144,18 @@ export default function ActiveFloodAlerts({ onDispatch }) {
             {/* Dispatch button */}
             <button
               onClick={() => onDispatch({ event: item, resources: item.resourcesNeeded })}
-              className="mt-3 w-full py-2 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors"
+              className="mt-3 w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-sm transition-colors shadow-sm cursor-pointer"
             >
               🚨 Dispatch Resources
             </button>
 
             {/* Collapsible Briefing Section */}
             {item.governmentBriefing && (
-              <div className="mt-3 pt-3 border-t border-slate-200/50 text-left">
+              <div className="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-800 text-left">
                 <button
                   type="button"
                   onClick={() => toggleBriefing(item._id ?? idx)}
-                  className="text-xs font-semibold text-slate-600 hover:text-slate-800 flex items-center gap-1.5 transition-colors focus:outline-none"
+                  className="text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white flex items-center gap-1.5 transition-colors focus:outline-none cursor-pointer"
                 >
                   <span
                     style={{
@@ -173,11 +175,10 @@ export default function ActiveFloodAlerts({ onDispatch }) {
                       fontSize: '13px',
                       padding: '12px',
                       borderLeft: `3px solid ${item.alertLevel === 'red' ? '#EF4444' : '#F97316'}`,
-                      background: 'rgba(255, 255, 255, 0.4)',
                     }}
-                    className="backdrop-blur-sm mt-2 rounded text-slate-800 border border-l-0 border-slate-200/50"
+                    className="backdrop-blur-sm mt-2 rounded-lg bg-slate-50/80 dark:bg-slate-900/60 text-slate-800 dark:text-slate-100 border border-l-0 border-slate-200/50 dark:border-slate-800"
                   >
-                    <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 select-none">
+                    <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2 select-none">
                       AI Generated • GPT-4o • {item.createdAt ? new Date(item.createdAt).toLocaleString() : 'N/A'}
                     </div>
                     <div className="whitespace-pre-wrap leading-relaxed">{item.governmentBriefing}</div>

@@ -75,18 +75,18 @@ export function ForgotPasswordPage() {
                 <CheckCircle size={48} className="animate-bounce" />
                 <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Reset Email Sent</h2>
               </div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
+              <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
                 Check your inbox! We've sent password reset instructions if the email matches an active account.
               </p>
               
               {previewUrl && (
-                <div className="p-4 rounded-xl border border-blue-200 bg-blue-50/50 dark:bg-blue-950/20 dark:border-blue-900 flex flex-col gap-2">
-                  <p className="text-xs text-blue-600 dark:text-blue-400 font-semibold">Dev Fallback Preview URL:</p>
+                <div className="p-4 rounded-xl border border-blue-200 dark:border-blue-800/60 bg-blue-50/70 dark:bg-blue-950/30 flex flex-col gap-2">
+                  <p className="text-xs text-blue-700 dark:text-blue-300 font-bold">Dev Fallback Preview URL:</p>
                   <a
                     href={previewUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-xs text-blue-500 hover:text-blue-400 underline font-mono break-all"
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline font-mono break-all font-semibold"
                   >
                     {previewUrl}
                   </a>

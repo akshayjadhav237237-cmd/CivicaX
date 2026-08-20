@@ -134,26 +134,32 @@ export function LoginPage() {
 
           {/* Demo Credentials */}
           <div className="mt-8 pt-6" style={{ borderTop: '1px solid var(--divider)' }}>
-            <p className="text-xs text-center font-medium mb-3 tracking-wider" style={{ color: 'var(--text-muted)' }}>
-              DEMO CREDENTIALS — click to fill
+            <p className="text-xs text-center font-bold mb-3 tracking-wider uppercase" style={{ color: 'var(--text-muted)' }}>
+              Demo Credentials — Click to Fill
             </p>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-2">
               {demoAccounts.map((acc) => (
                 <button
                   key={acc.email}
                   type="button"
                   onClick={() => { setEmail(acc.email); setPassword('demo1234'); }}
-                  className="flex items-center justify-between w-full rounded-xl px-3 py-2 text-[11px] transition-all hover:scale-[1.01] active:scale-[0.99]"
+                  className="flex items-center justify-between w-full rounded-xl px-3.5 py-2.5 text-xs transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
                   style={{
                     background: email === acc.email
-                      ? (isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.08)')
-                      : (isDark ? 'rgba(51,65,85,0.5)' : 'rgba(248,250,252,0.8)'),
-                    border: `1px solid ${email === acc.email ? 'rgba(59,130,246,0.5)' : 'var(--divider)'}`,
-                    color: 'var(--text-secondary)',
+                      ? (isDark ? 'rgba(59,130,246,0.25)' : 'rgba(59,130,246,0.12)')
+                      : (isDark ? 'rgba(51,65,85,0.6)' : 'rgba(241,245,249,0.9)'),
+                    border: `1px solid ${email === acc.email ? '#3B82F6' : 'var(--divider)'}`,
                   }}
                 >
-                  <span><b>{acc.role}</b> — {acc.email}</span>
-                  <span style={{ color: 'var(--text-muted)' }}>demo1234</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold px-2 py-0.5 rounded-md text-[11px] bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 border border-blue-200 dark:border-blue-700/50">
+                      {acc.role}
+                    </span>
+                    <span className="font-medium text-slate-700 dark:text-slate-200">{acc.email}</span>
+                  </div>
+                  <span className="font-mono text-[11px] font-semibold px-2 py-0.5 rounded bg-slate-200/80 dark:bg-slate-700/80 text-slate-800 dark:text-slate-200">
+                    demo1234
+                  </span>
                 </button>
               ))}
             </div>

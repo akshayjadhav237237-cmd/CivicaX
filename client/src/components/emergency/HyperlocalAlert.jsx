@@ -161,10 +161,10 @@ export default function HyperlocalAlert({ onEvacuate, safeZones }) {
           </h3>
         </div>
         
-        <div className="text-xs text-slate-600 dark:text-slate-300 flex flex-col gap-1">
-          <div>Zone: <span className="font-bold text-red-600 dark:text-red-400">{zoneName}</span></div>
+        <div className="text-xs text-slate-700 dark:text-slate-300 flex flex-col gap-1">
+          <div>Zone: <span className="font-bold text-red-700 dark:text-red-400">{zoneName}</span></div>
           <div>Distance to flood center: <span className="font-bold">{(distance ?? 0).toFixed(2)} km</span></div>
-          <div className="mt-2 text-red-700 dark:text-red-400 font-extrabold uppercase text-[11px] bg-red-100 dark:bg-red-950/40 p-2 rounded-lg border border-red-200/50">
+          <div className="mt-2 text-red-800 dark:text-red-200 font-bold uppercase text-[11px] bg-red-100 dark:bg-red-950/50 p-2 rounded-lg border border-red-200 dark:border-red-800/50">
             ⚠️ Recommended action: EVACUATE IMMEDIATELY
           </div>
         </div>
@@ -206,10 +206,10 @@ export default function HyperlocalAlert({ onEvacuate, safeZones }) {
           </h3>
         </div>
 
-        <div className="text-xs text-slate-600 dark:text-slate-300 flex flex-col gap-1">
-          <div>Nearest danger zone: <span className="font-bold text-amber-600 dark:text-amber-400">{zoneName}</span></div>
+        <div className="text-xs text-slate-700 dark:text-slate-300 flex flex-col gap-1">
+          <div>Nearest danger zone: <span className="font-bold text-amber-700 dark:text-amber-400">{zoneName}</span></div>
           <div>Distance: <span className="font-bold">{(distance ?? 0).toFixed(2)} km away</span></div>
-          <div className="mt-2 text-amber-700 dark:text-amber-400 font-bold text-[11px] bg-amber-100 dark:bg-amber-950/40 p-2 rounded-lg border border-amber-200/50">
+          <div className="mt-2 text-amber-800 dark:text-amber-200 font-bold text-[11px] bg-amber-100 dark:bg-amber-950/50 p-2 rounded-lg border border-amber-200 dark:border-amber-800/50">
             Recommended action: Stay alert and prepare to evacuate
           </div>
         </div>
@@ -227,13 +227,13 @@ export default function HyperlocalAlert({ onEvacuate, safeZones }) {
         </h3>
       </div>
       
-      <div className="text-xs text-slate-600 dark:text-slate-300">
+      <div className="text-xs text-slate-700 dark:text-slate-300">
         {nearestZone ? (
-          <div>Nearest alert zone: <span className="font-semibold text-slate-700 dark:text-slate-200">{zoneName}</span> ({(distance ?? 0).toFixed(2)} km away)</div>
+          <div>Nearest alert zone: <span className="font-semibold text-slate-800 dark:text-slate-100">{zoneName}</span> ({(distance ?? 0).toFixed(2)} km away)</div>
         ) : (
           <div>No nearby active danger zones detected.</div>
         )}
-        <div className="mt-2 text-slate-500 italic text-[10px]">Continue monitoring live updates.</div>
+        <div className="mt-2 text-slate-500 dark:text-slate-400 italic text-[10px]">Continue monitoring live updates.</div>
       </div>
     </GlassCard>
   );

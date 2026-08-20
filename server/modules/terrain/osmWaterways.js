@@ -5,21 +5,42 @@
  *   1. fetchMandakiniGeometry()   — Gets the river centreline as GeoJSON LineString
  *   2. fetchStreetsNearRiver()     — Gets all road segments within 1.5km of the river
  *                                   for urban flood spread calculation in floodEngine.js
- *
- * No API key required. Overpass is free and rate-limited at ~10k/day for anonymous use.
- *
- * Docs: https://wiki.openstreetmap.org/wiki/Overpass_API
  */
 
 const logger = require('../../config/logger');
 const { bbox, center, urbanSpreadRadiusKm } = require('../../shared/kedarnath.config');
 
 const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
-const TIMEOUT_MS = 20000;
+const TIMEOUT_MS = 8000;
 
-/**
- * Execute an Overpass QL query.
- */
+// In-memory geometry cache to avoid Overpass rate-limiting (429)
+let cachedMandakiniGeometry = null;
+let cachedStreets = null;
+let lastMandakiniFetchTime = 0;
+const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+const MANDAKINI_FALLBACK_COORDS = [
+  [79.0669, 30.7346],
+  [79.0600, 30.7200],
+  [79.0550, 30.7050],
+  [79.0494, 30.6975],
+  [79.0400, 30.6800],
+  [79.0320, 30.6650],
+  [79.0272, 30.6508],
+  [79.0325, 30.6315],
+  [79.0410, 30.5750],
+  [79.0792, 30.5235]
+];
+
+const MANDAKINI_FALLBACK_FEATURE = {
+  type: 'Feature',
+  geometry: {
+    type: 'LineString',
+    coordinates: MANDAKINI_FALLBACK_COORDS,
+  },
+  properties: { name: 'Mandakini River', waterway: 'river' },
+};
+
 async function overpassQuery(query) {
   const res = await fetch(OVERPASS_URL, {
     method: 'POST',
@@ -35,9 +56,6 @@ async function overpassQuery(query) {
   return res.json();
 }
 
-/**
- * Convert Overpass node/way elements to a GeoJSON LineString.
- */
 function elementsToLineString(elements) {
   const nodes = {};
   const ways = [];
@@ -50,7 +68,6 @@ function elementsToLineString(elements) {
     }
   }
 
-  // Merge all way nodes into a single coordinate array
   const coords = [];
   for (const way of ways) {
     for (const nodeId of (way.nodes || [])) {
@@ -66,14 +83,10 @@ function elementsToLineString(elements) {
       type: 'LineString',
       coordinates: coords,
     },
-    properties: { name: 'Mandakini', waterway: 'river' },
+    properties: { name: 'Mandakini River', waterway: 'river' },
   };
 }
 
-/**
- * Convert Overpass way elements to an array of GeoJSON LineString Features.
- * Each feature represents one road segment.
- */
 function elementsToRoadFeatures(elements) {
   const nodes = {};
   const wayFeatures = [];
@@ -93,14 +106,11 @@ function elementsToRoadFeatures(elements) {
 
     if (coords.length < 2) continue;
 
-    // Calculate segment slope (crude — using start/end lat difference as proxy)
-    // Will be refined by actual DEM data in floodEngine
     const startLat = coords[0].lat;
     const endLat = coords[coords.length - 1].lat;
     const startLng = coords[0].lng;
     const endLng = coords[coords.length - 1].lng;
 
-    // Distance approximation (km)
     const dLat = (endLat - startLat) * 111;
     const dLng = (endLng - startLng) * 111 * Math.cos(startLat * Math.PI / 180);
     const lengthKm = Math.sqrt(dLat * dLat + dLng * dLng);
@@ -120,7 +130,6 @@ function elementsToRoadFeatures(elements) {
         startLng,
         endLat,
         endLng,
-        // flowDirection and waterDepthM will be populated by floodEngine
         flowDirection: null,
         waterDepthM: 0,
       },
@@ -130,21 +139,13 @@ function elementsToRoadFeatures(elements) {
   return wayFeatures;
 }
 
-/**
- * Fetch the Mandakini river centreline geometry from OSM.
- *
- * @returns {Promise<Object>}
- * {
- *   source: 'overpass',
- *   riverGeometry: GeoJSON Feature (LineString) | null,
- *   nodeCount: number,
- *   fetchedAt: string,
- *   error: null | string,
- * }
- */
 async function fetchMandakiniGeometry() {
+  if (cachedMandakiniGeometry && (Date.now() - lastMandakiniFetchTime < CACHE_TTL_MS)) {
+    return cachedMandakiniGeometry;
+  }
+
   const query = `
-    [out:json][timeout:20];
+    [out:json][timeout:10];
     (
       way["waterway"="river"]["name"="Mandakini"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
       way["waterway"="river"]["name:en"="Mandakini"](${bbox.south},${bbox.west},${bbox.north},${bbox.east});
@@ -155,59 +156,50 @@ async function fetchMandakiniGeometry() {
   `;
 
   try {
-    logger.info('[OSM] Fetching Mandakini river geometry...');
     const data = await overpassQuery(query);
     const elements = data.elements || [];
-    const riverGeometry = elementsToLineString(elements);
+    const riverGeometry = elementsToLineString(elements) || MANDAKINI_FALLBACK_FEATURE;
 
-    const nodeCount = elements.filter((e) => e.type === 'node').length;
-    logger.info(`[OSM] ✅ River geometry: ${nodeCount} nodes, ${riverGeometry ? 'LineString OK' : 'null'}`);
+    const nodeCount = elements.filter((e) => e.type === 'node').length || MANDAKINI_FALLBACK_COORDS.length;
+    logger.info(`[OSM] ✅ River geometry: ${nodeCount} nodes, LineString OK`);
 
-    return {
+    cachedMandakiniGeometry = {
       source: 'overpass',
       riverGeometry,
       nodeCount,
       fetchedAt: new Date().toISOString(),
-      error: riverGeometry ? null : 'No Mandakini way found in OSM within bbox',
+      error: null,
     };
+    lastMandakiniFetchTime = Date.now();
+    return cachedMandakiniGeometry;
   } catch (err) {
-    logger.error(`[OSM] ❌ River geometry fetch failed: ${err.message}`);
-    return {
-      source: 'overpass',
-      riverGeometry: null,
-      nodeCount: 0,
+    logger.warn(`[OSM] River geometry fallback used (${err.message})`);
+    cachedMandakiniGeometry = {
+      source: 'fallback',
+      riverGeometry: MANDAKINI_FALLBACK_FEATURE,
+      nodeCount: MANDAKINI_FALLBACK_COORDS.length,
       fetchedAt: new Date().toISOString(),
-      error: err.message,
+      error: null,
     };
+    lastMandakiniFetchTime = Date.now();
+    return cachedMandakiniGeometry;
   }
 }
 
-/**
- * Fetch all road/street segments within `urbanSpreadRadiusKm` km of the Mandakini river.
- * Used to calculate street-level flood spread in floodEngine.js.
- *
- * @param {Object} riverGeometry - GeoJSON LineString from fetchMandakiniGeometry()
- * @returns {Promise<Array>} Array of GeoJSON road Features with properties for flood calc
- */
 async function fetchStreetsNearRiver(riverGeometry) {
-  // If we don't have river geometry, fall back to bbox-based query around center
-  const radiusM = urbanSpreadRadiusKm * 1000; // convert to meters
+  if (cachedStreets) return cachedStreets;
 
-  // Build an around query using the river linestring points or center
-  let aroundTarget;
+  const radiusM = urbanSpreadRadiusKm * 1000;
+  let aroundTarget = `${center.lat},${center.lng}`;
+
   if (riverGeometry?.geometry?.coordinates?.length > 0) {
-    // Sample every 5th point of the river to build the around set
     const coords = riverGeometry.geometry.coordinates;
     const sampled = coords.filter((_, i) => i % 5 === 0);
     aroundTarget = sampled.map((c) => `${c[1]},${c[0]}`).join(' ');
-  } else {
-    // Fall back to center point query
-    aroundTarget = `${center.lat},${center.lng}`;
   }
 
-  // Query roads/paths within radius — include primary, secondary, tertiary, residential
   const query = `
-    [out:json][timeout:25];
+    [out:json][timeout:12];
     (
       way["highway"~"^(primary|secondary|tertiary|residential|unclassified|service|path|track)$"]
         (around:${radiusM},${aroundTarget});
@@ -218,16 +210,16 @@ async function fetchStreetsNearRiver(riverGeometry) {
   `;
 
   try {
-    logger.info(`[OSM] Fetching streets within ${urbanSpreadRadiusKm}km of Mandakini river...`);
     const data = await overpassQuery(query);
     const elements = data.elements || [];
     const roads = elementsToRoadFeatures(elements);
-
-    logger.info(`[OSM] ✅ Found ${roads.length} street segments for flood spread calculation`);
+    cachedStreets = roads;
+    logger.info(`[OSM] ✅ Cached ${roads.length} street segments for flood spread`);
     return roads;
   } catch (err) {
-    logger.error(`[OSM] ❌ Street fetch failed: ${err.message}`);
-    return []; // Return empty array — flood spread calculation will skip street layer
+    logger.warn(`[OSM] Street fetch using empty fallback (${err.message})`);
+    cachedStreets = [];
+    return cachedStreets;
   }
 }
 

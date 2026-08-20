@@ -1,3 +1,4 @@
+const prisma = require('../config/prisma');
 /**
  * featureHealthChecker.js — Internal Feature Health Checker
  * Runs every 10 minutes, calling own backend endpoints.
@@ -5,12 +6,10 @@
  * Stores results in feature_health_reports table.
  * Emits 'admin:feature-health-update' WebSocket event.
  */
-const { PrismaClient } = require('@prisma/client');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const logger = require('../config/logger');
 
-const prisma = new PrismaClient();
 const POLL_INTERVAL_MS = 10 * 60 * 1000;
 const BASE_URL = 'http://localhost:3001/api/v1';
 const TIMEOUT_MS = 5000;
@@ -103,6 +102,21 @@ const FEATURES = [
 
 async function runFeatureChecks(io) {
   logger.info('[FeatureHealth] Running full feature health check...');
+  
+  // Check database first; if offline, skip hitting internal routes to avoid connection timeouts
+  const dbHealth = await testDB();
+  if (dbHealth.status === 'failing') {
+    logger.debug('[FeatureHealth] Database offline, skipping internal route probe.');
+    if (io) {
+      io.emit('admin:feature-health-update', {
+        results: [{ page: 'system', feature: 'Database Connection', status: 'failing', errorMessage: dbHealth.errorMessage }],
+        summary: { passing: 0, failing: 1, warning: 0, total: 1 },
+        checkedAt: new Date().toISOString(),
+      });
+    }
+    return [{ page: 'system', feature: 'Database Connection', status: 'failing' }];
+  }
+
   // Reset service token to force re-auth
   serviceToken = null;
 
@@ -116,7 +130,9 @@ async function runFeatureChecks(io) {
         ...result,
         checkedAt: new Date(),
       };
-      await prisma.featureHealthReport.create({ data: report });
+      try {
+        await prisma.featureHealthReport.create({ data: report });
+      } catch (_) {}
       results.push({ ...feat, ...result });
       const icon = result.status === 'passing' ? '✅' : result.status === 'warning' ? '⚠️' : '❌';
       logger.info(`[FeatureHealth] ${icon} ${feat.page} / ${feat.feature}: ${result.status} (${result.responseMs}ms)`);

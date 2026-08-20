@@ -44,18 +44,18 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
     quantity: 1,
     priority: 'standard',
     notes: '',
-    destinationLat: 18.7557,
-    destinationLng: 73.4091,
+    destinationLat: 30.7346,
+    destinationLng: 79.0669,
     destinationLabel: '',
   });
-  const [pinPosition, setPinPosition] = useState([18.7557, 73.4091]);
+  const [pinPosition, setPinPosition] = useState([30.7346, 79.0669]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const mapRef = useRef(null);
 
   useEffect(() => {
     if (isOpen) {
-      const lat = sourceEvent?.latitude || 18.7557;
-      const lng = sourceEvent?.longitude || 73.4091;
+      const lat = sourceEvent?.latitude || 30.7346;
+      const lng = sourceEvent?.longitude || 79.0669;
       setPinPosition([lat, lng]);
       setForm({
         serviceType: '',
@@ -115,7 +115,7 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
 
         {/* Service Type Grid */}
         <div>
-          <p className="text-xs font-semibold text-slate-600 mb-2 uppercase tracking-wide">Service Type</p>
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 uppercase tracking-wider">Service Type</p>
           <div className="grid grid-cols-3 gap-2">
             {SERVICE_TYPES.map(s => {
               const Ic = s.icon;
@@ -123,14 +123,14 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
                 <button
                   key={s.id}
                   onClick={() => setForm(f => ({ ...f, serviceType: s.id }))}
-                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center ${
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition-all text-center cursor-pointer ${
                     form.serviceType === s.id
                       ? `${s.color} border-current shadow-sm scale-105`
-                      : 'bg-white/40 border-transparent text-slate-500 hover:bg-white/60'
+                      : 'bg-white/40 dark:bg-slate-800/60 border-slate-200/50 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-white/60 dark:hover:bg-slate-700'
                   }`}
                 >
                   <Ic size={20}/>
-                  <span className="text-xs font-medium">{s.label}</span>
+                  <span className="text-xs font-semibold">{s.label}</span>
                 </button>
               );
             })}
@@ -140,7 +140,7 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
         {/* Quantity + Priority */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Units to Deploy</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Units to Deploy</label>
             <input
               type="number" min="1" max="500"
               value={form.quantity}
@@ -149,11 +149,11 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
             />
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Priority</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Priority</label>
             <select
               value={form.priority}
               onChange={e => setForm(f => ({ ...f, priority: e.target.value }))}
-              className="glass-input w-full text-sm"
+              className="glass-input w-full text-sm cursor-pointer"
             >
               <option value="immediate">🔴 Immediate</option>
               <option value="high">🟠 High</option>
@@ -164,7 +164,7 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
 
         {/* Destination Label */}
         <div>
-          <label className="text-xs font-semibold text-slate-600 block mb-1">Destination</label>
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Destination</label>
           <input
             type="text"
             placeholder="e.g. Zone Gamma — Bushi Dam area"
@@ -176,10 +176,10 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
 
         {/* Map Pin Selector */}
         <div>
-          <p className="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1">
+          <p className="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-1">
             <MapPin size={12}/> Click map to set destination
           </p>
-          <div className="h-44 rounded-xl overflow-hidden border border-white/30">
+          <div className="h-44 rounded-xl overflow-hidden border border-slate-200/60 dark:border-slate-700">
             <MapContainer
               key={`${isOpen}-${sourceEvent?.id || 'none'}`}
               center={pinPosition}
@@ -192,14 +192,14 @@ export function GovernmentDispatchModal({ isOpen, onClose, sourceEvent = null, o
               {pinPosition && <Marker position={pinPosition}/>}
             </MapContainer>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono font-medium">
             📍 {form.destinationLat.toFixed(4)}°N, {form.destinationLng.toFixed(4)}°E
           </p>
         </div>
 
         {/* Notes */}
         <div>
-          <label className="text-xs font-semibold text-slate-600 block mb-1">Operational Notes (optional)</label>
+          <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Operational Notes (optional)</label>
           <textarea
             rows={2}
             className="glass-input w-full text-sm resize-none"

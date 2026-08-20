@@ -37,7 +37,8 @@ export function FloodRiskGauge({ score = 0, level = 'green', size = 140 }) {
         <circle
           cx={cx} cy={cy} r={radius}
           fill="none"
-          stroke="#e2e8f0"
+          stroke="currentColor"
+          className="text-slate-200 dark:text-slate-700"
           strokeWidth={10}
         />
 
@@ -74,7 +75,7 @@ export function FloodRiskGauge({ score = 0, level = 'green', size = 140 }) {
           fontSize={size * 0.085}
           fontWeight="600"
           fontFamily="'Outfit', 'Inter', sans-serif"
-          fill="#94a3b8"
+          fill="var(--text-muted)"
           letterSpacing="1"
         >
           /100

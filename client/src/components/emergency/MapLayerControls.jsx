@@ -42,23 +42,24 @@ export function MapLayerControls({ onChange }) {
   return (
     <div
       style={{
-        background: 'rgba(255,255,255,0.92)',
-        backdropFilter: 'blur(16px)',
-        border: '1px solid rgba(0,0,0,0.1)',
+        background: 'var(--bg-card)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        border: '1px solid var(--bg-card-border)',
         borderRadius: 16,
         padding: '12px 14px',
         minWidth: 180,
-        boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+        boxShadow: 'var(--shadow)',
         zIndex: 1000,
       }}
     >
       <div
         style={{
-          fontWeight: 'bold',
-          fontSize: 12,
-          color: '#64748b',
+          fontWeight: 700,
+          fontSize: 11,
+          color: 'var(--text-muted)',
           marginBottom: 8,
-          letterSpacing: '0.05em',
+          letterSpacing: '0.08em',
           textTransform: 'uppercase',
         }}
       >
@@ -72,11 +73,11 @@ export function MapLayerControls({ onChange }) {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '5px 0',
-            borderBottom: '1px solid rgba(0,0,0,0.05)',
+            padding: '6px 0',
+            borderBottom: '1px solid var(--divider)',
           }}
         >
-          <span style={{ fontSize: 13 }}>
+          <span style={{ fontSize: 13, color: 'var(--text-primary)', fontWeight: 500 }}>
             {def.icon} {def.label}
           </span>
 

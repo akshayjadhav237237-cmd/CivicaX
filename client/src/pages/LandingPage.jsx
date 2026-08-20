@@ -256,7 +256,7 @@ export function LandingPage() {
                 <GlassButton size="lg" onClick={() => navigate('/register')} className="w-full sm:w-auto whitespace-nowrap">
                   Get Alerts for My Area <ArrowRight size={18} />
                 </GlassButton>
-                <GlassButton variant="ghost" size="lg" onClick={() => navigate('/dashboard')} className="w-full sm:w-auto bg-white/70">
+                <GlassButton variant="ghost" size="lg" onClick={() => navigate('/dashboard')} className="w-full sm:w-auto">
                   View Live Dashboard
                 </GlassButton>
               </motion.div>
@@ -290,13 +290,13 @@ export function LandingPage() {
           </Reveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
-              { icon: <AlertTriangle size={28} className="text-blue-600" />, bg: 'bg-blue-100', title: 'Emergency Responder', desc: 'Satellite-driven early warning for floods and landslides with precision evacuation routing.', delay: 0 },
-              { icon: <HardHat size={28} className="text-orange-600" />,    bg: 'bg-orange-100', title: 'Civic Manager',       desc: 'Report infrastructure issues directly to city departments and track resolution in real-time.', delay: 0.15 },
-              { icon: <ShieldAlert size={28} className="text-red-600" />,   bg: 'bg-red-100',    title: 'Safety Watch',        desc: 'Community-driven threat reporting to alert law enforcement of immediate public safety concerns.', delay: 0.3 },
+              { icon: <AlertTriangle size={28} className="text-blue-600 dark:text-blue-400" />, bg: 'bg-blue-100 dark:bg-blue-950/40', title: 'Emergency Responder', desc: 'Satellite-driven early warning for floods and landslides with precision evacuation routing.', delay: 0 },
+              { icon: <HardHat size={28} className="text-orange-600 dark:text-orange-400" />,    bg: 'bg-orange-100 dark:bg-orange-950/40', title: 'Civic Manager',       desc: 'Report infrastructure issues directly to city departments and track resolution in real-time.', delay: 0.15 },
+              { icon: <ShieldAlert size={28} className="text-red-600 dark:text-red-400" />,   bg: 'bg-red-100 dark:bg-red-950/40',    title: 'Safety Watch',        desc: 'Community-driven threat reporting to alert law enforcement of immediate public safety concerns.', delay: 0.3 },
             ].map(({ icon, bg, title, desc, delay }) => (
               <Reveal key={title} delay={delay}>
                 <GlassCard padding="p-8" className="hover:-translate-y-2 transition-transform duration-300 h-full">
-                  <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6" style={{ background: 'var(--hover-bg)' }}>
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 ${bg}`} style={{ border: '1px solid var(--divider)' }}>
                     {icon}
                   </div>
                   <h3 className="text-xl font-bold mb-3" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>{title}</h3>
@@ -366,7 +366,7 @@ export function LandingPage() {
                       className="bg-slate-800/50 backdrop-blur-md rounded-2xl p-6 border border-slate-700 hover:bg-slate-800/80 transition-colors"
                     >
                       <h4 className="font-bold text-blue-400 mb-2 flex items-center gap-2">{name} <ExternalLink size={14} /></h4>
-                      <p className="text-sm text-slate-400">{desc}</p>
+                      <p className="text-sm text-slate-300">{desc}</p>
                     </motion.div>
                   ))}
                 </div>
@@ -388,7 +388,7 @@ export function LandingPage() {
                   <p className="mb-8 text-lg" style={{ color: 'var(--text-secondary)' }}>
                     For government authorities. Manage relief camps, auto-calculate NDMA resource requirements, and dispatch responders from a single pane of glass.
                   </p>
-                  <GlassButton variant="primary" onClick={() => navigate('/login')} className="bg-slate-900 text-white w-full sm:w-auto hover:bg-slate-800">
+                  <GlassButton variant="primary" size="lg" onClick={() => navigate('/login')} className="w-full sm:w-auto">
                     Authority Login
                   </GlassButton>
                 </div>
@@ -416,9 +416,9 @@ export function LandingPage() {
       </main>
 
       {/* Powered by partners strip */}
-      <div className="text-center py-6 border-t border-slate-200/10 dark:border-slate-800/20 max-w-7xl mx-auto w-full">
-        <p className="text-[10px] text-slate-500 uppercase tracking-widest mb-3">Powered by Global Earth Intelligence</p>
-        <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-slate-500 dark:text-slate-400 font-bold text-xs select-none opacity-60">
+      <div className="text-center py-6 border-t border-slate-200/40 dark:border-slate-800/40 max-w-7xl mx-auto w-full">
+        <p className="text-[11px] font-semibold uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>Powered by Global Earth Intelligence</p>
+        <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-10 text-slate-700 dark:text-slate-300 font-bold text-xs select-none">
           <span>🛰️ NASA LANCE</span>
           <span>🛰️ NASA SMAP</span>
           <span>⛰️ USGS SRTM</span>
@@ -428,13 +428,13 @@ export function LandingPage() {
       </div>
 
       {/* Footer */}
-      <footer className="bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 text-slate-400 py-10 px-6 mt-auto relative z-50">
+      <footer className="bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 text-slate-300 py-10 px-6 mt-auto relative z-50">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <div className="w-6 h-6 rounded bg-slate-800 flex items-center justify-center text-white font-bold text-xs">C</div>
             <span className="font-bold text-white tracking-widest uppercase text-sm" style={{ fontFamily: 'var(--font-heading)' }}>CivicaX</span>
           </div>
-          <div className="text-sm text-center md:text-left">
+          <div className="text-sm text-center md:text-left text-slate-300">
             Built with open-source data. Zero-budget civic technology platform.
           </div>
           <div className="flex items-center gap-4">

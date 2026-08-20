@@ -1,3 +1,4 @@
+const prisma = require('../../config/prisma');
 /**
  * floodOrchestrator.js — Master Flood Prediction Orchestrator
  *
@@ -7,7 +8,6 @@
  * Chain: OpenMeteo → SMAP → SRTM → OSM → Runoff → Manning's → Inundation → Landslide
  */
 
-const { PrismaClient } = require('@prisma/client');
 const logger = require('../../config/logger');
 
 // ─── Satellite modules (DO NOT MODIFY those files) ──────────────────────────
@@ -23,8 +23,6 @@ const { calculateUrbanInundation }   = require('./urbanInundation');
 const { calculateLandslidRisk }      = require('./landslidRisk');
 const { generateFloodSummary }       = require('../ai/summaryGenerator');
 const { generateGovernmentBriefing } = require('../ai/governmentBriefing');
-
-const prisma = new PrismaClient();
 
 // Kedarnath / Mandakini basin parameters
 const BASIN_CATCHMENT_KM2   = 935;  // Mandakini catchment area upstream of Sonprayag
@@ -305,7 +303,11 @@ async function predict(lat, lng, zoneId, zoneName, io = null) {
     });
     logger.info(`[FloodOrchestrator] 💾 Saved prediction to DB`);
   } catch (dbErr) {
-    logger.warn(`[FloodOrchestrator] ⚠️ DB save failed (migration pending?): ${dbErr.message}`);
+    if (dbErr.message?.includes("Can't reach database server")) {
+      logger.debug('[FloodOrchestrator] Database offline, continuing in-memory.');
+    } else {
+      logger.warn(`[FloodOrchestrator] ⚠️ DB save failed (migration pending?): ${dbErr.message}`);
+    }
   }
 
   // ── Step 13: WebSocket emit if alert level changed ────────────────────────

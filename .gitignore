@@ -44,3 +44,6 @@ out/
 *.sw?
 .DS_Store
 Thumbs.db
+.railway/
+**/.railway/
+*.log

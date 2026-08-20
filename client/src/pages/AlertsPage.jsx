@@ -80,7 +80,7 @@ export function AlertsPage() {
         </div>
         
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">From:</span>
+          <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">From:</span>
           <input
             type="date"
             value={startDate}
@@ -95,7 +95,7 @@ export function AlertsPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">To:</span>
+          <span className="text-xs text-slate-700 dark:text-slate-300 font-semibold">To:</span>
           <input
             type="date"
             value={endDate}

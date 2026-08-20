@@ -13,9 +13,9 @@ import toast from 'react-hot-toast';
 import { useWebSocket } from '../../hooks/useWebSocket';
 
 const STATUS_CONFIG = {
-  passing: { icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50',   dot: 'bg-green-500' },
-  warning: { icon: AlertCircle,  color: 'text-yellow-600',bg: 'bg-yellow-50',  dot: 'bg-yellow-500' },
-  failing: { icon: XCircle,      color: 'text-red-600',   bg: 'bg-red-50',     dot: 'bg-red-500' },
+  passing: { icon: CheckCircle2, color: 'text-green-700 dark:text-green-300', bg: 'bg-green-50/80 dark:bg-green-950/30',   dot: 'bg-green-500' },
+  warning: { icon: AlertCircle,  color: 'text-yellow-700 dark:text-yellow-300',bg: 'bg-yellow-50/80 dark:bg-yellow-950/30',  dot: 'bg-yellow-500' },
+  failing: { icon: XCircle,      color: 'text-red-700 dark:text-red-300',   bg: 'bg-red-50/80 dark:bg-red-950/30',     dot: 'bg-red-500' },
 };
 
 function FeatureRow({ feature }) {
@@ -24,14 +24,14 @@ function FeatureRow({ feature }) {
   return (
     <div className={`flex items-center gap-3 px-3 py-2 rounded-lg ${cfg.bg}`}>
       <Ic size={14} className={cfg.color}/>
-      <span className="text-sm text-slate-700 flex-1">{feature.feature}</span>
+      <span className="text-sm font-semibold text-slate-800 dark:text-slate-100 flex-1">{feature.feature}</span>
       {feature.responseMs && (
-        <span className={`text-xs ${feature.responseMs > 2000 ? 'text-orange-500' : 'text-slate-400'}`}>
+        <span className={`text-xs font-semibold ${feature.responseMs > 2000 ? 'text-orange-600 dark:text-orange-400' : 'text-slate-500 dark:text-slate-400'}`}>
           {feature.responseMs}ms
         </span>
       )}
       {feature.errorMessage && (
-        <span className="text-xs text-red-400 max-w-32 truncate" title={feature.errorMessage}>
+        <span className="text-xs text-red-600 dark:text-red-400 font-medium max-w-32 truncate" title={feature.errorMessage}>
           {feature.errorMessage}
         </span>
       )}
@@ -46,18 +46,18 @@ function PageGroup({ page, features }) {
   return (
     <div className="glass-card overflow-hidden">
       <button
-        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 transition-colors"
+        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer"
         onClick={() => setIsOpen(o => !o)}
       >
         {isOpen ? <ChevronDown size={14} className="text-slate-400"/> : <ChevronRight size={14} className="text-slate-400"/>}
-        <span className="font-semibold text-slate-800 font-mono text-sm">{page}</span>
-        <span className="text-xs text-slate-400">{features.length} feature{features.length!==1?'s':''}</span>
-        {failing > 0 && <span className="ml-auto text-xs text-red-600 font-medium">⚠ {failing} failing</span>}
-        {failing === 0 && warning > 0 && <span className="ml-auto text-xs text-yellow-600 font-medium">{warning} slow</span>}
-        {failing === 0 && warning === 0 && <span className="ml-auto text-xs text-green-600">✓ All passing</span>}
+        <span className="font-bold text-slate-800 dark:text-slate-100 font-mono text-sm">{page}</span>
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">{features.length} feature{features.length!==1?'s':''}</span>
+        {failing > 0 && <span className="ml-auto text-xs text-red-700 dark:text-red-300 font-bold">⚠ {failing} failing</span>}
+        {failing === 0 && warning > 0 && <span className="ml-auto text-xs text-yellow-700 dark:text-yellow-300 font-bold">{warning} slow</span>}
+        {failing === 0 && warning === 0 && <span className="ml-auto text-xs text-green-700 dark:text-green-300 font-bold">✓ All passing</span>}
       </button>
       {isOpen && (
-        <div className="px-4 pb-3 space-y-1 border-t border-slate-100/50">
+        <div className="px-4 pb-3 space-y-1 border-t border-slate-100/50 dark:border-slate-800">
           {features.map(f => <FeatureRow key={`${f.page}:${f.feature}`} feature={f}/>)}
         </div>
       )}
@@ -118,9 +118,9 @@ export function AdminFeatureHealthDashboard() {
     <div className="space-y-4">
       {/* Failing banner */}
       {totalFailing > 0 && (
-        <div className="glass-card p-3 bg-red-50/80 border-red-300 flex items-center gap-3">
-          <XCircle size={18} className="text-red-600 flex-shrink-0"/>
-          <p className="text-sm text-red-700 font-medium">
+        <div className="glass-card p-3 bg-red-50/80 dark:bg-red-950/30 border-red-300 dark:border-red-800/50 flex items-center gap-3">
+          <XCircle size={18} className="text-red-600 dark:text-red-400 flex-shrink-0"/>
+          <p className="text-sm text-red-700 dark:text-red-300 font-semibold">
             ⚠️ {totalFailing} feature{totalFailing!==1?'s are':' is'} currently failing — investigate immediately
           </p>
         </div>
@@ -129,15 +129,15 @@ export function AdminFeatureHealthDashboard() {
       {/* Summary bar */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-4 text-sm">
-          <span className="text-green-600 font-medium">{totalPassing} passing</span>
-          {totalWarning > 0 && <span className="text-yellow-600">{totalWarning} slow</span>}
-          {totalFailing > 0 && <span className="text-red-600 font-medium">{totalFailing} failing</span>}
-          <div className="flex items-center gap-1 text-xs text-green-600">
+          <span className="text-green-700 dark:text-green-400 font-semibold">{totalPassing} passing</span>
+          {totalWarning > 0 && <span className="text-yellow-700 dark:text-yellow-400 font-semibold">{totalWarning} slow</span>}
+          {totalFailing > 0 && <span className="text-red-700 dark:text-red-400 font-semibold">{totalFailing} failing</span>}
+          <div className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-semibold">
             <Wifi size={12}/> Live
           </div>
         </div>
         <div className="flex items-center gap-3">
-          {lastChecked && <span className="text-xs text-slate-400">Last: {lastChecked.toLocaleTimeString('en-IN')}</span>}
+          {lastChecked && <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Last: {lastChecked.toLocaleTimeString('en-IN')}</span>}
           <GlassButton size="sm" variant="ghost" onClick={handleRunCheck} disabled={isRunning} className="gap-1 text-xs">
             <RefreshCw size={12} className={isRunning ? 'animate-spin' : ''}/> Run Check
           </GlassButton>

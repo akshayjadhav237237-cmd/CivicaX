@@ -130,7 +130,7 @@ export function ProfilePage() {
             <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200" style={{ fontFamily: 'var(--font-heading)' }}>{user?.name}</h2>
             <p className="text-sm text-slate-500 mb-6 flex items-center justify-center gap-1">
               <Shield size={14} className="text-blue-500" />
-              <span className="capitalize">{user?.role.replace('_', ' ')}</span> Account
+              <span className="capitalize">{(user?.role || 'Citizen').replace(/_/g, ' ')}</span> Account
             </p>
 
             <div className="w-full h-px bg-slate-200 dark:bg-slate-700 my-2" />
@@ -204,15 +204,15 @@ export function ProfilePage() {
                   onChange={handleChange}
                   className="w-4 h-4 mt-1 rounded text-blue-500 focus:ring-blue-400 border-slate-300"
                 />
-                <label htmlFor="smsAlertsEnabled" className="text-sm font-semibold text-slate-700 dark:text-slate-350 cursor-pointer">
+                <label htmlFor="smsAlertsEnabled" className="text-sm font-semibold text-slate-700 dark:text-slate-200 cursor-pointer">
                   Enable SMS Broadcast Alerts
-                  <p className="text-xs text-slate-550 dark:text-slate-500 font-normal mt-0.5">Receive immediate evacuation alerts to your phone number.</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 font-normal mt-0.5">Receive immediate evacuation alerts to your phone number.</p>
                 </label>
               </div>
 
-              <div className="bg-blue-50/50 dark:bg-blue-900/20 border border-blue-100 p-4 rounded-xl mt-4 flex items-start gap-3">
+              <div className="bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 p-4 rounded-xl mt-4 flex items-start gap-3">
                 <CheckCircle size={20} className="text-blue-500 shrink-0 mt-0.5" />
-                <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed">
+                <p className="text-sm text-blue-800 dark:text-blue-200 leading-relaxed font-medium">
                   Your phone number will be used exclusively for highly critical push notifications via the NDMA emergency SMS gateway in the event of an internet blackout.
                 </p>
               </div>

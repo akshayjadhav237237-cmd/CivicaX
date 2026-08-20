@@ -32,11 +32,16 @@ export function Sidebar({ mobile = false }) {
 
   const visibleItems = navItems.filter((item) => item.roles.includes(user?.role));
 
+  const activeTextColor = isDark ? '#60A5FA' : '#2563EB';
+  const activeBgColor = isDark ? 'rgba(59, 130, 246, 0.18)' : 'rgba(59, 130, 246, 0.12)';
+  const inactiveTextColor = isDark ? '#CBD5E1' : '#334155';
+  const inactiveIconColor = isDark ? '#94A3B8' : '#64748B';
+
   return (
     <div className={`${mobile ? 'flex w-full' : 'hidden md:flex w-[260px]'} flex-col h-screen fixed left-0 top-0 glass-nav z-40`}>
       {/* Logo */}
       <div className="p-6 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-blue-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
+        <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-blue-500/30">
           C
         </div>
         <h1 className="text-xl font-bold tracking-tight" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>
@@ -51,8 +56,8 @@ export function Sidebar({ mobile = false }) {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative ${
-                isActive ? 'font-semibold' : ''
+              `flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 relative group select-none ${
+                isActive ? 'font-semibold shadow-sm' : 'font-medium hover:bg-black/5 dark:hover:bg-white/5'
               }`
             }
             style={({ isActive }) => ({
@@ -61,16 +66,16 @@ export function Sidebar({ mobile = false }) {
                 : 'transparent',
               color: isActive
                 ? '#3B82F6'
-                : isDark ? '#94A3B8' : '#64748B',
+                : isDark ? '#CBD5E1' : '#475569',
             })}
           >
             {({ isActive }) => (
               <>
                 <item.icon
                   size={20}
-                  color={isActive ? '#3B82F6' : isDark ? '#64748B' : '#94A3B8'}
+                  color={isActive ? '#3B82F6' : isDark ? '#94A3B8' : '#64748B'}
                 />
-                <span>{item.name}</span>
+                <span className="font-medium text-sm">{item.name}</span>
                 {isActive && (
                   <motion.div
                     layoutId="activeNav"
@@ -89,18 +94,30 @@ export function Sidebar({ mobile = false }) {
       {/* User Card */}
       <div className="p-4 mt-auto">
         <div
-          className="p-4 flex flex-col items-center text-center gap-2 rounded-[20px]"
-          style={{ background: 'var(--bg-card)', border: '1px solid var(--bg-card-border)' }}
+          className="p-4 flex flex-col items-center text-center gap-2 rounded-[20px] shadow-sm"
+          style={{
+            background: 'var(--bg-card)',
+            border: '1px solid var(--bg-card-border)',
+            boxShadow: 'var(--shadow)',
+          }}
         >
           <div
-            className="w-10 h-10 rounded-full flex items-center justify-center font-medium"
-            style={{ background: 'var(--hover-bg)', color: 'var(--text-secondary)' }}
+            className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm"
+            style={{
+              background: isDark ? 'rgba(59, 130, 246, 0.2)' : 'rgba(59, 130, 246, 0.12)',
+              color: isDark ? '#60A5FA' : '#2563EB',
+              border: `1px solid ${isDark ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.25)'}`,
+            }}
           >
-            {user?.name?.charAt(0) || 'U'}
+            {user?.name?.charAt(0)?.toUpperCase() || 'U'}
           </div>
-          <div>
-            <p className="text-sm font-semibold line-clamp-1" style={{ color: 'var(--text-primary)' }}>{user?.name}</p>
-            <p className="text-xs capitalize" style={{ color: 'var(--text-muted)' }}>{user?.role?.replace('_', ' ')}</p>
+          <div className="w-full">
+            <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+              {user?.name || 'User'}
+            </p>
+            <p className="text-xs font-medium capitalize mt-0.5 truncate" style={{ color: 'var(--text-muted)' }}>
+              {user?.role?.replace('_', ' ') || 'Citizen'}
+            </p>
           </div>
         </div>
       </div>

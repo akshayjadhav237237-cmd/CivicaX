@@ -1,3 +1,4 @@
+const prisma = require('../../config/prisma');
 /**
  * cameraPoller.js — RTSP Camera Feed Registry Poller
  *
@@ -17,10 +18,7 @@
  */
 
 const net = require('net');
-const { PrismaClient } = require('@prisma/client');
 const logger = require('../../config/logger');
-
-const prisma = new PrismaClient();
 
 const POLL_INTERVAL_MS = 60 * 1000; // 60 seconds
 const RTSP_SOCKET_TIMEOUT_MS = 5000; // 5s connection timeout per feed
@@ -180,7 +178,11 @@ async function pollCameraFeeds(io) {
       }
     }
   } catch (err) {
-    logger.error(`[CameraPoller] Poll cycle failed: ${err.message}`);
+    if (err.message?.includes("Can't reach database server")) {
+      logger.debug('[CameraPoller] Database unreachable, skipping camera poll cycle.');
+    } else {
+      logger.error(`[CameraPoller] Poll cycle failed: ${err.message}`);
+    }
   }
 }
 

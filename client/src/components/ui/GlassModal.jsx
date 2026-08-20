@@ -4,15 +4,26 @@ import { X } from 'lucide-react';
 
 /**
  * GlassModal — Centered modal with blurred overlay backdrop.
- * Adapts to dark mode via CSS variables.
+ * Adapts to dark mode via CSS variables with crisp contrast.
  */
 export function GlassModal({ isOpen, onClose, title, children, size = 'md' }) {
-  const sizeMap = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
+  const sizeMap = {
+    sm: 'max-w-sm',
+    md: 'max-w-lg',
+    lg: 'max-w-2xl',
+    xl: 'max-w-4xl',
+  };
 
   useEffect(() => {
     const handleKeyDown = (e) => { if (e.key === 'Escape') onClose(); };
-    if (isOpen) { document.addEventListener('keydown', handleKeyDown); document.body.style.overflow = 'hidden'; }
-    return () => { document.removeEventListener('keydown', handleKeyDown); document.body.style.overflow = ''; };
+    if (isOpen) {
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+    }
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = '';
+    };
   }, [isOpen, onClose]);
 
   return (
@@ -25,17 +36,16 @@ export function GlassModal({ isOpen, onClose, title, children, size = 'md' }) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)' }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md"
           >
             {/* Modal panel */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.93, y: 12 }}
+              initial={{ opacity: 0, scale: 0.94, y: 14 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 8 }}
               transition={{ duration: 0.2, ease: 'easeOut' }}
               onClick={(e) => e.stopPropagation()}
-              className={`w-full ${sizeMap[size]} max-h-[90vh] overflow-y-auto glass-modal-surface`}
+              className={`w-full ${sizeMap[size] || sizeMap.md} max-h-[90vh] overflow-y-auto glass-modal-surface`}
               style={{
                 background: 'var(--glass-bg-strong)',
                 backdropFilter: 'blur(24px) saturate(160%)',
@@ -49,22 +59,35 @@ export function GlassModal({ isOpen, onClose, title, children, size = 'md' }) {
               {/* Header */}
               {title && (
                 <div
-                  className="flex items-center justify-between px-6 py-4"
-                  style={{ borderBottom: '1px solid var(--divider)' }}
+                  className="flex items-center justify-between px-6 py-4 sticky top-0 z-10"
+                  style={{
+                    background: 'var(--glass-bg-strong)',
+                    borderBottom: '1px solid var(--divider)',
+                  }}
                 >
-                  <h3 className="text-lg font-bold" style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}>{title}</h3>
+                  <h3
+                    className="text-lg font-bold"
+                    style={{ fontFamily: 'var(--font-heading)', color: 'var(--text-primary)' }}
+                  >
+                    {title}
+                  </h3>
                   <button
                     type="button"
                     onClick={onClose}
                     aria-label="Close modal"
-                    className="p-1.5 rounded-full transition-colors"
-                    style={{ background: 'var(--hover-bg)', color: 'var(--text-secondary)' }}
+                    className="p-1.5 rounded-full transition-colors hover:bg-slate-200/50 dark:hover:bg-slate-700/50"
+                    style={{
+                      background: 'var(--hover-bg)',
+                      color: 'var(--text-secondary)',
+                    }}
                   >
                     <X size={18} />
                   </button>
                 </div>
               )}
-              <div className="p-6" style={{ color: 'var(--text-primary)' }}>{children}</div>
+              <div className="p-6" style={{ color: 'var(--text-primary)' }}>
+                {children}
+              </div>
             </motion.div>
           </motion.div>
         </>

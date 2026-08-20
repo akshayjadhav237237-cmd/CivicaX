@@ -85,7 +85,8 @@ export function useWebSocket() {
 
     socket.on('safety:urgent', (report) => {
       if (['government', 'admin'].includes(user?.role)) {
-        toast.error(`URGENT SAFETY REPORT: ${report.incidentType.replace('_', ' ').toUpperCase()}`, {
+        const incidentName = (report?.incidentType || report?.category || 'incident').replace(/_/g, ' ').toUpperCase();
+        toast.error(`URGENT SAFETY REPORT: ${incidentName}`, {
           duration: 10000,
           icon: '🔴',
           style: { outline: '2px solid #DC2626' }

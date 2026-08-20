@@ -8,7 +8,9 @@ import {
   HardHat,
   ShieldAlert,
   Building2,
-  Menu
+  Menu,
+  User,
+  History
 } from 'lucide-react';
 
 export function MobileTabBar() {
@@ -24,13 +26,16 @@ export function MobileTabBar() {
   ];
 
   const moreItems = [
-    { name: 'Command Center', path: '/government', icon: Building2,    roles: ['government', 'admin'] },
-    { name: 'Alert History',  path: '/alerts',     icon: AlertTriangle, roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Profile',        path: '/profile',    icon: HardHat,       roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: 'Command Center', path: '/government', icon: Building2,     roles: ['government', 'admin'] },
+    { name: 'Alert History',  path: '/alerts',     icon: History,       roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: 'Profile',        path: '/profile',    icon: User,          roles: ['citizen', 'department_op', 'government', 'admin'] },
   ];
 
   const visibleMain = mainItems.filter((item) => item.roles.includes(user?.role)).slice(0, 4);
   const visibleMore = moreItems.filter((item) => item.roles.includes(user?.role));
+
+  const activeColor = isDark ? '#60A5FA' : '#2563EB';
+  const inactiveColor = isDark ? '#CBD5E1' : '#64748B';
 
   return (
     <>
@@ -43,21 +48,23 @@ export function MobileTabBar() {
             key={item.path}
             to={item.path}
             className={({ isActive }) =>
-              `flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors ${
-                isActive ? 'text-blue-500' : ''
+              `flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-colors select-none ${
+                isActive ? 'font-semibold' : 'font-medium'
               }`
             }
-            style={({ isActive }) => ({ color: isActive ? '#3B82F6' : 'var(--text-muted)' })}
+            style={({ isActive }) => ({
+              color: isActive ? activeColor : inactiveColor,
+            })}
           >
             <item.icon size={20} className="mb-0.5" />
-            <span className="text-[10px] font-medium">{item.name}</span>
+            <span className="text-[10px]">{item.name}</span>
           </NavLink>
         ))}
         {visibleMore.length > 0 && (
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="flex flex-col items-center justify-center w-16 h-full gap-1 transition-colors"
-            style={{ color: isOpen ? '#3B82F6' : 'var(--text-muted)' }}
+            className="flex flex-col items-center justify-center w-16 h-full gap-0.5 transition-colors select-none cursor-pointer"
+            style={{ color: isOpen ? activeColor : inactiveColor }}
           >
             <Menu size={20} className="mb-0.5" />
             <span className="text-[10px] font-medium">More</span>
@@ -69,15 +76,17 @@ export function MobileTabBar() {
       {isOpen && (
         <>
           <div
-            className="md:hidden fixed inset-0 z-30 backdrop-blur-sm"
-            style={{ background: 'rgba(0,0,0,0.3)' }}
+            className="md:hidden fixed inset-0 z-30 bg-slate-950/40 backdrop-blur-sm"
             onClick={() => setIsOpen(false)}
           />
           <div
-            className="md:hidden fixed bottom-20 right-4 z-40 backdrop-blur-xl rounded-2xl p-2 shadow-xl flex flex-col gap-1 w-48"
+            className="md:hidden fixed bottom-20 right-4 z-40 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 w-52"
             style={{
               background: 'var(--glass-bg-strong)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
               border: '1px solid var(--bg-card-border)',
+              boxShadow: 'var(--glass-shadow-heavy)',
             }}
           >
             {visibleMore.map((item) => (
@@ -85,26 +94,19 @@ export function MobileTabBar() {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsOpen(false)}
-                className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all"
+                className="flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all select-none hover:bg-black/5 dark:hover:bg-white/5"
                 style={({ isActive }) => ({
-                  background: isActive ? (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(219,234,254,1)') : 'transparent',
-                  color: isActive ? '#3B82F6' : 'var(--text-secondary)',
-                  fontWeight: isActive ? '600' : '400',
+                  background: isActive
+                    ? (isDark ? 'rgba(59,130,246,0.18)' : 'rgba(59,130,246,0.12)')
+                    : 'transparent',
+                  color: isActive ? activeColor : 'var(--text-primary)',
+                  fontWeight: isActive ? '600' : '500',
                 })}
               >
                 <item.icon size={18} />
                 <span className="text-sm">{item.name}</span>
               </NavLink>
             ))}
-            <div className="h-px my-1" style={{ background: 'var(--divider)' }} />
-            <NavLink
-              to="/profile"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-sm"
-              style={{ color: 'var(--text-secondary)' }}
-            >
-              <span>Profile</span>
-            </NavLink>
           </div>
         </>
       )}

@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react';
 
 /**
  * useGeolocation — Wrapper around browser navigator.geolocation
- * Default location is Lonavla (18.7557, 73.4091) if rejected or unavailable
+ * Default location is Kedarnath Temple (30.7346, 79.0669) if rejected or unavailable
  * @returns {Object} { location: { lat, lng }, error, isLoading }
  */
 export function useGeolocation() {
-  const [location, setLocation] = useState({ lat: 18.7557, lng: 73.4091 }); // Default Lonavla
+  const [location, setLocation] = useState({ lat: 30.7346, lng: 79.0669 }); // Default Kedarnath Temple
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 

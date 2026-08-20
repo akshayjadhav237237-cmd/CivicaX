@@ -52,28 +52,28 @@ export default function CCTVConfirmationPanel({ alertLevel }) {
       </div>
 
       {/* Connection Info Banner */}
-      <div className="bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200/50 dark:border-amber-900/30 p-3.5 rounded-xl flex items-start gap-2.5">
-        <ShieldAlert size={18} className="text-amber-600 dark:text-amber-500 shrink-0 mt-0.5" />
-        <p className="text-xs text-amber-800 dark:text-amber-400 leading-relaxed">
+      <div className="bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 p-3.5 rounded-xl flex items-start gap-2.5">
+        <ShieldAlert size={18} className="text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+        <p className="text-xs text-amber-900 dark:text-amber-200 leading-relaxed font-medium">
           This module requires connection to government CCTV infrastructure. Connect real RTSP camera stream URLs in the backend config to activate live feeds. The YOLO11 computer vision model processes feeds server-side.
         </p>
       </div>
 
       {/* Summary Analytics */}
-      <div className="flex justify-between items-center text-xs border-t border-white/5 pt-3">
+      <div className="flex justify-between items-center text-xs border-t border-slate-200/50 dark:border-white/10 pt-3">
         <div className="flex flex-col gap-0.5">
-          <span className="text-slate-400">Last 30 min crowd danger:</span>
-          <span className="font-bold text-slate-700 dark:text-slate-200">{isDanger ? '14 people' : '0 people'}</span>
+          <span className="text-slate-500 dark:text-slate-400 font-medium">Last 30 min crowd danger:</span>
+          <span className="font-bold text-slate-800 dark:text-slate-100">{isDanger ? '14 people' : '0 people'}</span>
         </div>
-        <span className="text-[10px] text-slate-400 italic">CCTV Person Detection (Demo Mode)</span>
+        <span className="text-[10px] text-slate-500 dark:text-slate-400 italic">CCTV Person Detection (Demo Mode)</span>
       </div>
 
       {/* Visual Confirmation Status */}
-      <div className="flex items-center justify-between border-t border-white/5 pt-3 text-xs">
-        <span className="text-slate-400">Flood Status:</span>
+      <div className="flex items-center justify-between border-t border-slate-200/50 dark:border-white/10 pt-3 text-xs">
+        <span className="text-slate-500 dark:text-slate-400 font-medium">Flood Status:</span>
         <div className="flex items-center gap-1.5">
           <span className={`h-2 w-2 rounded-full ${isDanger ? 'bg-red-500 animate-pulse' : 'bg-amber-500'}`} />
-          <span className={`font-bold uppercase tracking-wider ${isDanger ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400'}`}>
+          <span className={`font-bold uppercase tracking-wider ${isDanger ? 'text-red-700 dark:text-red-300' : 'text-amber-700 dark:text-amber-300'}`}>
             {isDanger ? 'Flood Visually Confirmed' : 'Awaiting Visual Confirmation'}
           </span>
         </div>

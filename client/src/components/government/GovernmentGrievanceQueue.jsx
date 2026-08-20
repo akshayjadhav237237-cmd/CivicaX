@@ -313,7 +313,7 @@ export function GovernmentGrievanceQueue() {
                   : 'bg-white/50 text-slate-600 hover:bg-white/70 border border-slate-200'
               }`}
             >
-              {s.replace('_', ' ')}
+              {(s || '').replace(/_/g, ' ')}
             </button>
           ))}
         </div>
@@ -348,87 +348,87 @@ export function GovernmentGrievanceQueue() {
         </select>
       </div>
 
-      {filteredGrievances.length === 0 && (
+      {filteredGrievances.length === 0 ? (
         <div className="glass-card p-8 text-center">
-          <ClipboardList size={32} className="mx-auto text-slate-300 mb-3"/>
-          <p className="text-slate-500 text-sm">No matching {statusFilter.replace('_', ' ')} grievances</p>
+          <ClipboardList size={32} className="mx-auto text-slate-400 mb-3"/>
+          <p className="text-slate-600 dark:text-slate-400 text-sm font-medium">No matching {(statusFilter || '').replace(/_/g, ' ')} grievances</p>
         </div>
-      )}
-
-      {filteredGrievances.map(g => {
-        const isExpanded = expandedId === g.id;
-        return (
-          <div key={g.id} className="glass-card p-4">
-            <div className="flex items-start gap-3">
-              <span className="text-xl">{CATEGORY_ICONS[g.category] || '📋'}</span>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap mb-1">
-                  <h4 className="font-semibold text-slate-800 text-sm">{g.title}</h4>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${STATUS_STYLE[g.status]}`}>
-                    {g.status.replace('_', ' ')}
-                  </span>
-                  <span className="text-xs text-slate-400 capitalize">{g.category.replace('_', ' ')}</span>
-                </div>
-                <p className="text-xs text-slate-500 line-clamp-2">{g.description}</p>
-                {g.address && <p className="text-xs text-slate-400 mt-0.5">📍 {g.address}</p>}
-                <p className="text-xs text-slate-400 mt-0.5">
-                  {new Date(g.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}
-                </p>
-              </div>
-              <button
-                onClick={() => setExpandedId(isExpanded ? null : g.id)}
-                className="text-slate-400 hover:text-slate-700 flex-shrink-0"
-              >
-                {isExpanded ? <ChevronDown size={16}/> : <ChevronRight size={16}/>}
-              </button>
-            </div>
-
-            {/* Action buttons for submitted/under_review */}
-            {['submitted', 'under_review'].includes(g.status) && (
-              <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
-                <GlassButton
-                  size="sm" variant="primary"
-                  onClick={() => setApproveTarget(g)}
-                  className="flex-1 text-xs flex items-center justify-center gap-1"
-                >
-                  <CheckCircle2 size={12}/> Approve & Assign
-                </GlassButton>
-                <GlassButton
-                  size="sm" variant="danger"
-                  onClick={() => setRejectTarget(g)}
-                  className="flex-1 text-xs flex items-center justify-center gap-1"
-                >
-                  <XCircle size={12}/> Reject
-                </GlassButton>
-              </div>
-            )}
-
-            {/* Expanded detail */}
-            {isExpanded && (
-              <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-                {g.images && g.images.length > 0 && (
-                  <div className="mb-2">
-                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">Attachments</p>
-                    <GrievanceImageGallery images={g.images.map(resolveImageUrl)} />
+      ) : (
+        filteredGrievances.map(g => {
+          const isExpanded = expandedId === g.id;
+          return (
+            <div key={g.id} className="glass-card p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-xl">{CATEGORY_ICONS[g.category] || '📋'}</span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100 text-sm">{g.title}</h4>
+                    <span className={`text-xs px-2 py-0.5 rounded-full font-bold uppercase ${STATUS_STYLE[g.status] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'}`}>
+                      {(g?.status || '').replace(/_/g, ' ')}
+                    </span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 capitalize">{(g?.category || '').replace(/_/g, ' ')}</span>
                   </div>
-                )}
-                {g.assignedDepartment && (
-                  <p className="text-xs text-slate-600">🏢 Assigned to: <strong>{g.assignedDepartment.name}</strong></p>
-                )}
-                {g.approvedBudget && (
-                  <p className="text-xs text-slate-600">💰 Budget: <strong>₹{g.approvedBudget.toLocaleString('en-IN')}</strong></p>
-                )}
-                {g.estimatedResolutionDays && (
-                  <p className="text-xs text-slate-600">📅 Est. resolution: <strong>{g.estimatedResolutionDays} days</strong></p>
-                )}
-                {g.updates?.length > 0 && (
-                  <p className="text-xs text-slate-400">{g.updates.length} status update(s)</p>
-                )}
+                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">{g.description}</p>
+                  {g.address && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">📍 {g.address}</p>}
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                    {new Date(g.createdAt).toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setExpandedId(isExpanded ? null : g.id)}
+                  className="text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex-shrink-0 cursor-pointer p-1"
+                >
+                  {isExpanded ? <ChevronDown size={16}/> : <ChevronRight size={16}/>}
+                </button>
               </div>
-            )}
-          </div>
-        );
-      })}
+
+              {/* Action buttons for submitted/under_review */}
+              {['submitted', 'under_review'].includes(g.status) && (
+                <div className="flex gap-2 mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-800">
+                  <GlassButton
+                    size="sm" variant="primary"
+                    onClick={() => setApproveTarget(g)}
+                    className="flex-1 text-xs flex items-center justify-center gap-1"
+                  >
+                    <CheckCircle2 size={12}/> Approve & Assign
+                  </GlassButton>
+                  <GlassButton
+                    size="sm" variant="danger"
+                    onClick={() => setRejectTarget(g)}
+                    className="flex-1 text-xs flex items-center justify-center gap-1"
+                  >
+                    <XCircle size={12}/> Reject
+                  </GlassButton>
+                </div>
+              )}
+
+              {/* Expanded detail */}
+              {isExpanded && (
+                <div className="mt-3 pt-3 border-t border-slate-200/50 dark:border-slate-800 space-y-2">
+                  {g.images && g.images.length > 0 && (
+                    <div className="mb-2">
+                      <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-1">Attachments</p>
+                      <GrievanceImageGallery images={g.images.map(resolveImageUrl)} />
+                    </div>
+                  )}
+                  {g.assignedDepartment && (
+                    <p className="text-xs text-slate-700 dark:text-slate-300">🏢 Assigned to: <strong>{g.assignedDepartment.name}</strong></p>
+                  )}
+                  {g.approvedBudget && (
+                    <p className="text-xs text-slate-700 dark:text-slate-300">💰 Budget: <strong>₹{g.approvedBudget.toLocaleString('en-IN')}</strong></p>
+                  )}
+                  {g.estimatedResolutionDays && (
+                    <p className="text-xs text-slate-700 dark:text-slate-300">📅 Est. resolution: <strong>{g.estimatedResolutionDays} days</strong></p>
+                  )}
+                  {g.updates?.length > 0 && (
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{g.updates.length} status update(s)</p>
+                  )}
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
 
       {/* Modals */}
       <ApprovalModal

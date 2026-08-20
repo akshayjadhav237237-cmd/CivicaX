@@ -48,12 +48,12 @@ function DispatchesPanel({ dispatches, loading, onNewDispatch, onStatusUpdate })
         <div key={d.id} className="glass-card p-3 flex items-center gap-3">
           <span className="text-xl">{SVC_EMOJI[d.serviceType]||'🚨'}</span>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-slate-800 capitalize">{d.serviceType.replace('_',' ')} × {d.quantity}</p>
+            <p className="text-sm font-medium text-slate-800 capitalize">{(d?.serviceType || 'service').replace(/_/g,' ')} × {d?.quantity || 1}</p>
             <p className="text-xs text-slate-500">{d.destinationLabel || `${d.destinationLat?.toFixed(3)}, ${d.destinationLng?.toFixed(3)}`}</p>
             <p className="text-xs text-slate-400">{new Date(d.dispatchedAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
           </div>
           <div className="flex flex-col items-end gap-1">
-            <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${STATUS_BADGE[d.status]||'bg-slate-100 text-slate-600'}`}>{d.status.replace('_',' ')}</span>
+            <span className={`text-xs px-2 py-1 rounded-full font-medium capitalize ${STATUS_BADGE[d.status]||'bg-slate-100 text-slate-600'}`}>{(d?.status || '').replace(/_/g,' ')}</span>
             {d.status !== 'completed' && (
               <select
                 className="text-[10px] bg-white/60 border border-slate-200 rounded px-1 py-0.5 text-slate-600 cursor-pointer"
@@ -62,7 +62,7 @@ function DispatchesPanel({ dispatches, loading, onNewDispatch, onStatusUpdate })
               >
                 <option value="" disabled>Update→</option>
                 {STATUS_STEPS.filter(s => STATUS_STEPS.indexOf(s) > STATUS_STEPS.indexOf(d.status)).map(s => (
-                  <option key={s} value={s}>{s.replace('_',' ')}</option>
+                  <option key={s} value={s}>{(s || '').replace(/_/g,' ')}</option>
                 ))}
               </select>
             )}
@@ -264,21 +264,25 @@ export function GovernmentPage() {
         </div>
       </div>
 
-      {/* Tab bar */}
-      <div className="flex gap-1 glass-card p-1.5 w-fit">
-        {TABS.map(tab => {
-          const Ic = tab.icon;
+      {/* Nav Tabs */}
+      <div className="flex gap-1 glass-card p-1.5 w-fit flex-wrap">
+        {[
+          { id: 'overview',   label: 'Overview & Operations', icon: LayoutDashboard },
+          { id: 'map',        label: 'Situation Map',         icon: MapPin },
+          { id: 'grievances', label: 'Grievance Queue',       icon: ClipboardList },
+          { id: 'alerts',     label: 'Broadcast Alerts',      icon: Radio },
+          { id: 'audit',      label: 'Audit Log',             icon: FileText },
+        ].map(t => {
+          const Ic = t.icon;
           return (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'text-slate-600 hover:bg-white/60'
+              key={t.id}
+              onClick={() => setActiveTab(t.id)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === t.id ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700 dark:text-slate-200 hover:bg-white/60 dark:hover:bg-slate-800/60'
               }`}
             >
-              <Ic size={15}/> {tab.label}
+              <Ic size={14}/> {t.label}
             </button>
           );
         })}
@@ -335,10 +339,10 @@ export function GovernmentPage() {
 
           {/* Resource Calculator */}
           <GlassCard padding="p-6">
-            <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2" style={{ fontFamily: 'var(--font-heading)' }}>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center gap-2" style={{ fontFamily: 'var(--font-heading)' }}>
               <Calculator size={20} className="text-indigo-500" /> Resource Calculator
             </h3>
-            <p className="text-xs text-slate-500 mb-4 bg-indigo-50/50 p-2 rounded border border-indigo-100">
+            <p className="text-xs text-indigo-900 dark:text-indigo-200 mb-4 bg-indigo-50/80 dark:bg-indigo-950/40 p-2.5 rounded-lg border border-indigo-200 dark:border-indigo-800/50 font-medium">
               Based on NDMA (National Disaster Management Authority) guidelines for immediate response.
             </p>
             
@@ -370,34 +374,34 @@ export function GovernmentPage() {
                   <option value="catastrophic">Catastrophic</option>
                 </GlassSelect>
               </div>
-              <GlassButton type="submit" className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700">
+              <GlassButton type="submit" className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white">
                 Run NDMA Formula
               </GlassButton>
             </form>
 
             {calcResult && (
-              <div className="mt-6 pt-4 border-t border-slate-200">
-                <h4 className="font-bold text-sm text-slate-700 mb-3">Required Resources:</h4>
+              <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800">
+                <h4 className="font-bold text-sm text-slate-850 dark:text-slate-100 mb-3">Required Resources:</h4>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <div className="text-slate-500 text-xs font-semibold mb-1 uppercase tracking-wider">Rescue Boats</div>
-                    <div className="font-bold text-lg text-slate-800">{calcResult.resources.boats}</div>
+                  <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">Rescue Boats</div>
+                    <div className="font-bold text-lg text-slate-800 dark:text-slate-100">{calcResult.resources.boats}</div>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <div className="text-slate-500 text-xs font-semibold mb-1 uppercase tracking-wider">Ambulances</div>
-                    <div className="font-bold text-lg text-slate-800">{calcResult.resources.ambulances}</div>
+                  <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">Ambulances</div>
+                    <div className="font-bold text-lg text-slate-800 dark:text-slate-100">{calcResult.resources.ambulances}</div>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <div className="text-slate-500 text-xs font-semibold mb-1 uppercase tracking-wider">NDRF Personnel</div>
-                    <div className="font-bold text-lg text-slate-800">{calcResult.resources.medicalPersonnel}</div>
+                  <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">NDRF Personnel</div>
+                    <div className="font-bold text-lg text-slate-800 dark:text-slate-100">{calcResult.resources.medicalPersonnel}</div>
                   </div>
-                  <div className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                    <div className="text-slate-500 text-xs font-semibold mb-1 uppercase tracking-wider">Relief Kits</div>
-                    <div className="font-bold text-lg text-slate-800">{calcResult.resources.reliefKits.toLocaleString()}</div>
+                  <div className="bg-slate-50 dark:bg-slate-800/60 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                    <div className="text-slate-500 dark:text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">Relief Kits</div>
+                    <div className="font-bold text-lg text-slate-800 dark:text-slate-100">{calcResult.resources.reliefKits.toLocaleString()}</div>
                   </div>
                 </div>
-                <div className="mt-3 bg-red-50 p-3 rounded-lg border border-red-100 flex justify-between items-center text-red-800">
-                  <span className="text-xs font-semibold uppercase tracking-wider">Est. Response Budget</span>
+                <div className="mt-3 bg-red-50 dark:bg-red-950/30 p-3 rounded-lg border border-red-200 dark:border-red-800/40 flex justify-between items-center text-red-900 dark:text-red-200 font-semibold">
+                  <span className="text-xs font-bold uppercase tracking-wider">Est. Response Budget</span>
                   <span className="font-bold">₹{calcResult.budgetEstimateINR.toLocaleString()}</span>
                 </div>
               </div>
@@ -410,28 +414,28 @@ export function GovernmentPage() {
           
           {/* Safe Zones Management */}
           <GlassCard padding="p-6">
-            <h3 className="text-xl font-bold text-slate-800 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Manage Relief Camps</h3>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4" style={{ fontFamily: 'var(--font-heading)' }}>Manage Relief Camps</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {data.safeZones.map(zone => (
-                <div key={zone.id} className="border border-slate-200 rounded-xl p-4 bg-white/40 flex flex-col hover:shadow-md transition-shadow">
+                <div key={zone.id} className="border border-slate-200 dark:border-slate-700 rounded-xl p-4 bg-white/40 dark:bg-slate-900/40 flex flex-col hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-2">
-                    <h4 className="font-bold text-slate-800">{zone.name}</h4>
+                    <h4 className="font-bold text-slate-800 dark:text-slate-100">{zone.name}</h4>
                     <GlassBadge 
                       level={zone.status === 'activated' ? 'safe' : zone.status === 'at_capacity' ? 'critical' : 'info'} 
-                      label={zone.status.replace('_', ' ').toUpperCase()} 
+                      label={(zone?.status || '').replace(/_/g, ' ').toUpperCase()} 
                     />
                   </div>
-                  <p className="text-xs text-slate-500 flex-1 mb-4 flex items-center gap-1"><Users size={12}/> Capacity: {zone.capacity}</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 flex-1 mb-4 flex items-center gap-1 font-medium"><Users size={12}/> Capacity: {zone.capacity}</p>
                   
                   <div className="flex flex-wrap gap-2 text-xs">
                     {zone.status === 'available' && (
-                       <button onClick={() => activateSafeZone(zone.id, 'activated')} className="flex-1 py-1.5 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold transition-colors shadow">Activate Camp</button>
+                       <button onClick={() => activateSafeZone(zone.id, 'activated')} className="flex-1 py-1.5 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold transition-colors shadow cursor-pointer">Activate Camp</button>
                     )}
                     {zone.status === 'activated' && (
-                       <button onClick={() => activateSafeZone(zone.id, 'at_capacity')} className="flex-1 py-1.5 rounded-lg bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 font-bold transition-colors">Mark Full</button>
+                       <button onClick={() => activateSafeZone(zone.id, 'at_capacity')} className="flex-1 py-1.5 rounded-lg bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800/40 hover:bg-red-100 font-bold transition-colors cursor-pointer">Mark Full</button>
                     )}
                     {zone.status !== 'available' && (
-                       <button onClick={() => activateSafeZone(zone.id, 'available')} className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 font-medium transition-colors">Standby</button>
+                       <button onClick={() => activateSafeZone(zone.id, 'available')} className="px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 font-semibold transition-colors cursor-pointer">Standby</button>
                     )}
                   </div>
                 </div>
@@ -441,32 +445,32 @@ export function GovernmentPage() {
 
           {/* Tamper-evident Audit Log */}
           <GlassCard padding="p-6" className="flex-1">
-            <h3 className="text-xl font-bold text-slate-800 mb-4 flex items-center justify-between" style={{ fontFamily: 'var(--font-heading)' }}>
+            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-4 flex items-center justify-between" style={{ fontFamily: 'var(--font-heading)' }}>
               <span>Action Audit Log</span>
-              <span className="text-xs font-medium bg-slate-100 text-slate-600 px-2 py-1 rounded border border-slate-200">Append-only</span>
+              <span className="text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-700">Append-only</span>
             </h3>
             
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="border-b border-slate-200 text-slate-500">
+                  <tr className="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400">
                     <th className="pb-3 font-semibold">Timestamp</th>
                     <th className="pb-3 font-semibold">User Official</th>
                     <th className="pb-3 font-semibold">Action Type</th>
                     <th className="pb-3 font-semibold text-right">Details</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {data.auditLogs.map(log => (
-                    <tr key={log.id} className="group hover:bg-white/50 transition-colors">
-                      <td className="py-3 text-slate-500 font-mono text-xs">{new Date(log.createdAt).toLocaleString()}</td>
-                      <td className="py-3 text-slate-800 font-medium">{log.user?.name || 'System'}</td>
+                    <tr key={log.id} className="group hover:bg-white/50 dark:hover:bg-slate-800/50 transition-colors">
+                      <td className="py-3 text-slate-500 dark:text-slate-400 font-mono text-xs">{new Date(log.createdAt).toLocaleString()}</td>
+                      <td className="py-3 text-slate-800 dark:text-slate-100 font-semibold">{log.user?.name || 'System'}</td>
                       <td className="py-3">
-                        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-600 border border-slate-200">
-                          {log.action.replace(/_/g, ' ')}
+                        <span className="px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                          {(log?.action || '').replace(/_/g, ' ')}
                         </span>
                       </td>
-                      <td className="py-3 text-right">
+                      <td className="py-3 text-right text-slate-700 dark:text-slate-300 text-xs">
                         {typeof log.details === 'object' ? Object.entries(log.details).map(([k,v]) => <span key={k}>{k}: {String(v)} </span>) : log.details}
                       </td>
                     </tr>

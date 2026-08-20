@@ -39,7 +39,7 @@ export function GrievanceImageGallery({ images = [] }) {
               className="w-full h-full object-cover"
               onError={(e) => {
                 // simple fallback in case image fails to load
-                e.target.src = 'https://images.unsplash.com/photo-1590086782957-93c06ef21604?auto=format&fit=crop&w=150&q=80';
+                e.target.src = 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80';
               }}
             />
           </div>
@@ -100,7 +100,7 @@ export function GrievanceImageGallery({ images = [] }) {
               alt={`Grievance attachment large ${selectedIdx + 1}`}
               className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl"
               onError={(e) => {
-                e.target.src = 'https://images.unsplash.com/photo-1590086782957-93c06ef21604?auto=format&fit=crop&w=800&q=80';
+                e.target.src = 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&w=800&q=80';
               }}
             />
             {/* Info and Counter */}

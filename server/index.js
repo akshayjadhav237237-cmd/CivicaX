@@ -17,6 +17,7 @@ const { createServer } = require('http');
 const { Server } = require('socket.io');
 const logger = require('./config/logger');
 const { setupSocketHandlers } = require('./socket/emergencySocket');
+const prisma = require('./config/prisma');
 
 // Import routes
 const authRoutes = require('./routes/auth');
@@ -111,19 +112,6 @@ app.get('/api/v1/health', (_req, res) => {
   res.json({ success: true, message: 'Server running' });
 });
 
-// WebSocket handlers
-try { setupSocketHandlers(io); } catch(e) { console.warn('[WS] Socket handler setup failed:', e.message); }
-
-// Start background services — each call isolated so one failure never stops others
-if (startWeatherPoller)        try { startWeatherPoller(io);        } catch(e) { console.warn('[SERVICE] weatherPoller start failed:', e.message); }
-if (startEONETPoller)          try { startEONETPoller(io);          } catch(e) { console.warn('[SERVICE] eonetService start failed:', e.message); }
-if (startFIRMSPoller)          try { startFIRMSPoller(io);          } catch(e) { console.warn('[SERVICE] firmsService start failed:', e.message); }
-if (startAPIHealthMonitor)     try { startAPIHealthMonitor(io);     } catch(e) { console.warn('[SERVICE] apiHealthMonitor start failed:', e.message); }
-if (startFeatureHealthChecker) try { startFeatureHealthChecker(io); } catch(e) { console.warn('[SERVICE] featureHealthChecker start failed:', e.message); }
-
-// Start the Mandakini Basin disaster intelligence pipeline (10-min polling)
-if (startPipeline)             try { startPipeline(io);             } catch(e) { console.warn('[PIPELINE] Disaster pipeline start failed:', e.message); }
-
 // Global Express error handler
 app.use((err, _req, res, _next) => {
   logger.error('Unhandled error:', err);
@@ -142,28 +130,32 @@ app.use((_req, res) => {
 const PORT = process.env.PORT || 3001;
 httpServer.listen(PORT, async () => {
   logger.info(`🚀 CivicaX server running on port ${PORT}`);
-  
+
+  // WebSocket handlers
+  try { setupSocketHandlers(io); } catch(e) { console.warn('[WS] Socket handler setup failed:', e.message); }
+
+  // Start background services asynchronously
+  setTimeout(() => {
+    if (startWeatherPoller)        try { startWeatherPoller(io);        } catch(e) { console.warn('[SERVICE] weatherPoller start failed:', e.message); }
+    if (startEONETPoller)          try { startEONETPoller(io);          } catch(e) { console.warn('[SERVICE] eonetService start failed:', e.message); }
+    if (startFIRMSPoller)          try { startFIRMSPoller(io);          } catch(e) { console.warn('[SERVICE] firmsService start failed:', e.message); }
+    if (startAPIHealthMonitor)     try { startAPIHealthMonitor(io);     } catch(e) { console.warn('[SERVICE] apiHealthMonitor start failed:', e.message); }
+    if (startFeatureHealthChecker) try { startFeatureHealthChecker(io); } catch(e) { console.warn('[SERVICE] featureHealthChecker start failed:', e.message); }
+    if (startPipeline)             try { startPipeline(io);             } catch(e) { console.warn('[PIPELINE] Disaster pipeline start failed:', e.message); }
+  }, 1000);
+
   if (process.env.OPENAI_API_KEY) {
     console.log('[OpenAI] GPT-4o summaries enabled');
   } else {
     console.warn('[OpenAI] No API key — using fallback summaries');
   }
 
-  try {
-    const { PrismaClient } = require('@prisma/client');
-    const prisma = new PrismaClient();
-    const [civicCount, safetyCount, alertCount, zoneCount, safeZoneCount] = await Promise.all([
-      prisma.civicReport.count(),
-      prisma.safetyReport.count(),
-      prisma.emergencyAlert.count(),
-      prisma.emergencyZone.count(),
-      prisma.safeZone.count(),
-    ]);
-    logger.info(`📊 DB Health: civicReports=${civicCount}  safetyReports=${safetyCount}  emergencyAlerts=${alertCount}  zones=${zoneCount}  safeZones=${safeZoneCount}`);
-    await prisma.$disconnect();
-  } catch (e) {
-    logger.error('DB health check failed:', e.message);
-  }
+  // Startup DB connectivity check
+  prisma.$queryRaw`SELECT 1`.then(() => {
+    logger.info('📊 DB Connection: ONLINE');
+  }).catch((e) => {
+    logger.warn('📊 DB Connection: OFFLINE (Operating in Offline Demo Mode)');
+  });
 });
 
 module.exports = { app, io };

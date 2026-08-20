@@ -264,9 +264,9 @@ export function GovernmentSituationMap({ socket }) {
                   <Truck size={14} /> Dispatch Active
                 </h4>
                 <p className="text-xs text-slate-700 mt-1 capitalize font-semibold">
-                  Unit: {disp.serviceType.replace('_', ' ')} x{disp.quantity}
+                  Unit: {(disp?.serviceType || 'dispatch').replace(/_/g, ' ')} x{disp?.quantity || 1}
                 </p>
-                <p className="text-[10px] text-slate-500">Status: {disp.status}</p>
+                <p className="text-[10px] text-slate-500">Status: {disp?.status || 'dispatched'}</p>
               </div>
             </Popup>
           </Marker>

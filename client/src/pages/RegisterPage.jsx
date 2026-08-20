@@ -10,7 +10,7 @@ import { GlassButton } from '../components/ui/GlassButton';
 
 export function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: '', email: '', password: '', city: 'Lonavla', officialId: '',
+    name: '', email: '', password: '', city: 'Kedarnath Valley', officialId: '',
   });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -102,7 +102,7 @@ export function RegisterPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <GlassInput label="Full Name *" name="name" placeholder="Priya Citizen" icon={User} value={formData.name} onChange={handleChange} required disabled={isSubmitting} />
-              <GlassInput label="City/Region *" name="city" placeholder="Lonavla" icon={MapPin} value={formData.city} onChange={handleChange} required disabled={isSubmitting} />
+              <GlassInput label="City/Region *" name="city" placeholder="Kedarnath Valley" icon={MapPin} value={formData.city} onChange={handleChange} required disabled={isSubmitting} />
             </div>
             <GlassInput label="Email Address *" type="email" name="email" placeholder="name@example.com" icon={Mail} value={formData.email} onChange={handleChange} required disabled={isSubmitting} />
             <GlassInput label="Phone Number" type="tel" name="phone" placeholder="+91 98765 43210 (Optional for SMS alerts)" icon={Phone} value={formData.phone || ''} onChange={handleChange} disabled={isSubmitting} />

@@ -74,8 +74,8 @@ export function AdminWhitelistPanel() {
     <div className="glass-card p-5 space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-slate-800">Official ID Whitelist</h3>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h3 className="font-bold text-slate-800 dark:text-slate-100 text-base">Official ID Whitelist</h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
             Users who register with a whitelisted Official ID automatically receive the <strong>government</strong> role.
           </p>
         </div>
@@ -86,43 +86,43 @@ export function AdminWhitelistPanel() {
 
       {/* Search */}
       <div className="relative">
-        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500"/>
         <input
           type="text" value={query} onChange={handleSearch}
           placeholder="Search by ID, name or jurisdiction..."
-          className="glass-input w-full pl-8 text-sm"
+          className="glass-input w-full pl-8 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500"
         />
       </div>
 
       {/* Table */}
       {isLoading ? (
-        <div className="space-y-2">{[1,2,3].map(i=><div key={i} className="h-12 animate-pulse bg-slate-100 rounded-xl"/>)}</div>
+        <div className="space-y-2">{[1,2,3].map(i=><div key={i} className="h-12 animate-pulse bg-slate-100 dark:bg-slate-800 rounded-xl"/>)}</div>
       ) : officials.length === 0 ? (
-        <p className="text-center text-slate-400 text-sm py-6">No whitelisted officials found</p>
+        <p className="text-center text-slate-500 dark:text-slate-400 text-sm py-6 font-medium">No whitelisted officials found</p>
       ) : (
         <div className="space-y-2">
           {officials.map(o => (
             <div key={o.id} className={`glass-card p-3 flex items-center gap-3 ${!o.isActive ? 'opacity-50' : ''}`}>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-semibold text-blue-700">{o.officialId}</span>
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${o.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                  <span className="font-mono text-sm font-bold text-blue-700 dark:text-blue-400">{o.officialId}</span>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-bold border ${o.isActive ? 'bg-green-100 text-green-800 dark:bg-green-950/60 dark:text-green-300 border-green-200 dark:border-green-800/40' : 'bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300 border-red-200 dark:border-red-800/40'}`}>
                     {o.isActive ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <p className="text-xs text-slate-600 mt-0.5">{o.name} · {o.jurisdiction}</p>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5 font-medium">{o.name} · {o.jurisdiction}</p>
               </div>
               <div className="flex gap-1">
                 <button
                   onClick={() => handleToggle(o)}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 dark:text-slate-400 transition-colors cursor-pointer"
                   title={o.isActive ? 'Deactivate' : 'Activate'}
                 >
                   {o.isActive ? <ToggleRight size={18} className="text-green-500"/> : <ToggleLeft size={18}/>}
                 </button>
                 <button
                   onClick={() => handleDelete(o)}
-                  className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-red-500 dark:text-red-400 transition-colors cursor-pointer"
                   title="Remove"
                 >
                   <Trash2 size={14}/>
@@ -137,22 +137,22 @@ export function AdminWhitelistPanel() {
       <GlassModal isOpen={isAddOpen} onClose={() => setIsAddOpen(false)} title="Add Official to Whitelist">
         <div className="space-y-4">
           <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Official ID</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Official ID</label>
             <input
               type="text" className="glass-input w-full text-sm font-mono"
               placeholder="e.g. GOV-MH-2026-001"
               value={form.officialId}
               onChange={e => setForm(f => ({ ...f, officialId: e.target.value }))}
             />
-            <p className="text-xs text-slate-400 mt-1">This ID must match what the official enters during registration.</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">This ID must match what the official enters during registration.</p>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Full Name</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Full Name</label>
             <input type="text" className="glass-input w-full text-sm" placeholder="e.g. District Collector Dr. Rajesh Patil"
               value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}/>
           </div>
           <div>
-            <label className="text-xs font-semibold text-slate-600 block mb-1">Jurisdiction</label>
+            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block mb-1">Jurisdiction</label>
             <input type="text" className="glass-input w-full text-sm" placeholder="e.g. Lonavla Municipal Council, Pune District"
               value={form.jurisdiction} onChange={e => setForm(f => ({ ...f, jurisdiction: e.target.value }))}/>
           </div>

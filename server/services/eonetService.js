@@ -1,13 +1,11 @@
+const prisma = require('../config/prisma');
 /**
  * eonetService.js — NASA EONET Natural Event Poller
  * Polls with NO API key required. Runs every 15 minutes.
  * Detects floods, wildfires, storms, landslides.
  * Stores to satellite_events table and emits WebSocket events.
  */
-const { PrismaClient } = require('@prisma/client');
 const logger = require('../config/logger');
-
-const prisma = new PrismaClient();
 
 const EONET_URL = 'https://eonet.gsfc.nasa.gov/api/v3/events?status=open&limit=50';
 const POLL_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
@@ -71,7 +69,12 @@ async function pollEONET(io) {
     for (const event of events) {
       try {
         const sourceId = `EONET:${event.id}`;
-        const existing = await prisma.satelliteEvent.findUnique({ where: { sourceEventId: sourceId } });
+        let existing = null;
+        try {
+          existing = await prisma.satelliteEvent.findUnique({ where: { sourceEventId: sourceId } });
+        } catch (_) {
+          break; // Database offline, stop iteration
+        }
         if (existing) continue; // already stored
 
         // Extract coordinates from geometry
@@ -127,6 +130,10 @@ async function pollEONET(io) {
           });
         }
       } catch (eventErr) {
+        if (eventErr.message?.includes("Can't reach database server")) {
+          logger.warn('[EONET] Database unreachable, skipping event persistence.');
+          break;
+        }
         logger.error(`[EONET] Error saving event ${event.id}:`, eventErr.message);
       }
     }
