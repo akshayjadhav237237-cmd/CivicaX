@@ -1,0 +1,10 @@
+{
+  "name": "civicax-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "cd server && npm start",
+    "build": "cd client && npm install && npm run build",
+    "postinstall": "cd server && npm install && npx prisma generate"
+  }
+}
