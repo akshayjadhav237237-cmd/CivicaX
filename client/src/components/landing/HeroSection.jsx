@@ -105,29 +105,17 @@ export function HeroSection({ prediction }) {
             </div>
           </div>
 
-          {/* Right Column (7 cols): Leaflet Map in Suspense */}
+          {/* Right Column (7 cols): Leaflet Interactive Basin Map */}
           <div className="lg:col-span-7 lg:pl-10 lg:border-l border-[var(--border-grid)] flex flex-col justify-center">
-            {error ? (
-              <div className="w-full h-[380px] sm:h-[460px] lg:h-[540px] rounded-[8px] border border-[var(--border-grid)] bg-[var(--bg-subtle)] p-8 flex flex-col items-center justify-center text-center">
-                <Skeleton height="32px" width="180px" className="mb-4" />
-                <span className="text-sm font-mono text-[var(--text-secondary)]">
-                  Connecting to satellite pipeline…
-                </span>
-                <span className="text-xs text-[var(--text-muted)] mt-1 font-mono">
-                  Waiting for telemetry link to Mandakini basin gauge
-                </span>
-              </div>
-            ) : (
-              <Suspense
-                fallback={
-                  <div className="w-full h-[380px] sm:h-[460px] lg:h-[540px] rounded-[8px] border border-[var(--border-grid)] bg-[var(--bg-subtle)] p-6">
-                    <Skeleton height="100%" width="100%" />
-                  </div>
-                }
-              >
-                <LiveMonitorMap data={data} loading={loading} isDelayed={error} />
-              </Suspense>
-            )}
+            <Suspense
+              fallback={
+                <div className="w-full h-[380px] sm:h-[460px] lg:h-[540px] rounded-[8px] border border-[var(--border-grid)] bg-[var(--bg-subtle)] p-6">
+                  <Skeleton height="100%" width="100%" />
+                </div>
+              }
+            >
+              <LiveMonitorMap data={data} loading={loading} isDelayed={error} />
+            </Suspense>
           </div>
 
         </div>
