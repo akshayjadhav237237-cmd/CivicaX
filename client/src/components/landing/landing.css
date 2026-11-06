@@ -1,0 +1,305 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
+
+/* ── Scope all tokens under .landing-root ──────────────────────────── */
+.landing-root {
+  --bg-canvas: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-subtle: #F1F5F9;
+  --bg-map-void: #E2E8F0;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #475569;
+  --border-grid: #E2E8F0;
+  --border-strong: #CBD5E1;
+  --accent-primary: #0284C7;
+  --accent-hover: #0369A1;
+  --accent-orbital: #0D9488;
+
+  /* Alert Tiers - Light Mode */
+  --alert-green-text: #15803D;
+  --alert-green-fill: #DCFCE7;
+  --alert-green-border: #86EFAC;
+
+  --alert-yellow-text: #A16207;
+  --alert-yellow-fill: #FEF9C3;
+  --alert-yellow-border: #FDE047;
+
+  --alert-orange-text: #C2410C;
+  --alert-orange-fill: #FFEDD5;
+  --alert-orange-border: #FDBA74;
+
+  --alert-red-text: #B91C1C;
+  --alert-red-fill: #FEE2E2;
+  --alert-red-border: #FCA5A5;
+
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* ── Dark Mode Scope ────────────────────────────────────────────────── */
+.dark .landing-root {
+  --bg-canvas: #090D16;
+  --bg-surface: #111827;
+  --bg-subtle: #1E293B;
+  --bg-map-void: #060911;
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #94A3B8;
+  --border-grid: #1E293B;
+  --border-strong: #334155;
+  --accent-primary: #38BDF8;
+  --accent-hover: #7DD3FC;
+  --accent-orbital: #2DD4BF;
+
+  /* Alert Tiers - Dark Mode: Deep tint backgrounds with pastel text */
+  --alert-green-text: #4ADE80;
+  --alert-green-fill: #052E16;
+  --alert-green-border: #166534;
+
+  --alert-yellow-text: #FACC15;
+  --alert-yellow-fill: #422006;
+  --alert-yellow-border: #854D0E;
+
+  --alert-orange-text: #FB923C;
+  --alert-orange-fill: #431407;
+  --alert-orange-border: #9A3412;
+
+  --alert-red-text: #F87171;
+  --alert-red-fill: #450A0A;
+  --alert-red-border: #991B1B;
+}
+
+/* ── Typography Scale ───────────────────────────────────────────────── */
+.landing-root h1,
+.landing-root .landing-h1 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 34px;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+  max-width: 18ch;
+  color: var(--text-primary);
+}
+@media (min-width: 768px) {
+  .landing-root h1,
+  .landing-root .landing-h1 {
+    font-size: 44px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-root h1,
+  .landing-root .landing-h1 {
+    font-size: 56px;
+  }
+}
+
+.landing-root h2,
+.landing-root .landing-h2 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 26px;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+@media (min-width: 768px) {
+  .landing-root h2,
+  .landing-root .landing-h2 {
+    font-size: 32px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-root h2,
+  .landing-root .landing-h2 {
+    font-size: 38px;
+  }
+}
+
+.landing-root h3,
+.landing-root .landing-h3 {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 600;
+  font-size: 18px;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+@media (min-width: 768px) {
+  .landing-root h3,
+  .landing-root .landing-h3 {
+    font-size: 20px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-root h3,
+  .landing-root .landing-h3 {
+    font-size: 22px;
+  }
+}
+
+.landing-root .body-lg {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 65ch;
+  color: var(--text-secondary);
+}
+@media (min-width: 768px) {
+  .landing-root .body-lg {
+    font-size: 17px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-root .body-lg {
+    font-size: 18px;
+  }
+}
+
+.landing-root .body-base {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+@media (min-width: 768px) {
+  .landing-root .body-base {
+    font-size: 15px;
+  }
+}
+
+.landing-root .stat-xl {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 30px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  color: var(--text-primary);
+}
+@media (min-width: 768px) {
+  .landing-root .stat-xl {
+    font-size: 36px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-root .stat-xl {
+    font-size: 42px;
+  }
+}
+
+.landing-root .stat-md {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: var(--text-primary);
+}
+@media (min-width: 768px) {
+  .landing-root .stat-md {
+    font-size: 22px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-root .stat-md {
+    font-size: 24px;
+  }
+}
+
+.landing-root .eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--accent-primary);
+}
+@media (min-width: 768px) {
+  .landing-root .eyebrow {
+    font-size: 12px;
+  }
+}
+
+.landing-root .micro {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 500;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+/* ── Container with Hairlines ────────────────────────────────────────── */
+.landing-root .landing-container {
+  max-width: 1360px;
+  margin-left: auto;
+  margin-right: auto;
+  border-left: 1px solid var(--border-grid);
+  border-right: 1px solid var(--border-grid);
+}
+
+.landing-root .landing-section {
+  border-bottom: 1px solid var(--border-grid);
+  padding-top: 48px;
+  padding-bottom: 48px;
+}
+@media (min-width: 768px) {
+  .landing-root .landing-section {
+    padding-top: 64px;
+    padding-bottom: 64px;
+  }
+}
+@media (min-width: 1024px) {
+  .landing-root .landing-section {
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+}
+
+/* ── Skeleton Shimmer ───────────────────────────────────────────────── */
+@keyframes landing-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.landing-root .landing-skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--bg-subtle);
+  border-radius: 4px;
+}
+
+.landing-root .landing-skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  animation: landing-shimmer 1500ms infinite;
+}
+
+.dark .landing-root .landing-skeleton::after {
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.06), transparent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-root .landing-skeleton::after {
+    animation: none;
+  }
+}
+
+/* ── Crosshair "+" SVG marker ────────────────────────────────────────── */
+.corner-crosshair {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  color: #64748B;
+  pointer-events: none;
+  z-index: 20;
+}
+.corner-crosshair.tl { top: -4px; left: -4px; }
+.corner-crosshair.tr { top: -4px; right: -4px; }
+.corner-crosshair.bl { bottom: -4px; left: -4px; }
+.corner-crosshair.br { bottom: -4px; right: -4px; }
