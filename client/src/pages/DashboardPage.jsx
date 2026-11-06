@@ -84,6 +84,7 @@ const DEFAULT_EMERGENCY_ALERT = {
 };
 
 export function DashboardPage() {
+  const { t } = useTranslation();
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   const { activeAlerts, fetchActiveAlerts, isLoadingAlerts } = useAlertStore();

@@ -453,6 +453,7 @@ function LoadingSkeleton({ message }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
+  const { t } = useTranslation();
   const activeZone = zoneId || 'zone-kedarnath-001';
   const [prediction, setPrediction] = useState(() => getOfflinePrediction(activeZone) || getFallbackPrediction(activeZone, zoneName));
   const [loading, setLoading]       = useState(false);

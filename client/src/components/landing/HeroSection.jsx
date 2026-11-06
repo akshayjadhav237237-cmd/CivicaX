@@ -9,6 +9,7 @@ import { Skeleton } from './ui/Skeleton';
 const LiveMonitorMap = lazy(() => import('./LiveMonitorMap'));
 
 export function HeroSection({ prediction }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { data, loading, error, selectedZone, setSelectedZone, zones } = prediction;
 

@@ -45,6 +45,7 @@ function CustomTooltip({ active, payload, label }) {
 
 export function TelemetryWorkbenchSection({ prediction }) {
   const { isDark } = useThemeStore();
+  const { t } = useTranslation();
   const { history = [], loading, error, data, lastUpdated } = prediction || {};
 
   const [leftTab, setLeftTab] = useState('chart'); // 'chart' | 'table' | 'sources'

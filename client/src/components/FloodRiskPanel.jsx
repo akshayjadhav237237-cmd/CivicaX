@@ -13,6 +13,7 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
+import { useTranslation } from '../i18n';
 import { RefreshCw, CloudRain, Droplets, Mountain, Clock, Satellite } from 'lucide-react';
 import { FloodRiskGauge } from './FloodRiskGauge';
 import api from '../services/api';
@@ -156,6 +157,7 @@ function StatCard({ icon: Icon, label, value, unit, color = '#3b82f6', sub }) {
 }
 
 export function FloodRiskPanel({ socket }) {
+  const { t } = useTranslation();
   const [riskData, setRiskData] = useState(DEFAULT_MANDAKINI_RISK);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
