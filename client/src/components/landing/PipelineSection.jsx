@@ -36,7 +36,7 @@ export function PipelineSection() {
           <line x1="25" y1="36" x2="95" y2="36" stroke="var(--accent-primary)" strokeWidth="1.5" strokeDasharray="3 2" />
           {/* Velocity arrow */}
           <path d="M50 36 L70 36 M66 32 L70 36 L66 40" stroke="var(--accent-primary)" strokeWidth="1.5" />
-          <text x="44" y="22" fill="var(--text-muted)" fontSize="9" fontFamily="JetBrains Mono">Q = (1/n)AR^(2/3)S^(1/2)</text>
+          <text x="44" y="22" fill="var(--text-muted)" fontSize="9" fontFamily="Geist Mono, monospace">Q = (1/n)AR^(2/3)S^(1/2)</text>
         </svg>
       ),
     },
