@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useAlertStore } from '../stores/alertStore';
+import { useSimulationStore } from '../stores/simulationStore';
 import { useTranslation } from '../i18n';
 import { 
   AlertTriangle, HardHat, ShieldAlert, ArrowRight, Activity, 
@@ -88,6 +89,7 @@ export function DashboardPage() {
   const { user, hasRole } = useAuth();
   const navigate = useNavigate();
   const { activeAlerts, fetchActiveAlerts, isLoadingAlerts } = useAlertStore();
+  const openSimulator = useSimulationStore((state) => state.openSimulator);
 
   const [stats, setStats] = useState({
     civicActive: 14,
@@ -165,7 +167,15 @@ export function DashboardPage() {
         </div>
 
         {/* Quick Action Button for Citizen */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button 
+            onClick={openSimulator}
+            className="px-3 py-1.5 rounded-xl bg-red-600/15 hover:bg-red-600/25 border border-red-500/40 text-red-600 dark:text-red-400 text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-sm hover:scale-105 active:scale-95"
+            title="Evaluator 1-Click 60s Simulation: 2013 Kedarnath Benchmark"
+          >
+            <Zap size={14} className="text-red-500 animate-pulse" />
+            <span>Simulate Cloudburst (Kedarnath 2013)</span>
+          </button>
           <GlassButton 
             variant="ghost" 
             size="sm" 

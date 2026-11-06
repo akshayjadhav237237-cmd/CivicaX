@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { useThemeStore } from '../../stores/themeStore';
+import { useSimulationStore } from '../../stores/simulationStore';
 import { useTranslation } from '../../i18n';
 import { CornerCrosshairs } from './ui/CornerCrosshairs';
 import { AlertBadge } from './ui/AlertBadge';
@@ -13,6 +14,8 @@ const KEDARNATH_CENTER = [30.7346, 79.0669];
 export function LiveMonitorMap({ data, loading, isDelayed = false }) {
   const { isDark } = useThemeStore();
   const { t } = useTranslation();
+  const isSimulationRunning = useSimulationStore((state) => state.isRunning);
+  const simTelemetry = useSimulationStore((state) => state.telemetry);
   const [canPan, setCanPan] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mapLayer, setMapLayer] = useState('satellite'); // 'satellite' | 'streets'
@@ -45,7 +48,9 @@ export function LiveMonitorMap({ data, loading, isDelayed = false }) {
     };
   }, [mapLayer, isDark]);
 
-  const alertTier = (data?.alertLevel || 'ORANGE').toUpperCase();
+  const alertTier = isSimulationRunning
+    ? (simTelemetry?.alertLevel || 'RED').toUpperCase()
+    : (data?.alertLevel || 'ORANGE').toUpperCase();
 
   return (
     <div className="relative w-full h-[380px] sm:h-[460px] lg:h-[540px] rounded-[8px] overflow-hidden border border-[var(--border-strong)] bg-[#0A0F1D]">
@@ -130,31 +135,39 @@ export function LiveMonitorMap({ data, loading, isDelayed = false }) {
           <div className="md:col-span-4 flex flex-wrap items-center gap-2.5">
             <AlertBadge tier={alertTier} />
             <div className="text-xs font-semibold text-[var(--text-primary)] tracking-tight">
-              {Math.round((data?.riverStatus?.overflowRatio || 0.89) * 100)}% {t("metrics.river_capacity", null, "River Capacity")}
+              {isSimulationRunning
+                ? `${simTelemetry.riverCap}% ${t("metrics.river_capacity", null, "River Capacity")}`
+                : `${Math.round((data?.riverStatus?.overflowRatio || 0.89) * 100)}% ${t("metrics.river_capacity", null, "River Capacity")}`}
             </div>
             <div className="text-xs text-[var(--text-muted)]">
-              {data?.riverStatus?.etaMinutes
-                ? `ETA: ${data?.riverStatus?.etaMinutes}m`
-                : t("metrics.monitored", null, "Monitored")}
+              {isSimulationRunning
+                ? 'ETA: 14m'
+                : (data?.riverStatus?.etaMinutes
+                    ? `ETA: ${data?.riverStatus?.etaMinutes}m`
+                    : t("metrics.monitored", null, "Monitored"))}
             </div>
           </div>
 
           {/* Drawer Center: Prediction Summary */}
           <div className="md:col-span-5 text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-2">
-            {data?.summary}
+            {isSimulationRunning
+              ? '⚡ CRISIS SIMULATION ACTIVE: Extreme 142mm/h cloudburst over Chorabari. Supercritical Manning discharge (2,840 m³/s) breaching Mandakini Ghat corridor.'
+              : data?.summary}
           </div>
 
           {/* Drawer Right: Telemetry + Updated Time */}
           <div className="md:col-span-3 flex flex-col items-start md:items-end text-left md:text-right text-xs text-[var(--text-muted)] space-y-0.5">
             <div className="text-[var(--text-primary)] font-semibold tracking-tight">
-              {data?.rainfall?.current?.toFixed(1) || '38.4'} mm/h • {data?.soilMoisture?.saturationPercent?.toFixed(0) || '79'}% sat • {data?.riverStatus?.velocityMs?.toFixed(1) || '3.1'} m/s
+              {isSimulationRunning
+                ? `${simTelemetry.rainfall.toFixed(1)} mm/h • ${simTelemetry.soilSaturation.toFixed(0)}% sat • ${simTelemetry.velocity.toFixed(1)} m/s`
+                : `${data?.rainfall?.current?.toFixed(1) || '38.4'} mm/h • ${data?.soilMoisture?.saturationPercent?.toFixed(0) || '79'}% sat • ${data?.riverStatus?.velocityMs?.toFixed(1) || '3.1'} m/s`}
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
               <span>
                 {t("metrics.updated", null, "Updated")} {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'LIVE'}
               </span>
-              <span className="text-emerald-500 font-semibold">
-                [ ● {t("metrics.live_feed", null, "Live Feed")} ]
+              <span className={isSimulationRunning ? "text-red-500 font-bold animate-pulse" : "text-emerald-500 font-semibold"}>
+                {isSimulationRunning ? '[ ● SIMULATION ACTIVE ]' : `[ ● ${t("metrics.live_feed", null, "Live Feed")} ]`}
               </span>
             </div>
           </div>

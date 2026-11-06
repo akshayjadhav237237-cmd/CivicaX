@@ -2,11 +2,12 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation, useNavigate, NavLink } from 'react-router-dom';
 import { 
   Bell, Menu, Search, Sun, Moon, MapPin, AlertCircle, 
-  FileText, ShieldAlert, Loader2, X, Sparkles, ArrowRight, Satellite, Navigation, FileSpreadsheet 
+  FileText, ShieldAlert, Loader2, X, Sparkles, ArrowRight, Satellite, Navigation, FileSpreadsheet, Zap 
 } from 'lucide-react';
 import { useNotificationStore } from '../../stores/notificationStore';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeStore } from '../../stores/themeStore';
+import { useSimulationStore } from '../../stores/simulationStore';
 import { useTranslation } from '../../i18n';
 import { GlassDrawer } from '../ui/GlassDrawer';
 import { GlassTimeline } from '../ui/GlassTimeline';
@@ -219,6 +220,8 @@ export function TopBar({ onMenuClick }) {
   const { user } = useAuth();
   const { isDark, toggleTheme } = useThemeStore();
   const { t, language, toggleLanguage } = useTranslation();
+  const openSimulator = useSimulationStore((state) => state.openSimulator);
+  const isSimulationRunning = useSimulationStore((state) => state.isRunning);
   const unreadCount = useNotificationStore((state) => state.unreadCount);
   const notifications = useNotificationStore((state) => state.notifications);
   const markAsRead = useNotificationStore((state) => state.markAsRead);
@@ -638,6 +641,21 @@ export function TopBar({ onMenuClick }) {
               </div>
             )}
           </div>
+
+          {/* Evaluator 1-Click Crisis Simulation Trigger */}
+          <button
+            onClick={openSimulator}
+            className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all duration-300 flex items-center gap-1.5 shadow-sm border cursor-pointer hover:scale-105 active:scale-95 shrink-0 ${
+              isSimulationRunning
+                ? 'bg-red-600 text-white border-red-500 shadow-red-600/30 shadow-lg animate-pulse'
+                : 'bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/40'
+            }`}
+            title="Evaluator 1-Click 60s Crisis Simulation: 2013 Kedarnath Benchmark"
+          >
+            <Zap size={13} className={isSimulationRunning ? 'text-white' : 'text-red-500 animate-pulse'} />
+            <span className="hidden sm:inline">1-Click Crisis Sim</span>
+            <span className="sm:hidden">Sim</span>
+          </button>
 
           {/* Sleek Language Toggle (EN | हिं) */}
           <button

@@ -1,5 +1,6 @@
 import { useState, useMemo, useCallback } from 'react';
 import toast from 'react-hot-toast';
+import { useSimulationStore } from '../../stores/simulationStore';
 import {
   Printer,
   Download,
@@ -167,6 +168,10 @@ const INCIDENT_PRESETS = [
 ];
 
 export function NDMAReportBuilder({ initialPresetId = 'NDMA-UK-RUD-2026-FL08' }) {
+  const openSimulator = useSimulationStore((state) => state.openSimulator);
+  const isSimulationRunning = useSimulationStore((state) => state.isRunning);
+  const currentStageIndex = useSimulationStore((state) => state.currentStageIndex);
+
   // Active Preset Selection
   const [selectedPresetId, setSelectedPresetId] = useState(initialPresetId);
   const activePreset = useMemo(
@@ -490,6 +495,19 @@ export function NDMAReportBuilder({ initialPresetId = 'NDMA-UK-RUD-2026-FL08' })
 
         {/* Action Buttons: Print / PDF, JSON, CSV */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          {/* Evaluator Simulation Trigger */}
+          <button
+            onClick={openSimulator}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm border cursor-pointer ${
+              isSimulationRunning
+                ? 'bg-red-600 text-white border-red-500 animate-pulse'
+                : 'bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400 border-red-500/30'
+            }`}
+            title="Evaluator 1-Click Crisis Simulation"
+          >
+            <Zap size={13} className={isSimulationRunning ? 'text-white' : 'text-red-500 animate-pulse'} />
+            <span>{isSimulationRunning ? `Sim: Stage ${currentStageIndex + 1}/5` : '1-Click Crisis Sim'}</span>
+          </button>
           {/* View Mode Switcher */}
           <div className="inline-flex rounded-xl bg-slate-100 dark:bg-slate-800/80 p-1 border border-slate-200 dark:border-slate-700/60">
             <button

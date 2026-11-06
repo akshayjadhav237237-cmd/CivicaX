@@ -33,8 +33,10 @@ import {
   RefreshCw,
   Maximize2,
   Users,
+  Zap,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useSimulationStore } from '../../stores/simulationStore';
 
 import {
   calculateSafeEvacuationRoute,
@@ -189,6 +191,10 @@ export default function EvacuationRouter({
   customHazards,
   className = '',
 }) {
+  const isSimulationRunning = useSimulationStore((state) => state.isRunning);
+  const currentStageIndex = useSimulationStore((state) => state.currentStageIndex);
+  const openSimulator = useSimulationStore((state) => state.openSimulator);
+
   // Origin State: Default to Mandakini Ghat risk spot or passed prop
   const [origin, setOrigin] = useState(() => {
     if (initialOrigin) {
@@ -401,6 +407,20 @@ export default function EvacuationRouter({
             );
           })}
         </div>
+
+        {/* Evaluator Simulation Quick Pill */}
+        <button
+          onClick={openSimulator}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl border transition-all cursor-pointer shadow-xl backdrop-blur-md shrink-0 ${
+            isSimulationRunning
+              ? 'bg-red-600/90 text-white border-red-400 animate-pulse'
+              : 'bg-slate-900/85 hover:bg-slate-800 text-red-400 border-red-500/40'
+          }`}
+          title="Evaluator 1-Click 60s Crisis Simulation"
+        >
+          <Zap size={13} className="text-red-400" />
+          <span>{isSimulationRunning ? `Sim: Stage ${currentStageIndex + 1}/5` : '1-Click Crisis Sim'}</span>
+        </button>
       </div>
 
       {/* ── Main Interactive Leaflet Map ── */}

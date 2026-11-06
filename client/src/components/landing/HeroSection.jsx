@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Play, MapPin } from 'lucide-react';
+import { ArrowRight, Play, MapPin, Zap } from 'lucide-react';
+import { useSimulationStore } from '../../stores/simulationStore';
 import { Button } from './ui/Button';
 import { useTranslation } from '../../i18n';
 import { Skeleton } from './ui/Skeleton';
@@ -11,6 +12,7 @@ const LiveMonitorMap = lazy(() => import('./LiveMonitorMap'));
 export function HeroSection({ prediction }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const openSimulator = useSimulationStore((state) => state.openSimulator);
   const { data, loading, error, selectedZone, setSelectedZone, zones } = prediction;
 
   return (
@@ -81,11 +83,11 @@ export function HeroSection({ prediction }) {
 
                 <Button
                   variant="ghost"
-                  onClick={() => navigate('/login')}
-                  className="w-full sm:w-auto"
+                  onClick={() => openSimulator()}
+                  className="w-full sm:w-auto text-red-600 dark:text-red-400 border border-red-500/30 bg-red-500/5 hover:bg-red-500/10"
                 >
-                  <Play size={14} className="fill-current" />
-                  <span>{t("common.try_live_demo", null, "Try Live Demo")}</span>
+                  <Zap size={14} className="text-red-500 animate-pulse" />
+                  <span>Simulate Kedarnath 2013</span>
                 </Button>
               </div>
             </div>

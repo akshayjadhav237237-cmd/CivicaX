@@ -5,6 +5,7 @@ import { useAuth } from './hooks/useAuth';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useThemeStore } from './stores/themeStore';
 import { OfflineBanner } from './components/common/OfflineBanner';
+import { CrisisSimulatorModal } from './components/simulation/CrisisSimulatorModal';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -99,6 +100,8 @@ function AppContent() {
       }} />
       {/* Offline Emergency Resilience Banner & Hotline Strip */}
       <OfflineBanner />
+      {/* Evaluator 1-Click Crisis Simulator HUD */}
+      <CrisisSimulatorModal />
       <Suspense fallback={<div className="flex h-screen items-center justify-center bg-slate-900/5 dark:bg-slate-950/10 text-slate-500 font-medium">Loading CivicaX...</div>}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
