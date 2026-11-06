@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { MapContainer, TileLayer } from 'react-leaflet';
 import { useThemeStore } from '../../stores/themeStore';
+import { useTranslation } from '../../i18n';
 import { CornerCrosshairs } from './ui/CornerCrosshairs';
 import { AlertBadge } from './ui/AlertBadge';
 import { Layers } from 'lucide-react';
@@ -11,6 +12,7 @@ const KEDARNATH_CENTER = [30.7346, 79.0669];
 
 export function LiveMonitorMap({ data, loading, isDelayed = false }) {
   const { isDark } = useThemeStore();
+  const { t } = useTranslation();
   const [canPan, setCanPan] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [mapLayer, setMapLayer] = useState('satellite'); // 'satellite' | 'streets'
@@ -128,12 +130,12 @@ export function LiveMonitorMap({ data, loading, isDelayed = false }) {
           <div className="md:col-span-4 flex flex-wrap items-center gap-2.5">
             <AlertBadge tier={alertTier} />
             <div className="text-xs font-semibold text-[var(--text-primary)] tracking-tight">
-              {Math.round((data?.riverStatus?.overflowRatio || 0.89) * 100)}% River Capacity
+              {Math.round((data?.riverStatus?.overflowRatio || 0.89) * 100)}% {t("metrics.river_capacity", null, "River Capacity")}
             </div>
             <div className="text-xs text-[var(--text-muted)]">
               {data?.riverStatus?.etaMinutes
                 ? `ETA: ${data?.riverStatus?.etaMinutes}m`
-                : 'Monitored'}
+                : t("metrics.monitored", null, "Monitored")}
             </div>
           </div>
 
@@ -149,10 +151,10 @@ export function LiveMonitorMap({ data, loading, isDelayed = false }) {
             </div>
             <div className="flex items-center gap-1.5 text-[11px]">
               <span>
-                Updated {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'LIVE'}
+                {t("metrics.updated", null, "Updated")} {data?.timestamp ? new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'LIVE'}
               </span>
               <span className="text-emerald-500 font-semibold">
-                [ ● Live Feed ]
+                [ ● {t("metrics.live_feed", null, "Live Feed")} ]
               </span>
             </div>
           </div>

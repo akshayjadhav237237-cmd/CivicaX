@@ -643,3 +643,6 @@ tr:hover td {
 .dark .stat-value {
   color: #F8FAFC;
 }
+
+/* Global Print Styles for Official Situation Reports */
+@media print { .no-print, .glass-nav, aside, nav, header, footer { display: none !important; } body { background: #ffffff !important; color: #0f172a !important; } main { margin: 0 !important; padding: 0 !important; overflow: visible !important; width: 100% !important; } }

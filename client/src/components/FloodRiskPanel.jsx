@@ -360,7 +360,7 @@ export function FloodRiskPanel({ socket }) {
           )}
           {factors.soil && (
             <FactorBar
-              label="Soil Saturation"
+              label={t("metrics.soil_saturation", null, "Soil Saturation")}
               contribution={factors.soil.contribution}
               weight={factors.soil.weight}
               value={factors.soil.value?.toFixed(3)}

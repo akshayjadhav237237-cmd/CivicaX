@@ -6,11 +6,11 @@
   "scripts": {
     "dev": "node index.js",
     "start": "node index.js",
-    "start:migrate": "npx prisma migrate deploy && node index.js",
+    "start:migrate": "node prisma/migrate.js && node index.js",
     "db:migrate": "npx prisma migrate deploy",
     "db:generate": "npx prisma generate",
     "db:seed": "node prisma/seed.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node --test test/**/*.test.js"
   },
   "prisma": {
     "seed": "node prisma/seed.js"

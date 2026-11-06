@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Play, MapPin } from 'lucide-react';
 import { Button } from './ui/Button';
+import { useTranslation } from '../../i18n';
 import { Skeleton } from './ui/Skeleton';
 
 // Lazy load Leaflet Map
@@ -73,7 +74,7 @@ export function HeroSection({ prediction }) {
                   onClick={() => navigate('/register')}
                   className="w-full sm:w-auto"
                 >
-                  <span>Get Started</span>
+                  <span>{t("common.get_started", null, "Get Started")}</span>
                   <ArrowRight size={16} />
                 </Button>
 
@@ -83,7 +84,7 @@ export function HeroSection({ prediction }) {
                   className="w-full sm:w-auto"
                 >
                   <Play size={14} className="fill-current" />
-                  <span>Try Live Demo</span>
+                  <span>{t("common.try_live_demo", null, "Try Live Demo")}</span>
                 </Button>
               </div>
             </div>

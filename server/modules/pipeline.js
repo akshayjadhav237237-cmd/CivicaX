@@ -31,6 +31,9 @@ const { pipelineIntervalMs } = require('../shared/kedarnath.config');
 // Track last run result for the /flood-risk endpoint to serve instantly
 let _lastRiskResult = null;
 let _isRunning = false;
+let _lastRunTime = null;
+let _lastDuration = null;
+let _lastError = null;
 
 /**
  * Execute one full pipeline cycle.
@@ -116,10 +119,14 @@ async function runDisasterPipeline(io) {
     logger.info(`[Pipeline] Timing: DB persistence and Socket.io emit took ${dbDuration}s`);
 
     const duration = ((Date.now() - cycleStart) / 1000).toFixed(1);
+    _lastRunTime = new Date().toISOString();
+    _lastDuration = parseFloat(duration);
+    _lastError = null;
     logger.info(
       `[Pipeline] ✅ Cycle complete in ${duration}s | Score: ${riskResult.score}/100 | Level: ${riskResult.level.toUpperCase()} | Segments: ${riskResult.floodZoneRisks.length}`
     );
   } catch (err) {
+    _lastError = err.message;
     logger.error(`[Pipeline] ❌ Cycle failed: ${err.message}`, err.stack);
   } finally {
     _isRunning = false;
@@ -132,6 +139,22 @@ async function runDisasterPipeline(io) {
  */
 function getLastRiskResult() {
   return _lastRiskResult;
+}
+
+/**
+ * Get current pipeline health & execution status.
+ */
+function getPipelineStatus() {
+  return {
+    status: _isRunning ? 'RUNNING' : (_lastRunTime ? 'HEALTHY' : 'READY'),
+    isRunning: _isRunning,
+    lastRunAt: _lastRunTime,
+    lastDurationSec: _lastDuration,
+    lastRiskScore: _lastRiskResult ? _lastRiskResult.score : null,
+    lastRiskLevel: _lastRiskResult ? _lastRiskResult.level : null,
+    lastError: _lastError,
+    intervalMs: pipelineIntervalMs,
+  };
 }
 
 /**
@@ -153,4 +176,4 @@ function startPipeline(io) {
   return interval;
 }
 
-module.exports = { startPipeline, runDisasterPipeline, getLastRiskResult };
+module.exports = { startPipeline, runDisasterPipeline, getLastRiskResult, getPipelineStatus };

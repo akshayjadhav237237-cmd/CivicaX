@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { MapContainer, TileLayer, GeoJSON, Popup, Marker, CircleMarker, useMap, Polyline } from 'react-leaflet';
 import L from 'leaflet';
-import { ShieldAlert, AlertTriangle, RefreshCw, ArrowRight, Satellite } from 'lucide-react';
+import { ShieldAlert, AlertTriangle, RefreshCw, ArrowRight, Satellite, Navigation } from 'lucide-react';
 import { io } from 'socket.io-client';
 import toast from 'react-hot-toast';
 import { useGeolocation } from '../hooks/useGeolocation';
@@ -12,6 +12,7 @@ import { GlassButton } from '../components/ui/GlassButton';
 import { GlassBadge } from '../components/ui/GlassBadge';
 import { GlassModal } from '../components/ui/GlassModal';
 import { FloodRiskPanel } from '../components/FloodRiskPanel';
+import { useTranslation } from '../i18n';
 // ── Flood Intelligence Layer ────────────────────────────────────────────────
 import ETACountdownBanner    from '../components/emergency/ETACountdownBanner';
 import { FloodPredictionPanel }  from '../components/emergency/FloodPredictionPanel';
@@ -23,6 +24,7 @@ import { MapLayerControls }      from '../components/emergency/MapLayerControls'
 import { initFloodAlertNotifier } from '../services/floodAlertNotifier';
 import CCTVConfirmationPanel from '../components/emergency/CCTVConfirmationPanel';
 import HyperlocalAlert from '../components/emergency/HyperlocalAlert';
+import EvacuationRouter from '../components/evacuation/EvacuationRouter';
 
 function getDistance(lat1, lon1, lat2, lon2) {
   const R = 6371; // km
@@ -141,6 +143,8 @@ export function EmergencyPage() {
   const [zoneDetails, setZoneDetails] = useState(null);
   const [evacRoute, setEvacRoute] = useState(null);
   const [isRoutingLoading, setIsRoutingLoading] = useState(false);
+  const [viewMode, setViewMode] = useState('tactical'); // 'tactical' | 'evacuation'
+  const [evacOrigin, setEvacOrigin] = useState(null);
 
   // Auto focus zone or alert from URL query params
   useEffect(() => {
@@ -354,8 +358,21 @@ export function EmergencyPage() {
                   <p className="text-sm text-slate-600 dark:text-slate-300 mb-3 line-clamp-2">{alert.description}</p>
                   
                   {alert.evacuationOrder && (
-                    <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs font-bold px-3 py-2 rounded-lg border border-red-200 dark:border-red-800/40 flex items-center gap-2 mb-3 animate-pulse">
-                      <AlertTriangle size={14} /> MANDATORY EVACUATION
+                    <div className="flex flex-col gap-2 mb-3">
+                      <div className="bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 text-xs font-bold px-3 py-2 rounded-lg border border-red-200 dark:border-red-800/40 flex items-center gap-2 animate-pulse">
+                        <AlertTriangle size={14} /> MANDATORY EVACUATION
+                      </div>
+                      <GlassButton
+                        size="sm"
+                        variant="primary"
+                        className="w-full text-xs font-bold py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white"
+                        onClick={() => {
+                          if (alert.zoneId) setSelectedZoneId(alert.zoneId);
+                          setViewMode('evacuation');
+                        }}
+                      >
+                        <Navigation size={13} className="mr-1.5" /> Launch Safe Evacuation Corridor
+                      </GlassButton>
                     </div>
                   )}
                   
@@ -372,7 +389,11 @@ export function EmergencyPage() {
           
           <div className="mt-4">
             <HyperlocalAlert 
-              onEvacuate={(fromLat, fromLng, safeZone) => fetchEvacRoute(fromLat, fromLng, safeZone.latitude, safeZone.longitude)} 
+              onEvacuate={(fromLat, fromLng, safeZone) => {
+                setEvacOrigin({ lat: fromLat, lng: fromLng, name: 'My Current Location' });
+                setViewMode('evacuation');
+                fetchEvacRoute(fromLat, fromLng, safeZone.latitude, safeZone.longitude);
+              }} 
               safeZones={safeZones} 
             />
           </div>
@@ -411,8 +432,65 @@ export function EmergencyPage() {
 
       </div>
 
-      {/* Main Map Container */}
-      <div className="w-full h-[500px] lg:h-full flex-1 rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 shadow-[0_8px_32px_rgba(31,38,135,0.08)] relative z-0 order-1 lg:order-2">
+      {/* Main Map or Evacuation Router View */}
+      <div className="w-full flex-1 flex flex-col gap-2 order-1 lg:order-2 h-auto lg:h-full">
+        {/* View Mode Switcher Header */}
+        <div className="flex items-center justify-between gap-3 px-1 py-0.5">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('tactical')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border ${
+                viewMode === 'tactical'
+                  ? 'bg-blue-600 text-white shadow-md border-blue-500 ring-2 ring-blue-500/20'
+                  : 'bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
+            >
+              <Satellite size={13} />
+              <span>Tactical Operations Map</span>
+            </button>
+            <button
+              onClick={() => setViewMode('evacuation')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer border ${
+                viewMode === 'evacuation'
+                  ? 'bg-emerald-600 text-white shadow-md border-emerald-500 ring-2 ring-emerald-500/30'
+                  : 'bg-white/80 dark:bg-slate-900/80 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-800 hover:border-emerald-500/60'
+              }`}
+            >
+              <Navigation size={13} className="text-emerald-400" />
+              <span>{t("evacuation.evacuation_routes", null, "Safe Evacuation Corridors")}</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+            </button>
+          </div>
+          {viewMode === 'evacuation' && (
+            <span className="hidden md:inline text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+              Active Hazard Bypass & Mountain Walking Guidance
+            </span>
+          )}
+        </div>
+
+        {viewMode === 'evacuation' ? (
+          <div className="w-full h-[580px] lg:h-full flex-1">
+            <EvacuationRouter
+              initialOrigin={
+                evacOrigin ||
+                (selectedZoneId && STREET_SELECTOR_PILLS.find((p) => p.id === selectedZoneId)
+                  ? {
+                      lat: STREET_SELECTOR_PILLS.find((p) => p.id === selectedZoneId).coords[0],
+                      lng: STREET_SELECTOR_PILLS.find((p) => p.id === selectedZoneId).coords[1],
+                      name: STREET_SELECTOR_PILLS.find((p) => p.id === selectedZoneId).label,
+                    }
+                  : location
+                  ? { lat: location.lat, lng: location.lng, name: 'My Current Location' }
+                  : undefined)
+              }
+              className="h-full"
+            />
+          </div>
+        ) : (
+          <div className="w-full h-[500px] lg:h-full flex-1 rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800 shadow-[0_8px_32px_rgba(31,38,135,0.08)] relative z-0">
         
         {/* Quick Street-Level Micro-Zone Selector Toolbar — Top Left Floating Bar */}
         <div className="absolute top-3 left-3 z-[1000] flex items-center gap-1.5 flex-wrap max-w-[calc(100%-120px)] bg-slate-900/85 dark:bg-slate-950/90 backdrop-blur-md px-2.5 py-1.5 rounded-xl border border-white/15 shadow-xl">
@@ -597,6 +675,8 @@ export function EmergencyPage() {
            </GlassCard>
         </div>
       </div>
+      )}
+      </div>
 
       {/* Zone Details Modal */}
       {selectedAlert && (
@@ -666,7 +746,7 @@ export function EmergencyPage() {
             </div>
             
             <div className="flex justify-end mt-2 pt-4 border-t border-slate-200 dark:border-slate-700">
-               <GlassButton variant="ghost" onClick={() => setSelectedAlert(null)}>Close</GlassButton>
+               <GlassButton variant="ghost" onClick={() => setSelectedAlert(null)}>{t("common.close", null, "Close")}</GlassButton>
             </div>
           </div>
         </GlassModal>

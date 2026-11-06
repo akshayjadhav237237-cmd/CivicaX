@@ -2,11 +2,12 @@ import { useEffect, useState } from 'react';
 import { History, Search, Filter } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
+import { getOfflineAlerts, saveOfflineAlerts } from '../services/offlineSync';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassBadge } from '../components/ui/GlassBadge';
 
 export function AlertsPage() {
-  const [alerts, setAlerts] = useState([]);
+  const [alerts, setAlerts] = useState(() => getOfflineAlerts() || []);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [levelFilter, setLevelFilter] = useState('all');
@@ -20,9 +21,20 @@ export function AlertsPage() {
     try {
       const response = await api.get('/emergency/alerts');
       const data = response.data?.data || response.data || [];
-      setAlerts(Array.isArray(data) ? data : []);
+      const valid = Array.isArray(data) ? data : [];
+      if (valid.length > 0) {
+        saveOfflineAlerts(valid);
+        setAlerts(valid);
+      } else {
+        setAlerts(getOfflineAlerts());
+      }
     } catch {
-      toast.error('Failed to load alert history');
+      const cached = getOfflineAlerts();
+      if (cached && cached.length > 0) {
+        setAlerts(cached);
+      } else {
+        toast.error('Failed to load alert history');
+      }
     } finally {
       setIsLoading(false);
     }

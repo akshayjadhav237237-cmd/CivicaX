@@ -4,6 +4,7 @@ import { Toaster } from 'react-hot-toast';
 import { useAuth } from './hooks/useAuth';
 import { useWebSocket } from './hooks/useWebSocket';
 import { useThemeStore } from './stores/themeStore';
+import { OfflineBanner } from './components/common/OfflineBanner';
 
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -43,6 +44,9 @@ const EmergencyPage = lazy(() => import('./pages/EmergencyPage').then(module => 
 const CivicPage = lazy(() => import('./pages/CivicPage').then(module => ({ default: module.CivicPage })));
 const SafetyPage = lazy(() => import('./pages/SafetyPage').then(module => ({ default: module.SafetyPage })));
 const GovernmentPage = lazy(() => import('./pages/GovernmentPage').then(module => ({ default: module.GovernmentPage })));
+const DamageAssessmentPage = lazy(() => import('./pages/DamageAssessmentPage').then(module => ({ default: module.DamageAssessmentPage || module.default })));
+const SatelliteImageryPanel = lazy(() => import('./components/satellite/SatelliteImageryPanel').then(module => ({ default: module.SatelliteImageryPanel || module.default })));
+const EvacuationRouter = lazy(() => import('./components/evacuation/EvacuationRouter').then(module => ({ default: module.EvacuationRouter || module.default })));
 const AlertsPage = lazy(() => import('./pages/AlertsPage').then(module => ({ default: module.AlertsPage })));
 const ProfilePage = lazy(() => import('./pages/ProfilePage').then(module => ({ default: module.ProfilePage })));
 const AdminPage = lazy(() => import('./pages/AdminPage').then(module => ({ default: module.AdminPage })));
@@ -93,6 +97,8 @@ function AppContent() {
           boxShadow: isDark ? '0 8px 32px rgba(0,0,0,0.4)' : '0 8px 32px rgba(31,38,135,0.08)'
         }
       }} />
+      {/* Offline Emergency Resilience Banner & Hotline Strip */}
+      <OfflineBanner />
       <Suspense fallback={<div className="flex h-screen items-center justify-center bg-slate-900/5 dark:bg-slate-950/10 text-slate-500 font-medium">Loading CivicaX...</div>}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -110,10 +116,16 @@ function AppContent() {
               <Route path="/safety" element={<SafetyPage />} />
               <Route path="/alerts" element={<AlertsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/satellite" element={<SatelliteImageryPanel />} />
+              <Route path="/evacuation" element={<EvacuationRouter />} />
+              <Route path="/damage-assessment" element={<DamageAssessmentPage />} />
+              <Route path="/reports" element={<DamageAssessmentPage />} />
               
-              {/* Government / Admin Only */}
-              <Route element={<RoleRoute roles={['government', 'admin']} />}>
+              {/* Government / Admin / Department Only */}
+              <Route element={<RoleRoute roles={['government', 'admin', 'department_op']} />}>
                 <Route path="/government" element={<GovernmentPage />} />
+                <Route path="/damage-assessment" element={<DamageAssessmentPage />} />
+                <Route path="/reports" element={<DamageAssessmentPage />} />
               </Route>
 
               {/* Admin Only */}

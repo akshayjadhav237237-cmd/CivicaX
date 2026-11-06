@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeStore } from '../../stores/themeStore';
+import { useTranslation } from '../../i18n';
 import { motion } from 'framer-motion';
 import {
   LayoutDashboard,
@@ -11,23 +12,30 @@ import {
   History,
   Users,
   Settings,
-  ClipboardList
+  ClipboardList,
+  FileSpreadsheet,
+  Satellite,
+  Navigation
 } from 'lucide-react';
 
 export function Sidebar({ mobile = false }) {
   const { user } = useAuth();
   const { isDark } = useThemeStore();
+  const { t } = useTranslation();
 
   const navItems = [
-    { name: 'Dashboard',           path: '/dashboard',             icon: LayoutDashboard, roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Emergency Responder', path: '/emergency',             icon: AlertTriangle,   roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Civic Manager',       path: '/civic',                 icon: HardHat,         roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Safety Watch',        path: '/safety',                icon: ShieldAlert,     roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'My Grievances',       path: '/civic?tab=grievances',  icon: ClipboardList,   roles: ['citizen'] },
-    { name: 'Command Center',      path: '/government',            icon: Building2,       roles: ['government', 'admin'] },
-    { name: 'Alert History',       path: '/alerts',                icon: History,         roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'User Profile',        path: '/profile',               icon: Settings,        roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Admin Panel',         path: '/admin',                 icon: Users,           roles: ['admin'] },
+    { name: t('nav.dashboard', null, 'Dashboard'),                     path: '/dashboard',             icon: LayoutDashboard, roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.emergency', null, 'Emergency Responder'),           path: '/emergency',             icon: AlertTriangle,   roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.civic', null, 'Civic Manager'),                     path: '/civic',                 icon: HardHat,         roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.safety', null, 'Safety Watch'),                     path: '/safety',                icon: ShieldAlert,     roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.grievances', null, 'My Grievances'),                path: '/civic?tab=grievances',  icon: ClipboardList,   roles: ['citizen'] },
+    { name: t('nav.government', null, 'Command Center'),               path: '/government',            icon: Building2,       roles: ['government', 'admin'] },
+    { name: t('nav.satellite', null, 'Satellite Comparison'),         path: '/satellite',             icon: Satellite,       roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.evacuation', null, 'Evacuation Routing'),           path: '/evacuation',            icon: Navigation,      roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.damage_assessment', null, 'Damage Reports'),        path: '/damage-assessment',     icon: FileSpreadsheet, roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.alerts', null, 'Alert History'),                    path: '/alerts',                icon: History,         roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.profile', null, 'User Profile'),                    path: '/profile',               icon: Settings,        roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.admin', null, 'Admin Panel'),                       path: '/admin',                 icon: Users,           roles: ['admin'] },
   ];
 
   const visibleItems = navItems.filter((item) => item.roles.includes(user?.role));

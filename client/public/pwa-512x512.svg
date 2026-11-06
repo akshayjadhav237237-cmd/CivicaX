@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="#090D16"/>
+  <rect x="4" y="4" width="504" height="504" rx="92" stroke="#00F0FF" stroke-opacity="0.3" stroke-width="4"/>
+  
+  <!-- Subtle radar pulse rings -->
+  <circle cx="256" cy="256" r="190" stroke="#00F0FF" stroke-opacity="0.12" stroke-width="3" stroke-dasharray="8 8"/>
+  <circle cx="256" cy="256" r="140" stroke="#863BFF" stroke-opacity="0.18" stroke-width="3"/>
+  <circle cx="256" cy="256" r="90" stroke="#00F0FF" stroke-opacity="0.25" stroke-width="3"/>
+
+  <!-- Mountain Silhouettes -->
+  <path d="M80 380 L175 235 L255 350 L335 205 L432 380 Z" fill="#1E293B" fill-opacity="0.7"/>
+  <path d="M135 380 L215 270 L280 368 L360 250 L420 380 Z" fill="#0E7490" fill-opacity="0.45"/>
+
+  <!-- CivicaX Alpine Shield Crest -->
+  <path d="M256 96 L368 150 V260 C368 336 315 394 256 416 C197 394 144 336 144 260 V150 L256 96 Z" 
+        fill="url(#crest-grad-lg)" stroke="#00F0FF" stroke-width="7" stroke-linejoin="round"/>
+
+  <!-- Stylized Bolt / 'X' Core -->
+  <path d="M272 165 L208 256 H250 L240 342 L304 251 H262 L272 165 Z" fill="#FFFFFF"/>
+  <circle cx="256" cy="254" r="8" fill="#00F0FF"/>
+
+  <defs>
+    <linearGradient id="crest-grad-lg" x1="144" y1="96" x2="368" y2="416" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#863BFF" stop-opacity="0.88"/>
+      <stop offset="0.6" stop-color="#0284C7" stop-opacity="0.88"/>
+      <stop offset="1" stop-color="#0F172A" stop-opacity="0.96"/>
+    </linearGradient>
+  </defs>
+</svg>

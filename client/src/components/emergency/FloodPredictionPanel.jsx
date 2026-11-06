@@ -1,7 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import toast from 'react-hot-toast';
 import { GlassCard } from '../ui/GlassCard';
+import { useTranslation } from '../../i18n';
 import api from '../../services/api';
+import { saveOfflinePrediction, getOfflinePrediction } from '../../services/offlineSync';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const REFETCH_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
@@ -452,7 +454,7 @@ function LoadingSkeleton({ message }) {
 // ─── Main component ───────────────────────────────────────────────────────────
 export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
   const activeZone = zoneId || 'zone-kedarnath-001';
-  const [prediction, setPrediction] = useState(() => getFallbackPrediction(activeZone, zoneName));
+  const [prediction, setPrediction] = useState(() => getOfflinePrediction(activeZone) || getFallbackPrediction(activeZone, zoneName));
   const [loading, setLoading]       = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const retryTimeoutRef = useRef(null);
@@ -463,16 +465,17 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
       const response = await api.get(`/emergency/flood-prediction/${activeZone}`);
       const data = response.data?.data || response.data;
       if (data && (data.alertLevel || data.rainfall || data.riverStatus)) {
+        saveOfflinePrediction(activeZone, data);
         setPrediction(data);
         if (onPredictionLoad) onPredictionLoad(data);
       } else {
-        const fb = getFallbackPrediction(activeZone, zoneName);
+        const fb = getOfflinePrediction(activeZone) || getFallbackPrediction(activeZone, zoneName);
         setPrediction(fb);
         if (onPredictionLoad) onPredictionLoad(fb);
       }
     } catch (err) {
       console.warn('[FloodPredictionPanel] Fetch prediction error, using live Mandakini fallback:', err);
-      const fb = getFallbackPrediction(activeZone, zoneName);
+      const fb = getOfflinePrediction(activeZone) || getFallbackPrediction(activeZone, zoneName);
       setPrediction(fb);
       if (onPredictionLoad) onPredictionLoad(fb);
     }
@@ -520,16 +523,17 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
       const predictionData = predictionRes.data?.data || predictionRes.data;
 
       if (predictionData && Object.keys(predictionData).length > 0 && (predictionData.alertLevel || predictionData.rainfall)) {
+        saveOfflinePrediction(activeZone, predictionData);
         setPrediction(predictionData);
         if (onPredictionLoad) onPredictionLoad(predictionData);
       } else {
-        const fb = getFallbackPrediction(activeZone, zoneName);
+        const fb = getOfflinePrediction(activeZone) || getFallbackPrediction(activeZone, zoneName);
         setPrediction(fb);
         if (onPredictionLoad) onPredictionLoad(fb);
       }
     } catch (err) {
       console.warn('[FloodPredictionPanel] Load data sync using Mandakini fallback:', err.message);
-      const fb = getFallbackPrediction(activeZone, zoneName);
+      const fb = getOfflinePrediction(activeZone) || getFallbackPrediction(activeZone, zoneName);
       setPrediction(fb);
       if (onPredictionLoad) onPredictionLoad(fb);
     } finally {
@@ -641,7 +645,7 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
 
       {/* ── Rainfall ── */}
       {rainfall && (
-        <DataRow icon="🌧" label="Rainfall">
+        <DataRow icon="🌧" label={t("metrics.rainfall", null, "Rainfall")}>
           {rainfall?.current != null ? `${rainfall.current.toFixed(1)} mm/hr current` : '44.2 mm/hr current'}
           &nbsp;|&nbsp;
           {rainfall?.forecast24h != null ? `${rainfall.forecast24h.toFixed(1)} mm 24h forecast` : '148.0 mm 24h forecast'}
@@ -650,7 +654,7 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
 
       {/* ── Soil Saturation ── */}
       {soilMoisture && (
-        <DataRow icon="💧" label="Soil Saturation">
+        <DataRow icon="💧" label={t("metrics.soil_saturation", null, "Soil Saturation")}>
           {soilPercent}% (NASA SMAP)
           <ProgressBar percent={soilPercent} colorClass={soilBarColor} />
         </DataRow>
@@ -658,14 +662,14 @@ export function FloodPredictionPanel({ zoneId, zoneName, onPredictionLoad }) {
 
       {/* ── River Velocity ── */}
       {riverStatus && (
-        <DataRow icon="🌊" label="River Velocity">
+        <DataRow icon="🌊" label={t("metrics.flow_velocity", null, "River Velocity")}>
           {riverStatus.velocityMs ?? 3.12} m/s ({riverStatus.velocityKmh ?? 11.2} km/h)
         </DataRow>
       )}
 
       {/* ── River Capacity ── */}
       {riverStatus && (
-        <DataRow icon="⚡" label="River Capacity">
+        <DataRow icon="⚡" label={t("metrics.river_capacity", null, "River Capacity")}>
           {capacityPercent}%
           <ProgressBar percent={capacityPercent} colorClass={capacityBarColor} />
         </DataRow>

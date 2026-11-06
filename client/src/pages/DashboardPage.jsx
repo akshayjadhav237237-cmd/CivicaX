@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { useAlertStore } from '../stores/alertStore';
+import { useTranslation } from '../i18n';
 import { 
   AlertTriangle, HardHat, ShieldAlert, ArrowRight, Activity, 
   MapPin, Building2, Clock, CheckCircle2, Zap, Radio, 
-  ExternalLink, ChevronRight, Plus, Users, Sparkles
+  ExternalLink, ChevronRight, Plus, Users, Sparkles,
+  Satellite, Navigation, FileSpreadsheet
 } from 'lucide-react';
 import { GlassCard } from '../components/ui/GlassCard';
 import { GlassStat } from '../components/ui/GlassStat';
@@ -169,7 +171,7 @@ export function DashboardPage() {
             onClick={() => navigate('/emergency')} 
             className="gap-1.5"
           >
-            <Radio size={14} className="text-red-500 animate-pulse" /> Live Risk Map
+            <Radio size={14} className="text-red-500 animate-pulse" /> {t("common.view_map", null, "Live Risk Map")}
           </GlassButton>
           <GlassButton 
             variant="primary" 
@@ -177,7 +179,7 @@ export function DashboardPage() {
             onClick={() => navigate('/civic')} 
             className="gap-1.5 shadow-md"
           >
-            <Plus size={16} /> Report Issue
+            <Plus size={16} /> {t("common.report_issue", null, "Report Issue")}
           </GlassButton>
         </div>
       </div>
@@ -328,6 +330,81 @@ export function DashboardPage() {
             </p>
             <div className="flex items-center font-bold text-xs text-red-600 dark:text-red-400 group-hover:gap-2 transition-all">
               View Safety Heatmaps <ArrowRight size={14} className="ml-1" />
+            </div>
+          </GlassCard>
+        </div>
+      </div>
+
+      {/* Advanced Emergency & Geospatial Command Modules */}
+      <div>
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200 dark:border-slate-800">
+          <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2" style={{ fontFamily: 'var(--font-heading)' }}>
+            <Activity size={18} className="text-emerald-500" />
+            Advanced Emergency & Geospatial Command Modules
+          </h3>
+          <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            Field Ops Ready
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Satellite Comparison Card */}
+          <GlassCard 
+            padding="p-6" 
+            className="flex flex-col h-full hover:shadow-xl transition-all duration-300 cursor-pointer group border border-slate-200 dark:border-slate-800 rounded-2xl" 
+            onClick={() => navigate('/satellite')}
+          >
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform bg-sky-100 text-sky-600 dark:bg-sky-950/50 dark:text-sky-400 shadow-sm">
+              <Satellite size={24} />
+            </div>
+            <h3 className="font-bold text-lg mb-1.5 text-slate-900 dark:text-slate-100" style={{ fontFamily: 'var(--font-heading)' }}>
+              Satellite Comparison
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 flex-1 mb-5 leading-relaxed">
+              Interactive NASA GIBS Terra & Aqua MODIS split-slider comparing baseline vs active flood inundation across Himalayan basins.
+            </p>
+            <div className="flex items-center font-bold text-xs text-sky-600 dark:text-sky-400 group-hover:gap-2 transition-all">
+              Launch Satellite View <ArrowRight size={14} className="ml-1" />
+            </div>
+          </GlassCard>
+
+          {/* Evacuation Routing Card */}
+          <GlassCard 
+            padding="p-6" 
+            className="flex flex-col h-full hover:shadow-xl transition-all duration-300 cursor-pointer group border border-slate-200 dark:border-slate-800 rounded-2xl" 
+            onClick={() => navigate('/evacuation')}
+          >
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform bg-emerald-100 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 shadow-sm">
+              <Navigation size={24} />
+            </div>
+            <h3 className="font-bold text-lg mb-1.5 text-slate-900 dark:text-slate-100" style={{ fontFamily: 'var(--font-heading)' }}>
+              Evacuation Routing
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 flex-1 mb-5 leading-relaxed">
+              Dynamic OSRM flood-hazard avoidance routing, automated shelter elevation calculation, and turn-by-turn evacuation directions.
+            </p>
+            <div className="flex items-center font-bold text-xs text-emerald-600 dark:text-emerald-400 group-hover:gap-2 transition-all">
+              Calculate Safe Route <ArrowRight size={14} className="ml-1" />
+            </div>
+          </GlassCard>
+
+          {/* Damage Assessment Card */}
+          <GlassCard 
+            padding="p-6" 
+            className="flex flex-col h-full hover:shadow-xl transition-all duration-300 cursor-pointer group border border-slate-200 dark:border-slate-800 rounded-2xl" 
+            onClick={() => navigate('/damage-assessment')}
+          >
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform bg-amber-100 text-amber-600 dark:bg-amber-950/50 dark:text-amber-400 shadow-sm">
+              <FileSpreadsheet size={24} />
+            </div>
+            <h3 className="font-bold text-lg mb-1.5 text-slate-900 dark:text-slate-100" style={{ fontFamily: 'var(--font-heading)' }}>
+              Damage Reports
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 flex-1 mb-5 leading-relaxed">
+              Official National Disaster Management Authority (NDMA) situation report builder with one-click print-ready PDF and CSV dossiers.
+            </p>
+            <div className="flex items-center font-bold text-xs text-amber-600 dark:text-amber-400 group-hover:gap-2 transition-all">
+              Open NDMA Dossier <ArrowRight size={14} className="ml-1" />
             </div>
           </GlassCard>
         </div>

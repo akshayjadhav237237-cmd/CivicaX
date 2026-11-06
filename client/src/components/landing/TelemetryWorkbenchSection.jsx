@@ -15,6 +15,7 @@ import {
   Cell,
 } from 'recharts';
 import { useThemeStore } from '../../stores/themeStore';
+import { useTranslation } from '../../i18n';
 import { SectionHeader } from './ui/SectionHeader';
 import { Card } from './ui/Card';
 import { ProvenanceFooter } from './ui/ProvenanceFooter';
@@ -184,7 +185,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                     {/* Bottom 210px AreaChart: Overflow Ratio */}
                     <div>
                       <div className="flex items-center justify-between micro text-[var(--text-muted)] mb-1">
-                        <span>RIVER CAPACITY OVERFLOW RATIO</span>
+                        <span>{t("metrics.river_capacity_ratio", null, "RIVER CAPACITY OVERFLOW RATIO")}</span>
                         <span className="font-medium tabular-nums">
                           RATIO: {data?.riverStatus?.overflowRatio ?? history[history.length - 1]?.overflowRatio ?? 0}
                         </span>
@@ -366,7 +367,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                     {/* LineChart: Soil Saturation */}
                     <div>
                       <div className="flex items-center justify-between micro text-[var(--text-muted)] mb-1">
-                        <span>SOIL SATURATION PERCENTAGE (%)</span>
+                        <span>{t("metrics.soil_saturation", null, "SOIL SATURATION")} (%)</span>
                         <span className="font-medium tabular-nums">
                           LATEST: {data?.soilMoisture?.saturationPercent ?? history[history.length - 1]?.soilSaturation ?? 0}%
                         </span>

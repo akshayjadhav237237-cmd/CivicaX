@@ -3,6 +3,7 @@ import { MapPin, Navigation, AlertTriangle, ShieldCheck, Loader2 } from 'lucide-
 import api from '../../services/api';
 import { GlassCard } from '../ui/GlassCard';
 import { GlassButton } from '../ui/GlassButton';
+import { useTranslation } from '../../i18n';
 
 // Haversine distance formula
 function getDistance(lat1, lon1, lat2, lon2) {
@@ -31,6 +32,7 @@ function isPointInPolygon(lat, lng, polygonCoordinates) {
 }
 
 export default function HyperlocalAlert({ onEvacuate, safeZones }) {
+  const { t } = useTranslation();
   const [coords, setCoords] = useState(null);
   const [permissionStatus, setPermissionStatus] = useState('prompt'); // prompt, granted, denied
   const [nearestZone, setNearestZone] = useState(null);
@@ -157,15 +159,15 @@ export default function HyperlocalAlert({ onEvacuate, safeZones }) {
         <div className="flex items-center gap-2 border-b border-red-500/25 pb-3">
           <AlertTriangle size={18} className="text-red-500 animate-pulse" />
           <h3 className="text-sm font-black text-red-700 dark:text-red-400 uppercase tracking-wide">
-            🚨 YOU ARE IN A DANGER ZONE
+            {t('alerts.danger_zone_title', null, '🚨 YOU ARE IN A DANGER ZONE')}
           </h3>
         </div>
         
         <div className="text-xs text-slate-700 dark:text-slate-300 flex flex-col gap-1">
           <div>Zone: <span className="font-bold text-red-700 dark:text-red-400">{zoneName}</span></div>
-          <div>Distance to flood center: <span className="font-bold">{(distance ?? 0).toFixed(2)} km</span></div>
+          <div>{t('alerts.distance_to_center', null, 'Distance to flood center:')} <span className="font-bold">{(distance ?? 0).toFixed(2)} km</span></div>
           <div className="mt-2 text-red-800 dark:text-red-200 font-bold uppercase text-[11px] bg-red-100 dark:bg-red-950/50 p-2 rounded-lg border border-red-200 dark:border-red-800/50">
-            ⚠️ Recommended action: EVACUATE IMMEDIATELY
+            ⚠️ {t('alerts.recommended_action_evacuate', null, 'Recommended action: EVACUATE IMMEDIATELY')}
           </div>
         </div>
 
@@ -202,7 +204,7 @@ export default function HyperlocalAlert({ onEvacuate, safeZones }) {
         <div className="flex items-center gap-2 border-b border-amber-500/25 pb-3">
           <AlertTriangle size={18} className="text-amber-500 animate-bounce" />
           <h3 className="text-sm font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wide">
-            ⚠️ YOU ARE NEAR A DANGER ZONE
+            {t('alerts.near_danger_title', null, '⚠️ YOU ARE NEAR A DANGER ZONE')}
           </h3>
         </div>
 
@@ -210,7 +212,7 @@ export default function HyperlocalAlert({ onEvacuate, safeZones }) {
           <div>Nearest danger zone: <span className="font-bold text-amber-700 dark:text-amber-400">{zoneName}</span></div>
           <div>Distance: <span className="font-bold">{(distance ?? 0).toFixed(2)} km away</span></div>
           <div className="mt-2 text-amber-800 dark:text-amber-200 font-bold text-[11px] bg-amber-100 dark:bg-amber-950/50 p-2 rounded-lg border border-amber-200 dark:border-amber-800/50">
-            Recommended action: Stay alert and prepare to evacuate
+            {t('alerts.recommended_action_prepare', null, 'Recommended action: Stay alert and prepare to evacuate')}
           </div>
         </div>
       </GlassCard>
@@ -223,15 +225,15 @@ export default function HyperlocalAlert({ onEvacuate, safeZones }) {
       <div className="flex items-center gap-2 border-b border-green-500/10 pb-3">
         <ShieldCheck size={18} className="text-green-500" />
         <h3 className="text-sm font-bold text-green-700 dark:text-green-400 uppercase tracking-wide">
-          ✅ YOUR LOCATION IS SAFE
+          {t('alerts.safe_location_title', null, '✅ YOUR LOCATION IS SAFE')}
         </h3>
       </div>
       
       <div className="text-xs text-slate-700 dark:text-slate-300">
         {nearestZone ? (
-          <div>Nearest alert zone: <span className="font-semibold text-slate-800 dark:text-slate-100">{zoneName}</span> ({(distance ?? 0).toFixed(2)} km away)</div>
+          <div>{t('alerts.nearest_alert_zone', null, 'Nearest alert zone:')} <span className="font-semibold text-slate-800 dark:text-slate-100">{zoneName}</span> ({(distance ?? 0).toFixed(2)} km away)</div>
         ) : (
-          <div>No nearby active danger zones detected.</div>
+          <div>{t('alerts.no_nearby_danger', null, 'No nearby active danger zones detected.')}</div>
         )}
         <div className="mt-2 text-slate-500 dark:text-slate-400 italic text-[10px]">Continue monitoring live updates.</div>
       </div>

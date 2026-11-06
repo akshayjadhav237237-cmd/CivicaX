@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useThemeStore } from '../../stores/themeStore';
+import { useTranslation } from '../../i18n';
 
 /**
  * ETACountdownBanner
@@ -11,6 +12,7 @@ import { useThemeStore } from '../../stores/themeStore';
  */
 export default function ETACountdownBanner({ prediction }) {
   const { isDark } = useThemeStore();
+  const { t } = useTranslation();
 
   // ── Guard: only render when overflowing and ETA ≤ 30 min ─────────────────
   const shouldShow =
@@ -142,11 +144,7 @@ export default function ETACountdownBanner({ prediction }) {
                 letterSpacing: '0.02em',
               }}
             >
-              ⚠️ FLOOD WATER REACHING{' '}
-              <span style={{ textTransform: 'uppercase' }}>
-                {prediction.zoneName ?? 'YOUR ZONE'}
-              </span>{' '}
-              IN
+              ⚠️ {t('alerts.flood_reaching', { zone: (prediction.zoneName ?? 'YOUR ZONE').toUpperCase(), time: '' }).trim()}
             </p>
 
             {/* Countdown */}
@@ -171,8 +169,7 @@ export default function ETACountdownBanner({ prediction }) {
                 color: isDark ? '#F87171' : '#DC2626',       /* text-red-600 */
               }}
             >
-              Estimated arrival based on river velocity{' '}
-              {prediction.riverStatus.velocityMs} m/s
+              {t('alerts.estimated_arrival', { velocity: prediction.riverStatus.velocityMs }, `Estimated arrival based on river velocity ${prediction.riverStatus.velocityMs} m/s`)}
             </p>
           </>
         ) : (

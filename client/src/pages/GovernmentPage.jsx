@@ -22,6 +22,7 @@ import { GovernmentGrievanceQueue } from '../components/government/GovernmentGri
 import ActiveFloodAlerts from '../components/government/ActiveFloodAlerts';
 import { io } from 'socket.io-client';
 import { GovernmentSituationMap } from '../components/government/GovernmentSituationMap';
+import { SatelliteImageryPanel } from '../components/satellite/SatelliteImageryPanel';
 
 
 const STATUS_BADGE = {
@@ -290,8 +291,15 @@ export function GovernmentPage() {
 
       {/* Satellite Feed Tab */}
       {activeTab === 'satellite' && (
-        <div className="glass-card p-5">
-          <GovernmentAlertsFeed onDispatch={handleDispatch}/>
+        <div className="space-y-6">
+          <SatelliteImageryPanel />
+          <div className="glass-card p-5">
+            <h3 className="font-semibold text-slate-900 dark:text-white mb-3 flex items-center gap-2">
+              <Satellite size={16} className="text-indigo-500" />
+              Satellite Event Ingest & Alerts Feed
+            </h3>
+            <GovernmentAlertsFeed onDispatch={handleDispatch}/>
+          </div>
         </div>
       )}
 

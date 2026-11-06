@@ -1,0 +1,51 @@
+{
+  "name": "CivicaX — Civic Command & Flood Alert",
+  "short_name": "CivicaX",
+  "description": "AI-powered civic command center for early warning, flood prediction, offline emergency resilience, and public safety.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#0F172A",
+  "background_color": "#090D16",
+  "categories": [
+    "weather",
+    "government",
+    "utilities",
+    "safety"
+  ],
+  "icons": [
+    {
+      "src": "/pwa-192x192.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Emergency Dashboard",
+      "short_name": "Emergency",
+      "url": "/emergency",
+      "description": "Instant access to Himalayan flood telemetry and high-ground shelters"
+    },
+    {
+      "name": "Live Alerts",
+      "short_name": "Alerts",
+      "url": "/alerts",
+      "description": "View active regional disaster alerts and notifications"
+    }
+  ]
+}

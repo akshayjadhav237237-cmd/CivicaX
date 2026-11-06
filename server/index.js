@@ -34,10 +34,7 @@ const medicalRoutes = require('./routes/medical');
 const roadsRoutes = require('./routes/roads');
 const missingPersonsRoutes = require('./routes/missingPersons');
 const volunteersRoutes = require('./routes/volunteers');
-
-
-
-
+const healthRoutes = require('./routes/health');
 
 // Background services — each loaded in isolation so a bad import never kills startup
 let startWeatherPoller, startEONETPoller, startFIRMSPoller, startAPIHealthMonitor, startFeatureHealthChecker;
@@ -55,14 +52,34 @@ const app = express();
 const httpServer = createServer(app);
 
 // Socket.io and CORS configuration
+const defaultOrigins = [
+  'https://civicax.vercel.app',
+  'https://civicax-indol.vercel.app',
+  'http://localhost:5173',
+  'http://localhost:5174',
+];
+
+const configuredOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((s) => s.trim()).filter(Boolean)
+  : [];
+
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...configuredOrigins]));
+
 const corsOptions = {
-  origin: [
-    'https://civicax.vercel.app',
-    'https://civicax-indol.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:5174'
-  ],
-  credentials: true
+  origin: (origin, callback) => {
+    // Allow non-browser requests or local/whitelisted origins
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      return callback(null, true);
+    }
+    // Allow any Vercel preview or production deployments
+    if (/\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+    // Default fallback allow
+    return callback(null, true);
+  },
+  credentials: true,
 };
 
 const io = new Server(httpServer, {
@@ -87,30 +104,25 @@ app.use((req, _res, next) => {
 // Static uploads
 app.use('/uploads', express.static('uploads'));
 
+// Health check endpoints (both canonical /api/v1/health and root /health for load balancers)
+app.use('/api/v1/health', healthRoutes);
+app.use('/health', healthRoutes);
+
 // API Routes
-app.use('/api/v1/auth',         authRoutes);
-app.use('/api/v1/emergency',    emergencyRoutes);
-app.use('/api/v1/civic',        civicRoutes);
-app.use('/api/v1/safety',       safetyRoutes);
-app.use('/api/v1/government',   governmentRoutes);
-app.use('/api/v1/government',   governmentExtraRoutes);
-app.use('/api/v1/admin',        adminRoutes);
+app.use('/api/v1/auth',          authRoutes);
+app.use('/api/v1/emergency',     emergencyRoutes);
+app.use('/api/v1/civic',         civicRoutes);
+app.use('/api/v1/safety',        safetyRoutes);
+app.use('/api/v1/government',    governmentRoutes);
+app.use('/api/v1/government',    governmentExtraRoutes);
+app.use('/api/v1/admin',         adminRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
-app.use('/api/v1/stats',        publicStatsRoutes);
-app.use('/api/v1/sos',          sosRoutes);
-app.use('/api/v1/medical',      medicalRoutes);
-app.use('/api/v1/roads',        roadsRoutes);
-app.use('/api/v1/missing',      missingPersonsRoutes);
-app.use('/api/v1/volunteers',   volunteersRoutes);
-
-
-
-
-
-// Health check
-app.get('/api/v1/health', (_req, res) => {
-  res.json({ success: true, message: 'Server running' });
-});
+app.use('/api/v1/stats',         publicStatsRoutes);
+app.use('/api/v1/sos',           sosRoutes);
+app.use('/api/v1/medical',       medicalRoutes);
+app.use('/api/v1/roads',         roadsRoutes);
+app.use('/api/v1/missing',       missingPersonsRoutes);
+app.use('/api/v1/volunteers',    volunteersRoutes);
 
 // Global Express error handler
 app.use((err, _req, res, _next) => {
@@ -128,34 +140,38 @@ app.use((_req, res) => {
 });
 
 const PORT = process.env.PORT || 3001;
-httpServer.listen(PORT, async () => {
-  logger.info(`🚀 CivicaX server running on port ${PORT}`);
 
-  // WebSocket handlers
-  try { setupSocketHandlers(io); } catch(e) { console.warn('[WS] Socket handler setup failed:', e.message); }
+// Only bind listener if run directly (allows supertest / integration test imports)
+if (require.main === module) {
+  httpServer.listen(PORT, async () => {
+    logger.info(`🚀 CivicaX server running on port ${PORT}`);
 
-  // Start background services asynchronously
-  setTimeout(() => {
-    if (startWeatherPoller)        try { startWeatherPoller(io);        } catch(e) { console.warn('[SERVICE] weatherPoller start failed:', e.message); }
-    if (startEONETPoller)          try { startEONETPoller(io);          } catch(e) { console.warn('[SERVICE] eonetService start failed:', e.message); }
-    if (startFIRMSPoller)          try { startFIRMSPoller(io);          } catch(e) { console.warn('[SERVICE] firmsService start failed:', e.message); }
-    if (startAPIHealthMonitor)     try { startAPIHealthMonitor(io);     } catch(e) { console.warn('[SERVICE] apiHealthMonitor start failed:', e.message); }
-    if (startFeatureHealthChecker) try { startFeatureHealthChecker(io); } catch(e) { console.warn('[SERVICE] featureHealthChecker start failed:', e.message); }
-    if (startPipeline)             try { startPipeline(io);             } catch(e) { console.warn('[PIPELINE] Disaster pipeline start failed:', e.message); }
-  }, 1000);
+    // WebSocket handlers
+    try { setupSocketHandlers(io); } catch(e) { console.warn('[WS] Socket handler setup failed:', e.message); }
 
-  if (process.env.OPENAI_API_KEY) {
-    console.log('[OpenAI] GPT-4o summaries enabled');
-  } else {
-    console.warn('[OpenAI] No API key — using fallback summaries');
-  }
+    // Start background services asynchronously
+    setTimeout(() => {
+      if (startWeatherPoller)        try { startWeatherPoller(io);        } catch(e) { console.warn('[SERVICE] weatherPoller start failed:', e.message); }
+      if (startEONETPoller)          try { startEONETPoller(io);          } catch(e) { console.warn('[SERVICE] eonetService start failed:', e.message); }
+      if (startFIRMSPoller)          try { startFIRMSPoller(io);          } catch(e) { console.warn('[SERVICE] firmsService start failed:', e.message); }
+      if (startAPIHealthMonitor)     try { startAPIHealthMonitor(io);     } catch(e) { console.warn('[SERVICE] apiHealthMonitor start failed:', e.message); }
+      if (startFeatureHealthChecker) try { startFeatureHealthChecker(io); } catch(e) { console.warn('[SERVICE] featureHealthChecker start failed:', e.message); }
+      if (startPipeline)             try { startPipeline(io);             } catch(e) { console.warn('[PIPELINE] Disaster pipeline start failed:', e.message); }
+    }, 1000);
 
-  // Startup DB connectivity check
-  prisma.$queryRaw`SELECT 1`.then(() => {
-    logger.info('📊 DB Connection: ONLINE');
-  }).catch((e) => {
-    logger.warn('📊 DB Connection: OFFLINE (Operating in Offline Demo Mode)');
+    if (process.env.OPENAI_API_KEY) {
+      console.log('[OpenAI] GPT-4o summaries enabled');
+    } else {
+      console.warn('[OpenAI] No API key — using fallback summaries');
+    }
+
+    // Startup DB connectivity check
+    prisma.$queryRaw`SELECT 1`.then(() => {
+      logger.info('📊 DB Connection: ONLINE');
+    }).catch((e) => {
+      logger.warn('📊 DB Connection: OFFLINE (Operating in Offline Demo Mode)');
+    });
   });
-});
+}
 
-module.exports = { app, io };
+module.exports = { app, io, httpServer };

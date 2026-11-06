@@ -1,11 +1,17 @@
 import { create } from 'zustand';
 import api from '../services/api';
+import {
+  saveOfflineAlerts,
+  getOfflineAlerts,
+  saveOfflineZones,
+  getOfflineZones,
+} from '../services/offlineSync';
 
 export const useAlertStore = create((set, get) => ({
-  zones: [],
-  activeAlerts: [],
-  isLoadingZones: true,
-  isLoadingAlerts: true,
+  zones: getOfflineZones() || [],
+  activeAlerts: getOfflineAlerts() || [],
+  isLoadingZones: false,
+  isLoadingAlerts: false,
 
   fetchZones: async () => {
     try {
@@ -13,10 +19,19 @@ export const useAlertStore = create((set, get) => ({
       const { data } = await api.get('/emergency/zones');
       // Response shape: { success, data: { type: 'FeatureCollection', features: [...] } }
       const features = data?.data?.features ?? data?.features ?? [];
-      set({ zones: Array.isArray(features) ? features : [] });
+      const validFeatures = Array.isArray(features) ? features : [];
+      if (validFeatures.length > 0) {
+        saveOfflineZones(validFeatures);
+        set({ zones: validFeatures });
+      } else {
+        // Retain offline cached zones if API returns empty
+        const cached = getOfflineZones();
+        set({ zones: cached.length > 0 ? cached : [] });
+      }
     } catch (err) {
-      console.error('Failed to fetch zones:', err);
-      set({ zones: [] });
+      console.warn('[AlertStore] Failed to fetch zones from network, using offline cache:', err.message);
+      const cached = getOfflineZones();
+      set({ zones: cached });
     } finally {
       set({ isLoadingZones: false });
     }
@@ -28,47 +43,62 @@ export const useAlertStore = create((set, get) => ({
       const { data } = await api.get('/emergency/alerts/active');
       // Response shape: { success, data: [...] }
       const alerts = data?.data ?? data ?? [];
-      set({ activeAlerts: Array.isArray(alerts) ? alerts : [] });
+      const validAlerts = Array.isArray(alerts) ? alerts : [];
+      if (validAlerts.length > 0) {
+        saveOfflineAlerts(validAlerts);
+        set({ activeAlerts: validAlerts });
+      } else {
+        // Fallback to offline cached alerts if response empty
+        const cached = getOfflineAlerts();
+        set({ activeAlerts: cached });
+      }
     } catch (err) {
-      console.error('Failed to fetch active alerts:', err);
-      set({ activeAlerts: [] });
+      console.warn('[AlertStore] Network fetch failed, activating offline persisted alerts:', err.message);
+      const cached = getOfflineAlerts();
+      set({ activeAlerts: cached });
     } finally {
       set({ isLoadingAlerts: false });
     }
   },
 
   addAlert: (alert) => {
-    set((state) => ({
-      activeAlerts: [alert, ...state.activeAlerts].sort((a, b) => {
+    set((state) => {
+      const updated = [alert, ...state.activeAlerts].sort((a, b) => {
         const levelOrder = { red: 0, orange: 1, yellow: 2, green: 3 };
-        return levelOrder[a.level] - levelOrder[b.level];
-      }),
-    }));
+        return (levelOrder[a.level] ?? 4) - (levelOrder[b.level] ?? 4);
+      });
+      saveOfflineAlerts(updated);
+      return { activeAlerts: updated };
+    });
   },
 
   updateAlert: (updatedAlert) => {
-    set((state) => ({
-      activeAlerts: state.activeAlerts
+    set((state) => {
+      const updated = state.activeAlerts
         .map((a) => (a.id === updatedAlert.id ? updatedAlert : a))
         .filter((a) => a.isActive) // remove if deactivated
         .sort((a, b) => {
           const levelOrder = { red: 0, orange: 1, yellow: 2, green: 3 };
-          return levelOrder[a.level] - levelOrder[b.level];
-        }),
-    }));
+          return (levelOrder[a.level] ?? 4) - (levelOrder[b.level] ?? 4);
+        });
+      saveOfflineAlerts(updated);
+      return { activeAlerts: updated };
+    });
   },
 
   updateZoneLevel: (zoneId, level) => {
-    set((state) => ({
-      zones: state.zones.map((zone) => {
-        if (zone.properties.id === zoneId) {
+    set((state) => {
+      const updated = state.zones.map((zone) => {
+        if (zone.properties?.id === zoneId) {
           return {
             ...zone,
             properties: { ...zone.properties, level },
           };
         }
         return zone;
-      }),
-    }));
+      });
+      saveOfflineZones(updated);
+      return { zones: updated };
+    });
   },
 }));

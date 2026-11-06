@@ -1,8 +1,10 @@
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Play } from 'lucide-react';
 import { Button } from './ui/Button';
+import { useTranslation } from '../../i18n';
 
 export function FinalCTASection() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   return (
@@ -21,7 +23,7 @@ export function FinalCTASection() {
             onClick={() => navigate('/register')}
             className="w-full sm:w-auto"
           >
-            <span>Get Started</span>
+            <span>{t("common.get_started", null, "Get Started")}</span>
             <ArrowRight size={16} />
           </Button>
 
@@ -31,7 +33,7 @@ export function FinalCTASection() {
             className="w-full sm:w-auto"
           >
             <Play size={14} className="fill-current" />
-            <span>Try Live Demo</span>
+            <span>{t("common.try_live_demo", null, "Try Live Demo")}</span>
           </Button>
         </div>
       </div>

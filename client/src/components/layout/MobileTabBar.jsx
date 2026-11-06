@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeStore } from '../../stores/themeStore';
+import { useTranslation } from '../../i18n';
 import {
   LayoutDashboard,
   AlertTriangle,
@@ -10,25 +11,28 @@ import {
   Building2,
   Menu,
   User,
-  History
+  History,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export function MobileTabBar() {
   const { user } = useAuth();
   const { isDark } = useThemeStore();
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
 
   const mainItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard, roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Emergency', path: '/emergency', icon: AlertTriangle,   roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Civic',     path: '/civic',     icon: HardHat,         roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Safety',    path: '/safety',    icon: ShieldAlert,     roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.dashboard', null, 'Dashboard'), path: '/dashboard', icon: LayoutDashboard, roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.emergency', null, 'Emergency'), path: '/emergency', icon: AlertTriangle,   roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.civic', null, 'Civic'),         path: '/civic',     icon: HardHat,         roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.safety', null, 'Safety'),       path: '/safety',    icon: ShieldAlert,     roles: ['citizen', 'department_op', 'government', 'admin'] },
   ];
 
   const moreItems = [
-    { name: 'Command Center', path: '/government', icon: Building2,     roles: ['government', 'admin'] },
-    { name: 'Alert History',  path: '/alerts',     icon: History,       roles: ['citizen', 'department_op', 'government', 'admin'] },
-    { name: 'Profile',        path: '/profile',    icon: User,          roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.government', null, 'Command Center'),           path: '/government',        icon: Building2,       roles: ['government', 'admin'] },
+    { name: t('nav.damage_assessment', null, 'Damage Assessment'), path: '/damage-assessment',icon: FileSpreadsheet, roles: ['government', 'admin', 'department_op'] },
+    { name: t('nav.alerts', null, 'Alert History'),                path: '/alerts',            icon: History,         roles: ['citizen', 'department_op', 'government', 'admin'] },
+    { name: t('nav.profile', null, 'Profile'),                     path: '/profile',           icon: User,            roles: ['citizen', 'department_op', 'government', 'admin'] },
   ];
 
   const visibleMain = mainItems.filter((item) => item.roles.includes(user?.role)).slice(0, 4);
@@ -57,7 +61,7 @@ export function MobileTabBar() {
             })}
           >
             <item.icon size={20} className="mb-0.5" />
-            <span className="text-[10px]">{item.name}</span>
+            <span className="text-[10px] truncate max-w-full px-0.5 text-center">{item.name}</span>
           </NavLink>
         ))}
         {visibleMore.length > 0 && (
@@ -67,7 +71,7 @@ export function MobileTabBar() {
             style={{ color: isOpen ? activeColor : inactiveColor }}
           >
             <Menu size={20} className="mb-0.5" />
-            <span className="text-[10px] font-medium">More</span>
+            <span className="text-[10px] font-medium">{t("common.more", null, "More")}</span>
           </button>
         )}
       </div>

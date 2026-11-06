@@ -2,18 +2,20 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sun, Moon, Menu, X } from 'lucide-react';
 import { useThemeStore } from '../../stores/themeStore';
+import { useTranslation } from '../../i18n';
 import { Button } from './ui/Button';
 
 export function Navbar({ isApiOk = true }) {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useThemeStore();
+  const { t, language, toggleLanguage } = useTranslation();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   const links = [
-    { label: 'Live Monitor', href: '#live-monitor' },
-    { label: 'Pipeline', href: '#pipeline' },
-    { label: 'Telemetry', href: '#telemetry' },
-    { label: 'Roles', href: '#roles' },
+    { label: t('nav.live_monitor', null, 'Live Monitor'), href: '#live-monitor' },
+    { label: t('nav.pipeline', null, 'Pipeline'), href: '#pipeline' },
+    { label: t('nav.telemetry', null, 'Telemetry'), href: '#telemetry' },
+    { label: t('nav.roles', null, 'Roles'), href: '#roles' },
   ];
 
   const handleLinkClick = (e, href) => {
@@ -66,8 +68,25 @@ export function Navbar({ isApiOk = true }) {
           ))}
         </nav>
 
-        {/* Right: Theme Toggle + Login + Get Started */}
+        {/* Right: Language Toggle + Theme Toggle + Login + Get Started */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {/* Sleek Language Toggle (EN | हिं) */}
+          <button
+            type="button"
+            onClick={toggleLanguage}
+            aria-label={`Switch language. Current: ${language === 'hi' ? 'Hindi' : 'English'}`}
+            title={language === 'hi' ? 'Switch to English' : 'हिंदी में बदलें'}
+            className="h-[36px] px-2.5 rounded-[6px] border border-[var(--border-grid)] bg-[var(--bg-subtle)] text-xs font-bold flex items-center gap-1 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-primary)] cursor-pointer select-none shrink-0"
+          >
+            <span className={language === 'en' ? 'text-blue-500 dark:text-blue-400 font-extrabold' : 'text-slate-400 font-medium'}>
+              EN
+            </span>
+            <span className="text-slate-400/50 text-[10px]">|</span>
+            <span className={language === 'hi' ? 'text-blue-500 dark:text-blue-400 font-extrabold' : 'text-slate-400 font-medium'}>
+              हिं
+            </span>
+          </button>
+
           <button
             type="button"
             onClick={toggleTheme}

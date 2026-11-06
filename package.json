@@ -4,7 +4,10 @@
   "private": true,
   "scripts": {
     "start": "cd server && npm start",
+    "start:migrate": "cd server && npm run start:migrate",
+    "test": "cd server && npm test",
     "build": "cd client && npm install && npm run build",
+    "build:server": "cd server && npm install && npx prisma generate",
     "postinstall": "cd server && npm install && npx prisma generate"
   }
 }

@@ -1,7 +1,10 @@
+import { useTranslation } from '../../i18n';
+
 /**
  * GlassBadge — Alert level badge using CSS variable design system colours.
  * Automatically adapts to dark/light mode via CSS variable tokens.
  * Guarantees high WCAG AA/AAA contrast on both light and dark card backgrounds.
+ * Supports English and Hindi localization.
  * @param {'watch'|'warning'|'critical'|'safe'|'info'|string} level
  * @param {string} [label] — custom text, otherwise uses level name
  * @param {string} [className]
@@ -9,6 +12,8 @@
  * @param {object} [style]
  */
 export function GlassBadge({ level, label, className = '', dot = false, style = {}, ...props }) {
+  const { t } = useTranslation();
+
   const levelMap = {
     yellow: 'watch',
     orange: 'warning',
@@ -27,10 +32,10 @@ export function GlassBadge({ level, label, className = '', dot = false, style = 
   const normalized = levelMap[String(level || '').toLowerCase()] || 'info';
 
   const labelMap = {
-    watch: 'Yellow Watch',
-    warning: 'Orange Warning',
-    critical: 'Red Critical',
-    safe: 'All Clear',
+    watch: t('alerts.short.watch', null, 'Yellow Watch'),
+    warning: t('alerts.short.warning', null, 'Orange Warning'),
+    critical: t('alerts.short.critical', null, 'Red Critical'),
+    safe: t('alerts.short.normal', null, 'All Clear'),
     info: 'Info',
   };
 
@@ -63,8 +68,8 @@ export function GlassBadge({ level, label, className = '', dot = false, style = 
     >
       {dot && (
         <span
-          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-          style={{ background: dotColorMap[normalized] || 'currentColor' }}
+          className="w-1.5 h-1.5 rounded-full flex-shrink-0 animate-pulse"
+          style={{ background: dotColorMap[normalized] }}
         />
       )}
       {label || labelMap[normalized]}

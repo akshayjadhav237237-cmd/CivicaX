@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../services/api';
+import { saveOfflinePrediction } from '../../services/offlineSync';
 
 /**
  * Calibrated Scientific Baseline for Mandakini Basin (Kedarnath Pilot)
@@ -204,6 +205,7 @@ export function useLivePrediction(initialZoneId = 'zone-kedarnath-001') {
         affectedStreets: payload.urbanImpact?.affectedStreets || payload.affectedStreets || KEDARNATH_CALIBRATED_BASELINE.affectedStreets,
       };
 
+      saveOfflinePrediction(zoneToQuery, adapted);
       setData(adapted);
       setLastUpdated(new Date());
       setError(false);

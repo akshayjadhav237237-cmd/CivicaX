@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, NavLink } from 'react-router-dom';
 import { 
   Bell, Menu, Search, Sun, Moon, MapPin, AlertCircle, 
-  FileText, ShieldAlert, Loader2, X, Sparkles, ArrowRight 
+  FileText, ShieldAlert, Loader2, X, Sparkles, ArrowRight, Satellite, Navigation, FileSpreadsheet 
 } from 'lucide-react';
 import { useNotificationStore } from '../../stores/notificationStore';
 import { useAuth } from '../../hooks/useAuth';
 import { useThemeStore } from '../../stores/themeStore';
+import { useTranslation } from '../../i18n';
 import { GlassDrawer } from '../ui/GlassDrawer';
 import { GlassTimeline } from '../ui/GlassTimeline';
 import api from '../../services/api';
@@ -195,6 +196,9 @@ const POPULAR_SUGGESTIONS = [
   { label: 'Helipad Safe Haven (Safe)', url: '/emergency?zone=zone-upper-helipad-004', type: 'zone' },
   { label: 'CIV-2026-081', url: '/civic?report=CIV-2026-081', type: 'civic' },
   { label: 'SAF-2026-012', url: '/safety?incident=SAF-2026-012', type: 'safety' },
+  { label: 'Satellite Comparison', url: '/satellite', type: 'satellite' },
+  { label: 'Evacuation Routing', url: '/evacuation', type: 'evacuation' },
+  { label: 'Damage Reports', url: '/damage-assessment', type: 'reports' },
 ];
 
 function performLocalSearch(q) {
@@ -214,6 +218,7 @@ export function TopBar({ onMenuClick }) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isDark, toggleTheme } = useThemeStore();
+  const { t, language, toggleLanguage } = useTranslation();
   const unreadCount = useNotificationStore((state) => state.unreadCount);
   const notifications = useNotificationStore((state) => state.notifications);
   const markAsRead = useNotificationStore((state) => state.markAsRead);
@@ -322,14 +327,17 @@ export function TopBar({ onMenuClick }) {
   };
 
   const pathMap = {
-    '/dashboard':  'Dashboard',
-    '/emergency':  'Emergency Responder',
-    '/civic':      'Civic Manager',
-    '/safety':     'Safety Watch',
-    '/government': 'Command Center',
-    '/alerts':     'Alert History',
-    '/profile':    'User Profile',
-    '/admin':      'Admin Panel',
+    '/dashboard':  t('topbar.titles./dashboard', null, 'Dashboard Overview'),
+    '/emergency':  t('topbar.titles./emergency', null, 'Emergency Response & Evacuation'),
+    '/civic':      t('topbar.titles./civic', null, 'Civic Problem Reporting'),
+    '/safety':     t('topbar.titles./safety', null, 'Women Safety Center'),
+    '/government': t('topbar.titles./government', null, 'Government Portal'),
+    '/alerts':     t('topbar.titles./alerts', null, 'Alert History'),
+    '/profile':    t('topbar.titles./profile', null, 'User Profile'),
+    '/admin':      t('topbar.titles./admin', null, 'Admin Panel'),
+    '/satellite':  t('topbar.titles./satellite', null, 'Satellite Comparison'),
+    '/evacuation': t('topbar.titles./evacuation', null, 'Evacuation Routing'),
+    '/damage-assessment': t('topbar.titles./damage-assessment', null, 'Damage Reports'),
   };
   const title = pathMap[location.pathname] || 'CivicaX';
 
@@ -370,6 +378,44 @@ export function TopBar({ onMenuClick }) {
         </div>
 
         <div className="flex items-center gap-3 sm:gap-4">
+        {/* Navigation Tabs for newly wired command modules */}
+        <div className="hidden lg:flex items-center gap-1.5 mr-1">
+          <NavLink
+            to="/satellite"
+            className={({ isActive }) => `px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 border ${
+              isActive
+                ? 'bg-blue-500/15 text-blue-600 dark:text-blue-400 border-blue-500/40 shadow-sm'
+                : 'text-slate-600 dark:text-slate-300 border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+            }`}
+          >
+            <Satellite size={13} className="text-blue-500" />
+            <span>{t('nav.satellite', null, 'Satellite Comparison')}</span>
+          </NavLink>
+
+          <NavLink
+            to="/evacuation"
+            className={({ isActive }) => `px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 border ${
+              isActive
+                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/40 shadow-sm'
+                : 'text-slate-600 dark:text-slate-300 border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+            }`}
+          >
+            <Navigation size={13} className="text-emerald-500" />
+            <span>{t('nav.evacuation', null, 'Evacuation Routing')}</span>
+          </NavLink>
+
+          <NavLink
+            to="/damage-assessment"
+            className={({ isActive }) => `px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 border ${
+              isActive
+                ? 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/40 shadow-sm'
+                : 'text-slate-600 dark:text-slate-300 border-transparent hover:bg-black/5 dark:hover:bg-white/5'
+            }`}
+          >
+            <FileSpreadsheet size={13} className="text-amber-500" />
+            <span>{t('nav.damage_assessment', null, 'Damage Reports')}</span>
+          </NavLink>
+        </div>
           {/* Universal Search Container */}
           <div className="flex items-center relative" ref={searchContainerRef}>
             {/* Mobile Search Toggle Button */}
@@ -413,7 +459,7 @@ export function TopBar({ onMenuClick }) {
                     value={searchQuery}
                     onChange={(e) => handleQueryChange(e.target.value)}
                     onFocus={() => setIsDropdownOpen(true)}
-                    placeholder="Search Kedarnath, CIV-, SAF-..."
+                    placeholder={t("topbar.mobile_search_placeholder", null, "Search Kedarnath, CIV-, SAF-...")}
                     className="bg-transparent border-none outline-none text-sm w-full"
                     style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}
                   />
@@ -429,7 +475,7 @@ export function TopBar({ onMenuClick }) {
                     onClick={() => setIsSearchExpanded(false)}
                     className="ml-2 px-2 py-1 text-xs font-bold rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200"
                   >
-                    Close
+                    {t("common.close", null, "Close")}
                   </button>
                 </div>
               </div>
@@ -456,7 +502,7 @@ export function TopBar({ onMenuClick }) {
                 onChange={(e) => handleQueryChange(e.target.value)}
                 onFocus={() => setIsDropdownOpen(true)}
                 onClick={() => setIsDropdownOpen(true)}
-                placeholder="Search ID, Zone, or Incident..."
+                placeholder={t("topbar.search_placeholder", null, "Search ID, Zone, or Incident...")}
                 className="bg-transparent border-none outline-none text-sm px-2 w-full"
                 style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-body)' }}
               />
@@ -487,7 +533,7 @@ export function TopBar({ onMenuClick }) {
                   <div className="p-2">
                     <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                       <Sparkles size={12} className="text-blue-500" />
-                      Popular Quick Searches
+                      {t("topbar.popular_searches", null, "Popular Quick Searches")}
                     </div>
                     <div className="flex flex-wrap gap-1.5 mt-2">
                       {POPULAR_SUGGESTIONS.map((sug, i) => (
@@ -511,8 +557,8 @@ export function TopBar({ onMenuClick }) {
                 ) : (
                   <div className="flex flex-col gap-1">
                     <div className="flex items-center justify-between px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                      <span>Matches ({searchResults.length})</span>
-                      <span className="text-[9px] font-mono text-blue-500">Instant Local Telemetry</span>
+                      <span>{t("topbar.matches", null, "Matches")} ({searchResults.length})</span>
+                      <span className="text-[9px] font-mono text-blue-500">{t("topbar.instant_telemetry", null, "Instant Local Telemetry")}</span>
                     </div>
 
                     {searchResults.map((item, idx) => {
@@ -592,6 +638,39 @@ export function TopBar({ onMenuClick }) {
               </div>
             )}
           </div>
+
+          {/* Sleek Language Toggle (EN | हिं) */}
+          <button
+            onClick={toggleLanguage}
+            className="px-2.5 py-1.5 rounded-full transition-all duration-300 hover:scale-105 shadow-sm cursor-pointer flex items-center gap-1 text-xs font-bold select-none shrink-0"
+            style={{
+              background: isDark ? 'rgba(51, 65, 85, 0.7)' : 'rgba(241, 245, 249, 0.9)',
+              border: isDark ? '1px solid rgba(148, 163, 184, 0.3)' : '1px solid rgba(203, 213, 225, 0.8)',
+              color: 'var(--text-primary)',
+            }}
+            aria-label={`Switch language. Current: ${language === 'hi' ? 'Hindi' : 'English'}`}
+            title={language === 'hi' ? 'Switch to English' : 'हिंदी में बदलें'}
+          >
+            <span
+              className={
+                language === 'en'
+                  ? 'text-blue-500 dark:text-blue-400 font-extrabold'
+                  : 'text-slate-400 dark:text-slate-500 font-medium'
+              }
+            >
+              EN
+            </span>
+            <span className="text-slate-400/50 text-[10px]">|</span>
+            <span
+              className={
+                language === 'hi'
+                  ? 'text-blue-500 dark:text-blue-400 font-extrabold'
+                  : 'text-slate-400 dark:text-slate-500 font-medium'
+              }
+            >
+              हिं
+            </span>
+          </button>
 
           {/* Dark Mode Toggle */}
           <button
