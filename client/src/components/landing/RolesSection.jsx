@@ -133,7 +133,7 @@ export function RolesSection() {
                   key={`mobile-${role.id}`}
                   type="button"
                   onClick={() => setActiveRole(role.id)}
-                  className={`h-[44px] px-3 rounded-[6px] text-xs font-mono font-medium border transition-colors ${
+                  className={`h-[44px] px-3 rounded-[6px] text-xs font-medium border transition-colors ${
                     isSelected
                       ? 'bg-[var(--bg-surface)] border-[var(--accent-primary)] text-[var(--text-primary)] shadow-sm'
                       : 'bg-[var(--bg-subtle)] border-[var(--border-grid)] text-[var(--text-secondary)]'
@@ -212,7 +212,7 @@ export function RolesSection() {
 
                 {/* Right: 8 Cols Clean Static Outline Schematic */}
                 <div className="lg:col-span-8">
-                  <div className="rounded-[6px] border border-[var(--border-strong)] bg-[var(--bg-canvas)] p-4 sm:p-5 font-mono text-xs">
+                  <div className="rounded-[6px] border border-[var(--border-strong)] bg-[var(--bg-canvas)] p-4 sm:p-5 text-xs">
                     {/* Mock Header */}
                     <div className="pb-3 mb-4 border-b border-[var(--border-grid)] flex items-center justify-between micro text-[var(--text-muted)]">
                       <span className="font-semibold text-[var(--text-primary)]">

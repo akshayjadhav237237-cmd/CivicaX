@@ -41,13 +41,13 @@ export function Navbar({ isApiOk = true }) {
           </a>
 
           {/* Status Pill */}
-          <div className="h-[22px] px-2 rounded-full border border-[var(--border-strong)] bg-[var(--bg-subtle)] inline-flex items-center gap-1.5 font-mono text-[11px] text-[var(--text-secondary)] select-none">
+          <div className="h-[22px] px-2.5 rounded-full border border-[var(--border-strong)] bg-[var(--bg-subtle)] inline-flex items-center gap-1.5 text-[11px] font-medium text-[var(--text-secondary)] select-none">
             <span
               className={`w-2 h-2 rounded-full ${
                 isApiOk ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
               }`}
             />
-            <span className="hidden sm:inline font-semibold">LIVE: SATELLITE PIPELINE</span>
+            <span className="hidden sm:inline font-semibold tracking-wide">LIVE SATELLITE PIPELINE</span>
             <span className="sm:hidden font-semibold">LIVE</span>
           </div>
         </div>

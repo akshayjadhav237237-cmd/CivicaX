@@ -8,7 +8,7 @@ export function ProvenanceFooter({
 }) {
   return (
     <div
-      className={`text-[11px] font-mono text-[var(--text-muted)] flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--border-grid)] ${className}`}
+      className={`text-[11px] text-[var(--text-muted)] font-medium tracking-wide flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-[var(--border-grid)] ${className}`}
     >
       <span>Sources: {sources}</span>
       {updated && <span>Updated {updated}</span>}

@@ -62,7 +62,7 @@ export function HowItWorksSection() {
               <div key={step.num} className="relative pl-8 sm:pl-10 group">
                 
                 {/* Timeline Dot / Node */}
-                <div className="absolute -left-[17px] top-0.5 w-8 h-8 rounded-full bg-white dark:bg-slate-900 border-2 border-blue-600 dark:border-blue-500 flex items-center justify-center text-xs font-mono font-bold text-blue-600 dark:text-blue-400">
+                <div className="absolute -left-[17px] top-0.5 w-8 h-8 rounded-full bg-white dark:bg-slate-900 border-2 border-blue-600 dark:border-blue-500 flex items-center justify-center text-xs font-semibold tabular-nums text-blue-600 dark:text-blue-400">
                   {step.num}
                 </div>
 

@@ -1,6 +1,6 @@
 /**
  * AlertBadge — Never color alone: color + shape symbol + text prefix
- * Height: 24px, Font: JetBrains Mono 11px
+ * Clean minimalist typography
  */
 export function AlertBadge({ tier = 'GREEN', className = '' }) {
   const norm = (tier || 'GREEN').toUpperCase();
@@ -49,7 +49,7 @@ export function AlertBadge({ tier = 'GREEN', className = '' }) {
   return (
     <div
       style={config.style}
-      className={`h-[24px] px-2.5 rounded-[4px] border inline-flex items-center gap-1.5 font-mono text-[11px] font-semibold tracking-wider select-none shrink-0 ${className}`}
+      className={`h-[24px] px-2.5 rounded-[4px] border inline-flex items-center gap-1.5 text-[11px] font-semibold tracking-wide select-none shrink-0 ${className}`}
     >
       <span className="text-[9px] leading-none">{config.shape}</span>
       <span>{config.label}</span>

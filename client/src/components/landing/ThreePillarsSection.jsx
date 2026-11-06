@@ -74,7 +74,7 @@ export function ThreePillarsSection() {
             </div>
           </div>
 
-          <div className="shrink-0 text-xs font-mono font-semibold px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
+          <div className="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-md bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
             District Administration Mode
           </div>
         </div>

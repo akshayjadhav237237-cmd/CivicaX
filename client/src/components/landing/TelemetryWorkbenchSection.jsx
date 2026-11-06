@@ -28,14 +28,14 @@ import { Activity, Database, Table as TableIcon } from 'lucide-react';
 function CustomTooltip({ active, payload, label }) {
   if (!active || !payload || !payload.length) return null;
   return (
-    <div className="p-2.5 rounded-[6px] border border-[var(--border-strong)] bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md text-xs font-mono">
+    <div className="p-2.5 rounded-[6px] border border-[var(--border-strong)] bg-[var(--bg-surface)] text-[var(--text-primary)] shadow-md text-xs">
       <div className="text-[var(--text-muted)] mb-1 font-semibold">{label}</div>
       {payload.map((entry, index) => (
         <div key={`tooltip-${index}`} className="flex items-center justify-between gap-3">
           <span style={{ color: entry.color || 'var(--text-secondary)' }}>
             {entry.name}:
           </span>
-          <span className="font-bold">{entry.value}</span>
+          <span className="font-bold tabular-nums">{entry.value}</span>
         </div>
       ))}
     </div>
@@ -135,7 +135,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                 !hasSufficientHistory ? (
                   <div className="h-[340px] flex flex-col items-center justify-center p-6 text-center rounded-[6px] border border-dashed border-[var(--border-strong)] bg-[var(--bg-subtle)]">
                     <Activity size={28} className="text-[var(--text-muted)] mb-3 animate-pulse" />
-                    <div className="font-mono text-sm font-semibold text-[var(--text-primary)] mb-1">
+                    <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">
                       Collecting readings…
                     </div>
                     <p className="text-xs text-[var(--text-secondary)] max-w-sm">
@@ -148,7 +148,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                     <div>
                       <div className="flex items-center justify-between micro text-[var(--text-muted)] mb-1">
                         <span>PRECIPITATION RATE (mm/h)</span>
-                        <span className="font-mono">
+                        <span className="font-medium tabular-nums">
                           LATEST: {data?.rainfall?.current ?? history[history.length - 1]?.rainfall ?? 0} mm/h
                         </span>
                       </div>
@@ -161,7 +161,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                           >
                             <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
                             <YAxis
-                              tick={{ fill: tickFill, fontSize: 10, fontFamily: 'monospace' }}
+                              tick={{ fill: tickFill, fontSize: 10, fontFamily: 'Inter, sans-serif' }}
                               stroke={gridStroke}
                               domain={[0, 'auto']}
                             />
@@ -185,7 +185,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                     <div>
                       <div className="flex items-center justify-between micro text-[var(--text-muted)] mb-1">
                         <span>RIVER CAPACITY OVERFLOW RATIO</span>
-                        <span className="font-mono">
+                        <span className="font-medium tabular-nums">
                           RATIO: {data?.riverStatus?.overflowRatio ?? history[history.length - 1]?.overflowRatio ?? 0}
                         </span>
                       </div>
@@ -237,7 +237,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                 )
               ) : leftTab === 'table' ? (
                 <div className="overflow-x-auto min-h-[320px]">
-                  <table className="w-full text-left text-xs font-mono">
+                  <table className="w-full text-left text-xs tabular-nums">
                     <caption className="sr-only">Rainfall and River Overflow History</caption>
                     <thead>
                       <tr className="border-b border-[var(--border-strong)] text-[var(--text-muted)]">
@@ -277,7 +277,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                 </div>
               ) : (
                 <div className="p-4 rounded-[6px] bg-[var(--bg-subtle)] text-xs space-y-3 leading-relaxed text-[var(--text-secondary)] min-h-[320px]">
-                  <div className="font-semibold text-[var(--text-primary)] font-mono text-xs uppercase tracking-wider">
+                  <div className="font-semibold text-[var(--text-primary)] text-xs uppercase tracking-wider">
                     Data Sources & Scientific Formulations
                   </div>
                   <div>
@@ -287,7 +287,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                   <div>
                     <strong className="text-[var(--text-primary)] block">Manning&apos;s Open-Channel Equation:</strong>
                     Used to compute volumetric discharge and cross-sectional capacity overflow:
-                    <div className="my-1.5 p-2 bg-[var(--bg-surface)] rounded font-mono text-[11px] border border-[var(--border-grid)]">
+                    <div className="my-1.5 p-2 bg-[var(--bg-surface)] rounded text-[11px] border border-[var(--border-grid)]">
                       v = (1 / n) * R^(2/3) * S^(1/2)
                     </div>
                   </div>
@@ -334,7 +334,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                 !hasSufficientHistory ? (
                   <div className="h-[340px] flex flex-col items-center justify-center p-6 text-center rounded-[6px] border border-dashed border-[var(--border-strong)] bg-[var(--bg-subtle)]">
                     <Database size={28} className="text-[var(--text-muted)] mb-3 animate-pulse" />
-                    <div className="font-mono text-sm font-semibold text-[var(--text-primary)] mb-1">
+                    <div className="text-sm font-semibold text-[var(--text-primary)] mb-1">
                       Collecting readings…
                     </div>
                     <p className="text-xs text-[var(--text-secondary)] max-w-sm">
@@ -349,7 +349,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                         <span className="micro text-[var(--text-muted)] block uppercase">
                           Current Channel Stream Velocity
                         </span>
-                        <div className="font-mono font-bold text-xl sm:text-2xl text-[var(--text-primary)] mt-0.5">
+                        <div className="font-bold text-xl sm:text-2xl text-[var(--text-primary)] mt-0.5 tabular-nums">
                           {data?.riverStatus?.velocityMs ?? '—'} <span className="text-sm font-normal text-[var(--text-muted)]">m/s</span>
                         </div>
                       </div>
@@ -357,7 +357,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                         <span className="micro text-[var(--text-muted)] block uppercase">
                           Estimated Wave Arrival
                         </span>
-                        <span className="font-mono font-semibold text-sm text-[var(--accent-primary)]">
+                        <span className="font-semibold text-sm text-[var(--accent-primary)]">
                           {data?.riverStatus?.etaMinutes ? `+${data.riverStatus.etaMinutes} min ETA` : 'Baseline'}
                         </span>
                       </div>
@@ -367,7 +367,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                     <div>
                       <div className="flex items-center justify-between micro text-[var(--text-muted)] mb-1">
                         <span>SOIL SATURATION PERCENTAGE (%)</span>
-                        <span className="font-mono">
+                        <span className="font-medium tabular-nums">
                           LATEST: {data?.soilMoisture?.saturationPercent ?? history[history.length - 1]?.soilSaturation ?? 0}%
                         </span>
                       </div>
@@ -380,11 +380,11 @@ export function TelemetryWorkbenchSection({ prediction }) {
                             <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
                             <XAxis
                               dataKey="time"
-                              tick={{ fill: tickFill, fontSize: 11, fontFamily: 'monospace' }}
+                              tick={{ fill: tickFill, fontSize: 11, fontFamily: 'Inter, sans-serif' }}
                               stroke={gridStroke}
                             />
                             <YAxis
-                              tick={{ fill: tickFill, fontSize: 10, fontFamily: 'monospace' }}
+                              tick={{ fill: tickFill, fontSize: 10, fontFamily: 'Inter, sans-serif' }}
                               stroke={gridStroke}
                               domain={[0, 100]}
                             />
@@ -398,7 +398,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                                 position: 'insideTopLeft',
                                 fill: '#F59E0B',
                                 fontSize: 10,
-                                fontFamily: 'monospace',
+                                fontFamily: 'Inter, sans-serif',
                               }}
                             />
                             <Line
@@ -418,7 +418,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                 )
               ) : rightTab === 'table' ? (
                 <div className="overflow-x-auto min-h-[320px]">
-                  <table className="w-full text-left text-xs font-mono">
+                  <table className="w-full text-left text-xs tabular-nums">
                     <caption className="sr-only">Soil Saturation and Velocity Observations</caption>
                     <thead>
                       <tr className="border-b border-[var(--border-strong)] text-[var(--text-muted)]">
@@ -457,7 +457,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                 </div>
               ) : (
                 <div className="p-4 rounded-[6px] bg-[var(--bg-subtle)] text-xs space-y-3 leading-relaxed text-[var(--text-secondary)] min-h-[320px]">
-                  <div className="font-semibold text-[var(--text-primary)] font-mono text-xs uppercase tracking-wider">
+                  <div className="font-semibold text-[var(--text-primary)] text-xs uppercase tracking-wider">
                     Soil Physics & Hydrological Modeling
                   </div>
                   <div>
@@ -467,7 +467,7 @@ export function TelemetryWorkbenchSection({ prediction }) {
                   <div>
                     <strong className="text-[var(--text-primary)] block">SCS Curve Number (CN) Method:</strong>
                     Calculates surface direct runoff volume ($Q$) based on antecedent soil moisture condition (AMC) and soil saturation threshold:
-                    <div className="my-1.5 p-2 bg-[var(--bg-surface)] rounded font-mono text-[11px] border border-[var(--border-grid)]">
+                    <div className="my-1.5 p-2 bg-[var(--bg-surface)] rounded text-[11px] border border-[var(--border-grid)]">
                       Q = (P - 0.2*S)^2 / (P + 0.8*S)
                     </div>
                   </div>

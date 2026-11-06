@@ -36,7 +36,7 @@ export function PipelineSection() {
           <line x1="25" y1="36" x2="95" y2="36" stroke="var(--accent-primary)" strokeWidth="1.5" strokeDasharray="3 2" />
           {/* Velocity arrow */}
           <path d="M50 36 L70 36 M66 32 L70 36 L66 40" stroke="var(--accent-primary)" strokeWidth="1.5" />
-          <text x="44" y="22" fill="var(--text-muted)" fontSize="9" fontFamily="Geist Mono, monospace">Q = (1/n)AR^(2/3)S^(1/2)</text>
+          <text x="44" y="22" fill="var(--text-muted)" fontSize="9" fontFamily="Inter, sans-serif">Q = (1/n)AR^(2/3)S^(1/2)</text>
         </svg>
       ),
     },
@@ -125,10 +125,10 @@ export function PipelineSection() {
               >
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <span className="font-mono text-xs font-bold text-[var(--accent-primary)]">
+                    <span className="text-xs font-semibold tracking-wider text-[var(--accent-primary)] uppercase">
                       STAGE {st.num}
                     </span>
-                    <span className="micro text-[var(--text-muted)] font-mono">
+                    <span className="micro text-[var(--text-muted)] font-medium tracking-wide">
                       VERIFIED
                     </span>
                   </div>

@@ -8,7 +8,7 @@ export function Footer() {
 
   const noticeBlock = (
     <div className="p-4 rounded-[6px] border border-[var(--border-strong)] bg-[var(--bg-subtle)]">
-      <div className="text-[11px] font-mono font-bold uppercase tracking-wider text-[var(--accent-primary)] mb-1">
+      <div className="text-[11px] font-semibold uppercase tracking-wider text-[var(--accent-primary)] mb-1">
         Operational Notice
       </div>
       <p className="text-xs text-[var(--text-secondary)] leading-relaxed font-normal">
@@ -79,7 +79,7 @@ export function Footer() {
         </div>
 
         {/* Bottom Line */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[var(--text-muted)]">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-[var(--text-muted)]">
           <div>
             Built for <span className="text-[var(--text-primary)] font-semibold">Smart India Hackathon 2026</span>
           </div>
