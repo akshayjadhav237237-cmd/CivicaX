@@ -18,12 +18,59 @@ class ErrorBoundary extends Component {
   componentDidCatch(error, errorInfo) {
     console.error("ErrorBoundary caught an error:", error, errorInfo);
   }
+  handleReload = () => {
+    window.location.reload();
+  };
+  handleGoHome = () => {
+    this.setState({ hasError: false, error: null });
+    window.location.href = '/';
+  };
+  handleReset = () => {
+    this.setState({ hasError: false, error: null });
+  };
   render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: "2rem", color: "red", background: "#fef2f2", height: "100vh" }}>
-          <h2>Something went wrong in this route.</h2>
-          <pre>{this.state.error?.toString()}</pre>
+        <div className="min-h-screen w-full flex items-center justify-center p-6 bg-slate-950 text-slate-100 font-sans">
+          <div className="max-w-lg w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl text-center">
+            <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl font-bold">
+              ⚠️
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mb-2 font-heading">
+              {this.props.fallbackTitle || "Something went wrong in this view"}
+            </h2>
+            <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+              CivicaX isolated a runtime exception in this component to prevent the platform from crashing.
+            </p>
+            {this.state.error && (
+              <div className="text-left bg-slate-950/80 border border-slate-800/80 rounded-xl p-3 mb-6 max-h-32 overflow-y-auto font-mono text-xs text-rose-400">
+                {this.state.error.toString()}
+              </div>
+            )}
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <button
+                type="button"
+                onClick={this.handleReload}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/20 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <span>Reload Page</span>
+              </button>
+              <button
+                type="button"
+                onClick={this.handleReset}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm transition-all cursor-pointer"
+              >
+                Try Again
+              </button>
+              <button
+                type="button"
+                onClick={this.handleGoHome}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-700 hover:bg-slate-800/50 text-slate-300 font-medium text-sm transition-all cursor-pointer"
+              >
+                Go Home
+              </button>
+            </div>
+          </div>
         </div>
       );
     }

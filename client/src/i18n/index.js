@@ -47,33 +47,48 @@ function interpolate(template, params) {
 }
 
 /**
- * Core translation function with fallback to English and string interpolation.
+ * Core translation function with fallback to English, string interpolation, and guaranteed zero-throw safety.
+ * Missing key returns the key text (or fallback if provided). Never throws.
  */
 export function getTranslation(key, params, lang = 'en', fallbackDefault) {
-  if (!key) return '';
+  try {
+    if (key === null || key === undefined) return '';
+    const keyStr = typeof key === 'string' ? key : String(key);
 
-  const activeDict = translations[lang] || translations.en;
-  let translated = resolvePath(activeDict, key);
+    const activeDict = (translations && translations[lang]) || (translations && translations.en) || {};
+    let translated = resolvePath(activeDict, keyStr);
 
-  // Fallback to English dictionary if missing in current language
-  if (translated === undefined && lang !== 'en') {
-    translated = resolvePath(translations.en, key);
+    // Fallback to English dictionary if missing in current language
+    if (translated === undefined && lang !== 'en' && translations && translations.en) {
+      translated = resolvePath(translations.en, keyStr);
+    }
+
+    // Fallback to provided default or original key
+    if (translated === undefined || translated === null) {
+      translated = fallbackDefault !== undefined && fallbackDefault !== null ? fallbackDefault : keyStr;
+    }
+
+    const result = interpolate(translated, params);
+    return result !== undefined && result !== null ? result : keyStr;
+  } catch (err) {
+    console.warn(`[i18n] Error resolving key: ${key}`, err);
+    return fallbackDefault !== undefined && fallbackDefault !== null 
+      ? fallbackDefault 
+      : (typeof key === 'string' ? key : (key ? String(key) : ''));
   }
-
-  // Fallback to provided default or original key
-  if (translated === undefined) {
-    translated = fallbackDefault !== undefined ? fallbackDefault : key;
-  }
-
-  return interpolate(translated, params);
 }
 
 /**
- * Standalone `t` function reading current state from Zustand store.
+ * Standalone `t` function reading current state from Zustand store. Never throws.
  */
 export function t(key, params, fallback) {
-  const lang = useLanguageStore.getState().language || 'en';
-  return getTranslation(key, params, lang, fallback);
+  try {
+    const lang = (useLanguageStore && useLanguageStore.getState && useLanguageStore.getState().language) || 'en';
+    return getTranslation(key, params, lang, fallback);
+  } catch (err) {
+    console.warn(`[i18n] Standalone t() error:`, err);
+    return fallback !== undefined && fallback !== null ? fallback : (typeof key === 'string' ? key : (key ? String(key) : ''));
+  }
 }
 
 /**

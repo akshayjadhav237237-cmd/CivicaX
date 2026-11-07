@@ -124,6 +124,7 @@ function MapUpdater({ center, zoom = 16.5 }) {
 import { useSearchParams } from 'react-router-dom';
 
 export function EmergencyPage() {
+  const { t } = useTranslation();
   const [searchParams] = useSearchParams();
   const { location, isLoading: isLocLoading } = useGeolocation();
   const { zones, activeAlerts, fetchZones, fetchActiveAlerts, isLoadingZones } = useAlertStore();
